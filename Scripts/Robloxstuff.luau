@@ -12,6 +12,10 @@ local GitHub = "I love using GitHub repositories to make updates to Code stuff a
 local MD = "I love using Markdown instead of .txt"
 local txt = "I love using Markdown instead of boring .txt that doesnt allow masked links, i need masked links!!"
 local java = "I love coding Java. Don't mix this with JavaScript."
+local ruby = "I love coding Ruby"
+local swift = "I love coding Swift"
+local go = "I love coding Go"
+local rust = "I love coding Rust"
 
 -- Code --
 
@@ -23,7 +27,6 @@ print(var)
 
 if print(var) then
     print(gitignore)
-
 end
 
 -- but what if..
@@ -69,3 +72,32 @@ print("I really hate txt files. I love VBS and MD more. LMAO.")
 if print("I really hate txt files. I love VBS and MD more. LMAO.") then
     print(java)
 end
+
+
+print(ruby)
+
+if print(ruby) then
+    print(swift)
+end
+
+if print(swift) then
+    print(go)
+end
+
+if print(go) then
+    print(rust)
+end
+
+print("I added 4 more languages :D")
+
+for i = 1, 10 do
+    print("This is line number " .. i)
+end
+
+print("")
+
+for j = 1, 5 do
+    print("Extra line lmao " .. j)
+end
+
+print("Done!")
