@@ -7,3 +7,5 @@ Links:
 
 
 hope uh nothing wrong happens and i can't fix it
+
+if you saw every file, thank you, it took quite a lot of time to make solo.
