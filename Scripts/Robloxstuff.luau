@@ -1,45 +1,71 @@
-local printexample = "I love print thing"
-local errorexample = "I love error things but I now have to destroy this world, I am sorry Roblox."
-local warningexample = "I love warnings, but this is a warning that I WILL DESTROY ROBLOX."
-local THISISYOURLASTCHANCE = "THIS IS YOUR LAST CHANCE"
-local YOUAREDEAD = "ROBLOX HAS BEEN DESTROYED, GOODBYE"
-local thereturnofroblox = "Roblox has returned once again, but it will not last long."
-local robloxreturnunalived = "I HAVE DESTROYED YOU ONCE AGAIN"
+-- Variables --
 
-print(printexample)
-warn(warningexample)
-error(errorexample)
+local var = "Example Variable"
+local gitignore = "I wish .gitignore was a file in this folder! but it is in the gitignore folder. :("
+local css = "I love CSS"
+local html = "I love HTML"
+local Lua = "I love coding Lua"
+local js = "I love coding JavaScript"
+local py = "I love coding Python"
+local ts = "I love coding TypeScript"
+local GitHub = "I love using GitHub repositories to make updates to Code stuff and share my files to the public"
+local MD = "I love using Markdown instead of .txt"
+local txt = "I love using Markdown instead of boring .txt that doesnt allow masked links, i need masked links!!"
+local java = "I love coding Java. Don't mix this with JavaScript."
 
--- I will destroy roblox.
+-- Code --
 
-if print(printexample) then
-    warn(warningexample)
+print("This is a custom string that was not put inside of the Variables category.")
 
-if warn(warningexample) then
-    error(errorexample)
+-- custom text above me ^^^
+
+print(var)
+
+if print(var) then
+    print(gitignore)
+
 end
+
+-- but what if..
+
+if print(gitignore) then
+    print(css)
+    if print(css) then
+        print(html)
+        if print(html) then
+            print(Lua)
+        end
     end
+end
 
-    error(THISISYOURLASTCHANCE)
-    
-    error(YOUAREDEAD)
+-- ligma balls
 
-    -- error(YOUAREDEAD) means that ROBLOX has been destroyed.
+if print(js) then
+    print(py)
+end
 
-    print(thereturnofroblox)
-    print(robloxreturnunalived)
+if print(py) then
+    print(ts)
+end
 
+error("Oh shit! an error!")
 
-    -- Roblox i hate you only because of you scamming me out of real money. Roblox i hate you.
-    -- ROBLOX I HATE YOU. I HATE YOU. I HATE YOU. I HATE YOU. WHY DID YOU SCAM ME HUH ROBLOX? HM?
-    -- ROBLOX? YOU SCARED LITTLE BITCH? YOU LITTLE MOTHERFUCKER? HUH? I HATE YOU ROBLOX. I WILL
-    -- RUIN YOUR REPUTATION LITTLE BITCHASS. YOU WASTED MY OWN MONEY. I WILL RUIN YOUR PLATFORM.
+if error("Oh shit! an error!") then
+    print("Yay, it's fixed")
+end
 
-    ------------------------------------------------------------------------------------------------
+print(GitHub)
 
-    local robloxreturn2 = "You are back huh? okay, i will do it again, if you really want it"
-    local return2broken = "ROBLOX, YOU REALLY THOUGHT YOU WERE SLICK? WELL I DESTROYED YOU AGAIN."
+if print(GitHub) then
+    print(MD)
+end
 
-    error(robloxreturn2)
-    print("I'm sorry, but ill come back")
-    error(return2broken)
+if print(MD) then
+    print(txt)
+end
+
+print("I really hate txt files. I love VBS and MD more. LMAO.")
+
+if print("I really hate txt files. I love VBS and MD more. LMAO.") then
+    print(java)
+end
