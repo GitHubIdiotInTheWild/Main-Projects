@@ -2,9 +2,9 @@ package Scripts.Java;
 
 import java.util.*;
 
-class Utility1 {
+class Utility {
     
-    static int performOperation3(int[] arr) {
+    static int operation3performancetest(int[] arr) {
         int result = 0;
         for (int i = 0; i < arr.length; i++) {
             result += arr[i] * (i + 1);
@@ -26,7 +26,7 @@ class Utility1 {
     }
 
     
-    static String performOperation2hehehehe(String str) {
+    static String operation2performancetest(String str) {
         StringBuilder sb = new StringBuilder();
         for (char c : str.toCharArray()) {
             if (Character.isLetter(c)) {
@@ -40,18 +40,18 @@ class Utility1 {
 }
 
 
-class Utility1exception extends Exception {
-    Utility1exception(String message) {
+class UtilityException extends Exception {
+    UtilityException(String message) {
         super(message);
     }
 }
 
 
-class Utility1Datastructure {
+class MainDataStructure01 {
     private Map<String, List<Integer>> data;
 
     
-    Utility1Datastructure() {
+    MainDataStructure01() {
         this.data = new HashMap<>();
     }
 
@@ -65,52 +65,52 @@ class Utility1Datastructure {
     }
 
     
-    int performOperation1(String key) throws Utility1exception {
+    int operation1performancetest(String key) throws UtilityException {
         if (!data.containsKey(key)) {
-            throw new Utility1exception("Key not found in the data structure.");
+            throw new UtilityException("Key not found in the data structure");
         }
         List<Integer> values = data.get(key);
         int[] arr = new int[values.size()];
         for (int i = 0; i < values.size(); i++) {
             arr[i] = values.get(i);
         }
-        return Utility1.performOperation3(arr);
+        return Utility.operation3performancetest(arr);
     }
 }
 
 public class Javastuffbackup {
     public static void main(String[] args) {
         
-        Utility1Datastructure utility1Datastructure = new Utility1Datastructure();
+        MainDataStructure01 maindatastructure01 = new MainDataStructure01();
 
         
-        utility1Datastructure.addData("key1", new int[]{1, 2, 3, 4, 5});
-        utility1Datastructure.addData("key2", new int[]{6, 7, 8, 9, 10});
+        maindatastructure01.addData("key1", new int[]{1, 2, 3, 4, 5});
+        maindatastructure01.addData("key2", new int[]{6, 7, 8, 9, 10});
 
         try {
             
-            int result = utility1Datastructure.performOperation1("key1");
-            System.out.println("Result of complex operation: " + result);
-        } catch (Utility1exception e) {
-            System.err.println("Error occurred: " + e.getMessage());
+            int result = maindatastructure01.operation1performancetest("key1");
+            System.out.println("Result of a complex operation: " + result);
+        } catch (UtilityException e) {
+            System.err.println("An error occurred: " + e.getMessage());
         }
 
         
-        List<Integer> fibonacciSequence = Utility1.generateFibonacciSequence(50);
+        List<String> list = new ArrayList<>();
+        list.add("test01");
+        list.add("test02");
+        list.add("test03");
+        list.add("test04");
+        Collections.sort(list, Comparator.comparingInt(String::length));
+        System.out.println("List after sorting by length: " + list);
+
+        
+        List<Integer> fibonacciSequence = Utility.generateFibonacciSequence(50);
         System.out.println("Fibonacci Sequence up to 50: " + fibonacciSequence);
 
         
         String inputString = "hello world";
-        String modifiedString = Utility1.performOperation2hehehehe(inputString);
+        String modifiedString = Utility.operation2performancetest(inputString);
         System.out.println("Modified String: " + modifiedString);
-
-        
-        List<String> mixedList = new ArrayList<>();
-        mixedList.add("apple");
-        mixedList.add("banana");
-        mixedList.add("cherry");
-        mixedList.add("date");
-        Collections.sort(mixedList, Comparator.comparingInt(String::length));
-        System.out.println("Mixed List after sorting by length: " + mixedList);
     }
 }
