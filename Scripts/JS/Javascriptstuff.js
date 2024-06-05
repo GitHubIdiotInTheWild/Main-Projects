@@ -1,5 +1,5 @@
 
-let greeting = "Hello, World!";
+let greeting = "hi";
 const pi = 3.14159;
 
 
@@ -13,8 +13,8 @@ function greet(name) {
 
 
 let person = {
-    firstName: "John",
-    lastName: "Doe",
+    firstName: "some",
+    lastName: "guy",
     age: 30,
     fullName: function() {
         return `${this.firstName} ${this.lastName}`;
@@ -22,20 +22,20 @@ let person = {
 };
 
 
-let fruits = ["Apple", "Banana", "Cherry"];
-fruits.push("Date");
+let somethingeeea = ["thing01", "thing02", "thing03"];
+somethingeeea.push("thing04");
 
 
-for (let i = 0; i < fruits.length; i++) {
-    console.log(fruits[i]);
+for (let i = 0; i < somethingeeea.length; i++) {
+    console.log(somethingeeea[i]);
 }
 
-fruits.forEach(function(fruit) {
-    console.log(fruit);
+somethingeeea.forEach(function(eeeafunction) {
+    console.log(eeeafunction);
 });
 
-for (let fruit of fruits) {
-    console.log(fruit);
+for (let eeeafunction of somethingeeea) {
+    console.log(eeeafunction);
 }
 
 
@@ -54,7 +54,7 @@ let squares = numbers.map(n => n * n);
 
 function asyncFunction() {
     return new Promise((resolve, reject) => {
-        setTimeout(() => resolve("Async Function Result"), 1000);
+        setTimeout(() => resolve("async function result"), 1000);
     });
 }
 
@@ -78,7 +78,7 @@ class somethingeer {
 
 class somethingeer01 extends somethingeer {
     speak() {
-        console.log(`${this.name} barks.`);
+        console.log(`${this.name} blinks.`);
     }
 }
 
@@ -88,7 +88,7 @@ domeera.speak();
 
 document.addEventListener("DOMContentLoaded", () => {
     let div = document.createElement("div");
-    div.textContent = greet("John Doe");
+    div.textContent = greet("some guy");
     document.body.appendChild(div);
 
     let ul = document.createElement("ul");
@@ -111,7 +111,7 @@ fetch("https://jsonplaceholder.typicode.com/posts")
     .then(data => {
         console.log(data);
     })
-    .catch(error => console.error("Error:", error));
+    .catch(error => console.error("rror:", error));
 
 
 localStorage.setItem("greeting", greeting);
