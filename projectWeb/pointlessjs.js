@@ -1,5 +1,5 @@
 
-const Variable = 'variable';
+const variable = 'variable';
 
 
 function Function() {
@@ -10,7 +10,7 @@ function Function() {
 Function();
 
 
-console.log('message');
+console.log('hello world');
 
 
 const Object = {
@@ -24,4 +24,4 @@ for (let i = 0; i < 3; i++) {
 }
 
 
-export default Variable;
+export default variable;
