@@ -9,3 +9,14 @@ Links:
 hope uh nothing wrong happens and i can't fix it
 
 if you saw every file, thank you, it took quite a lot of time to make solo.
+
+random lua code snippet:
+
+```lua
+function printing()
+        yeah = "Haha yes"
+        print(yeah)
+end
+
+printing()
+```
