@@ -1,4 +1,4 @@
--- there will be some errors in here (this works in roblox i tested)
+-- there might be errors in here
 
 local function print()
     local yes = "haha yes"
