@@ -1,5 +1,7 @@
 {
     "Lua.diagnostics.globals": [
-        "task"
+        "task",
+        "variable3",
+        "variable4"
     ]
 }
