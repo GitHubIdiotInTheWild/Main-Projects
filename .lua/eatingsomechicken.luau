@@ -39,3 +39,5 @@ end
 no()
 print(variable1)
 print(variable2)
+
+-- hmmm what the hell did i even think of while doing this?? 🙏
