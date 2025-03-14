@@ -17,6 +17,11 @@ function printing()
         yeah = "Haha yes"
         print(yeah)
 end
+
 wait(2.5)
+
 printing()
+
+
+-- it prints "haha yes" 👍
 ```
