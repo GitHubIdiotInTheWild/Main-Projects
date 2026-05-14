@@ -224,10 +224,15 @@ output.pack(pady=20)
 run_btn = tk.Button(container, text="Give output", font=FONT, bg="#00e5ff", fg="black", command=lambda: process())
 run_btn.pack(pady=10)
 
-tk.Button(container, text="clear", font=FONT, bg="#111111", fg="#00ffff", command=lambda: output.config(text="")).pack(pady=4)
-tk.Button(container, text="clear vars", font=FONT, bg="#111111", fg="#ffd700", command=lambda: clear_vars()).pack(pady=4)
-tk.Button(container, text="copy", font=FONT, bg="#111111", fg="#b388ff", command=lambda: copy_output()).pack(pady=4)
-tk.Button(container, text="help", font=FONT, bg="#111111", fg="#ff6b6b", command=lambda: show_help()).pack(pady=4)
+btn_row1 = tk.Frame(container, bg="black")
+btn_row1.pack(pady=4)
+tk.Button(btn_row1, text="clear", font=FONT, bg="#111111", fg="#00ffff", command=lambda: output.config(text="")).pack(side="left", padx=6)
+tk.Button(btn_row1, text="clear vars", font=FONT, bg="#111111", fg="#ffd700", command=lambda: clear_vars()).pack(side="left", padx=6)
+
+btn_row2 = tk.Frame(container, bg="black")
+btn_row2.pack(pady=4)
+tk.Button(btn_row2, text="copy", font=FONT, bg="#111111", fg="#b388ff", command=lambda: copy_output()).pack(side="left", padx=6)
+tk.Button(btn_row2, text="help", font=FONT, bg="#111111", fg="#ff6b6b", command=lambda: show_help()).pack(side="left", padx=6)
 
 set_color()
 
