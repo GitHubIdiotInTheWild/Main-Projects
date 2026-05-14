@@ -274,7 +274,7 @@ if parsed is not None:
 
     if func_name not in functions:
         log("NAN", COLOR_EXPR)
-        return
+return
 
     param_names, func_body = functions[func_name]
 
