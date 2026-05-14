@@ -12,39 +12,20 @@ def factorial(num):
 
 # ---------------- expression system ----------------
 
-def eval_addition(expr):
+def eval_expression(expr):
     if any(c.isalpha() for c in expr):
         return None
 
-    if "+" not in expr:
+    # only trigger expression mode if operators exist
+    if not any(op in expr for op in ["+", "*", "(", ")"]):
         return None
 
     try:
-        parts = expr.split("+")
-        nums = [int(p.strip()) for p in parts]
-        return nums, sum(nums)
-    except:
-        return None
+        allowed = set("0123456789+*() ")
+        if not all(c in allowed for c in expr):
+            return None
 
-
-# ---------------- NEW: multiplication system ----------------
-
-def eval_multiplication(expr):
-    if any(c.isalpha() for c in expr):
-        return None
-
-    if "*" not in expr:
-        return None
-
-    try:
-        parts = expr.split("*")
-        nums = [int(p.strip()) for p in parts]
-
-        result = 1
-        for n in nums:
-            result *= n
-
-        return nums, result
+        return eval(expr)
     except:
         return None
 
@@ -109,8 +90,7 @@ roasts_1000 = [
     "THIS IS TORTURE",
     "PLEASE RECONSIDER",
     "I REGRET EVERYTHING",
-    "FUCK YOU",
-    "KILL YOURSELF",
+    "SYSTEM MELTDOWN",
     "WHAT IS THIS EVEN FOR?!",
     "WHY?!",
     "DON'T DO THIS TO ME",
@@ -129,16 +109,43 @@ FONT = ("VCR OSD Mono", 16)
 container = tk.Frame(window, bg="black")
 container.place(relx=0.5, rely=0.5, anchor="center")
 
-label = tk.Label(container, text="Enter a number:", font=FONT, bg="black", fg="#bffcff")
+label = tk.Label(
+    container,
+    text="Enter a number:",
+    font=FONT,
+    bg="black",
+    fg="#bffcff"
+)
 label.pack(pady=10)
 
-entry = tk.Entry(container, font=FONT, bg="white", fg="black", insertbackground="black", width=30)
+entry = tk.Entry(
+    container,
+    font=FONT,
+    bg="white",
+    fg="black",
+    insertbackground="black",
+    width=30
+)
 entry.pack(pady=10)
 
-output = tk.Label(container, text="", font=FONT, bg="black", fg="#bffcff", wraplength=900)
+output = tk.Label(
+    container,
+    text="",
+    font=FONT,
+    bg="black",
+    fg="#bffcff",
+    wraplength=900
+)
 output.pack(pady=20)
 
-button = tk.Button(container, text="run", font=FONT, bg="#00e5ff", fg="black", command=lambda: process())
+button = tk.Button(
+    container,
+    text="run",
+    font=FONT,
+    bg="#00e5ff",
+    fg="black",
+    command=lambda: process()
+)
 button.pack(pady=10)
 
 # ---------------- log system ----------------
@@ -198,39 +205,19 @@ def process():
         is_debug = True
         raw = raw.replace("debug ", "", 1)
 
-    # ---------------- addition ----------------
+    # ---------------- expression system ----------------
 
-    add = eval_addition(raw)
-    if add is not None:
-        nums, total = add
-
+    expr_result = eval_expression(raw)
+    if expr_result is not None:
         if is_debug:
             debug_uses += 1
 
             if is_silent:
-                log(str(total))
+                log(str(expr_result))
             else:
-                log(f"D {nums} = {total}")
+                log(f"D {raw} = {expr_result}")
         else:
-            log(f"{raw} = {total}")
-
-        return
-
-    # ---------------- multiplication (NEW) ----------------
-
-    mul = eval_multiplication(raw)
-    if mul is not None:
-        nums, total = mul
-
-        if is_debug:
-            debug_uses += 1
-
-            if is_silent:
-                log(str(total))
-            else:
-                log(f"D {nums} = {total}")
-        else:
-            log(f"{raw} = {total}")
+            log(f"{raw} = {expr_result}")
 
         return
 
@@ -244,7 +231,7 @@ def process():
 
     fact = factorial(num)
 
-    # ---------------- 1000+ MELTDOWN TIER ----------------
+    # ---------------- 1000+ MELTDOWN ----------------
 
     if num >= 1000:
         log(random.choice(roasts_1000))
@@ -259,22 +246,22 @@ def process():
             log(f"ok this might break your pc: {fact}")
 
         elif roll < 0.25:
-            log(f"digits: {len(str(fact))}")
+            log(f"Factorial digit count of {num}: {len(str(fact))}")
 
         else:
             log(random.choice(roasts))
 
         return
 
-    # ---------------- NORMAL OUTPUT ----------------
+    # ---------------- normal output ----------------
 
     if is_debug:
         debug_uses += 1
         if is_silent:
             log(str(fact))
         else:
-            log(f"D factorial {num} = {fact}")
+            log(f"D Factorial {num} = {fact}")
     else:
-        log(f"Factorial = {fact}")
+        log(f"Factorial of {num} = {fact}")
 
 window.mainloop()
