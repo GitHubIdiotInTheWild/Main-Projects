@@ -39,6 +39,8 @@ reboot_done = False
 log_queue = []
 log_running = False
 
+# ---------------- ROASTS (normal < 1000) ----------------
+
 roasts = [
     "What are you even doing?",
     "This is really unnecessary.",
@@ -49,13 +51,13 @@ roasts = [
     "What?",
     "Why?",
     "How?",
-    "by spu7nix.",
+    "by Spu7Nix.",
     "Please stop",
     "This is cursed behavior.",
     "Explain yourself.",
     "Explain.",
     "Let's talk about this..",
-    "uhh, what the hell?"
+    "uhh, what the hell?",
     "Busbis would hate you for this.",
     "Shh....",
     "no. just no.",
@@ -64,6 +66,33 @@ roasts = [
     "I'm not gonna do that.",
     "Nah.",
     "Ehhhhh..."
+]
+
+# ---------------- ROASTS (1000+) ----------------
+
+roasts_1000 = [
+    "I GIVE UP",
+    "NO. JUST NO.",
+    "CLOSE ME PLEASE",
+    "STOP DOING THIS",
+    "<_>",
+    "THIS IS TOO MUCH",
+    "WHY WOULD YOU DO THIS?!",
+    "PLEASE STOP",
+    "I CAN'T HANDLE THIS",
+    "NO PLEASE",
+    "THIS WASN'T PART OF THE DEAL",
+    "I AM BEGGING YOU",
+    "WHAT ARE YOU EVEN DOING?!",
+    "THIS IS TORTURE",
+    "PLEASE RECONSIDER",
+    "I REGRET EVERYTHING",
+    "FUCK YOU",
+    "KILL YOURSELF",
+    "WHAT IS THIS EVEN FOR?!",
+    "WHY?!",
+    "DON'T DO THIS TO ME",
+    "STOP :("
 ]
 
 # ---------------- window ----------------
@@ -126,14 +155,14 @@ def run_log_queue():
 
     type_step()
 
-# ---------------- idk ----------------
+# ---------------- MAIN ----------------
 
 def process():
     global debug_uses, reboot_done
 
     raw = entry.get().strip()
 
-    # ---------------- Debug mode ----------------
+    # ---------------- debug mode ----------------
 
     is_debug = False
     is_silent = False
@@ -165,7 +194,7 @@ def process():
 
         return
 
-    # ---------------- factorials ----------------
+    # ---------------- factorial ----------------
 
     try:
         num = int(raw)
@@ -175,7 +204,13 @@ def process():
 
     fact = factorial(num)
 
-    # ---------------- rsystem----------------
+    # ---------------- 1000+ MELTDOWN TIER ----------------
+
+    if num >= 1000:
+        log(random.choice(roasts_1000))
+        return
+
+    # ---------------- 100+ ROAST TIER ----------------
 
     if num > 100:
         roll = random.random()
@@ -191,7 +226,7 @@ def process():
 
         return
 
-    # ---------------- outputs ----------------
+    # ---------------- NORMAL OUTPUT ----------------
 
     if is_debug:
         debug_uses += 1
