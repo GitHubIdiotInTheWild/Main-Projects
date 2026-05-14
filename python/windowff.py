@@ -2,6 +2,7 @@ import tkinter as tk
 import random
 import pygame
 import re
+import math
 
 # ---------------- math ----------------
 
@@ -11,9 +12,37 @@ def factorial(num):
         fact *= i
     return fact
 
+# ---------------- constants ----------------
+
+constants = {
+    "pi": math.pi,
+    "e": math.e,
+    "tau": math.tau,
+    "phi": (1 + 5 ** 0.5) / 2
+}
+
+def apply_constants(expr):
+    for k in constants:
+        expr = expr.replace(k, str(constants[k]))
+    return expr
+
+# ---------------- trig ----------------
+
+def apply_trig(expr):
+    try:
+        expr = re.sub(r"sin\(([^)]+)\)", lambda m: str(math.sin(math.radians(eval(m.group(1))))), expr)
+        expr = re.sub(r"cos\(([^)]+)\)", lambda m: str(math.cos(math.radians(eval(m.group(1))))), expr)
+        expr = re.sub(r"tan\(([^)]+)\)", lambda m: str(math.tan(math.radians(eval(m.group(1))))), expr)
+    except:
+        pass
+    return expr
+
 # ---------------- expression system ----------------
 
 def eval_expression(expr):
+    expr = apply_constants(expr)
+    expr = apply_trig(expr)
+
     allowed_chars = set("0123456789+-*/() ")
 
     for c in expr:
@@ -164,6 +193,22 @@ output.pack(pady=20)
 
 tk.Button(container, text="run", font=FONT, bg="#00e5ff", fg="black", command=lambda: process()).pack(pady=10)
 
+# ---------------- fade (ADD ON ONLY) ----------------
+
+def fade(text):
+    steps = 6
+
+    def step(i=0):
+        if i <= steps:
+            shade = int(255 * (i / steps))
+            color = f"#{shade:02x}{shade:02x}ff"
+            output.config(text=text, fg=color)
+            window.after(30, lambda: step(i + 1))
+        else:
+            output.config(text=text, fg="#bffcff")
+
+    step()
+
 # ---------------- log system ----------------
 
 def log(text):
@@ -188,7 +233,7 @@ def run_log_queue():
                 pass
             window.after(25, lambda: type_step(i + 1))
         else:
-            output.config(text=text)
+            fade(text)
             window.after(120, finish)
 
     def finish():
@@ -204,8 +249,6 @@ def process():
     global debug_uses
 
     raw = entry.get().strip()
-
-    # ---------------- debug ----------------
 
     is_debug = False
     is_silent = False
@@ -224,11 +267,10 @@ def process():
     if "=" in raw and "(" in raw.split("=")[0]:
         try:
             left, right = raw.split("=", 1)
-
             func_name, params = left.split("(", 1)
+
             func_name = func_name.strip()
             params = params.replace(")", "").strip()
-
             func_body = right.strip()
 
             functions[func_name] = (params, func_body)
@@ -300,11 +342,7 @@ def process():
     result = eval_expression(expr)
 
     if result is not None:
-        if is_debug:
-            debug_uses += 1
-            log(f"D {raw} = {result}")
-        else:
-            log(f"{raw} = {result}")
+        log(f"{raw} = {result}")
         return
 
     # ---------------- factorial ----------------
