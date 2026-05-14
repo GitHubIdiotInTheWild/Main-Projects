@@ -14,18 +14,13 @@ def factorial(num):
 # ---------------- expression system ----------------
 
 def eval_expression(expr):
-    if any(c.isalpha() for c in expr):
-        return None
+    allowed_chars = set("0123456789+-*/() ")
 
-    if not any(op in expr for op in ["+", "-", "*", "/", "(", ")"]):
-        return None
+    for c in expr:
+        if c not in allowed_chars:
+            return None
 
     try:
-        allowed_chars = set("0123456789+-*/() ")
-        for c in expr:
-            if c not in allowed_chars:
-                return None
-
         result = eval(expr)
 
         if isinstance(result, float):
@@ -33,7 +28,6 @@ def eval_expression(expr):
                 result = int(result)
 
         return result
-
     except:
         return None
 
@@ -44,9 +38,8 @@ variables = {}
 def resolve_vars(expr):
     new_expr = expr
 
-    for var_name in variables:
-        var_value = str(variables[var_name])
-        new_expr = new_expr.replace(var_name, var_value)
+    for name in variables:
+        new_expr = new_expr.replace(name, str(variables[name]))
 
     return new_expr
 
@@ -57,16 +50,38 @@ functions = {}
 def parse_function_call(expr):
     match = re.match(r"([a-zA-Z]\w*)\((.*)\)", expr)
 
-    if match is None:
+    if not match:
         return None
 
-    func_name = match.group(1)
-    func_arg = match.group(2).strip()
+    name = match.group(1)
+    args = match.group(2)
 
-    if func_name not in functions:
+    if name not in functions:
         return None
 
-    return func_name, func_arg
+    return name, args
+
+
+def split_args(arg_string):
+    args = []
+    current = ""
+    depth = 0
+
+    for c in arg_string:
+        if c == "," and depth == 0:
+            args.append(current.strip())
+            current = ""
+        else:
+            if c == "(":
+                depth += 1
+            elif c == ")":
+                depth -= 1
+            current += c
+
+    if current:
+        args.append(current.strip())
+
+    return args
 
 # ---------------- sound ----------------
 
@@ -142,7 +157,7 @@ FONT = ("VCR OSD Mono", 16)
 container = tk.Frame(window, bg="black")
 container.place(relx=0.5, rely=0.5, anchor="center")
 
-label = tk.Label(container, text="Enter input:", font=FONT, bg="black", fg="#bffcff")
+label = tk.Label(container, text="enter input", font=FONT, bg="black", fg="#bffcff")
 label.pack(pady=10)
 
 entry = tk.Entry(container, font=FONT, bg="white", fg="black", insertbackground="black", width=30)
@@ -151,8 +166,7 @@ entry.pack(pady=10)
 output = tk.Label(container, text="", font=FONT, bg="black", fg="#bffcff", wraplength=900)
 output.pack(pady=20)
 
-button = tk.Button(container, text="run", font=FONT, bg="#00e5ff", fg="black", command=lambda: process())
-button.pack(pady=10)
+tk.Button(container, text="run", font=FONT, bg="#00e5ff", fg="black", command=lambda: process()).pack(pady=10)
 
 # ---------------- log system ----------------
 
@@ -163,15 +177,10 @@ def log(text):
 def run_log_queue():
     global log_running
 
-    if log_running:
-        if len(log_queue) == 0:
-            return
-
-    if len(log_queue) == 0:
+    if log_running or not log_queue:
         return
 
     log_running = True
-
     text = log_queue.pop(0)
 
     def type_step(i=0):
@@ -220,17 +229,15 @@ def process():
 
     if "=" in raw and "(" in raw.split("=")[0]:
         try:
-            left_side, right_side = raw.split("=", 1)
+            left, right = raw.split("=", 1)
 
-            func_header = left_side
-            func_body = right_side.strip()
-
-            func_name, func_params = func_header.split("(", 1)
+            func_name, params = left.split("(", 1)
             func_name = func_name.strip()
+            params = params.replace(")", "").strip()
 
-            func_params = func_params.replace(")", "").strip()
+            func_body = right.strip()
 
-            functions[func_name] = (func_params, func_body)
+            functions[func_name] = (params, func_body)
 
             log(f"{func_name} defined")
             return
@@ -244,27 +251,26 @@ def process():
     parsed = parse_function_call(raw)
 
     if parsed is not None:
-        func_name = parsed[0]
-        func_arg = parsed[1]
+        func_name, arg_string = parsed
 
-        func_params, func_body = functions[func_name]
+        param_string, func_body = functions[func_name]
 
-        param_name = func_params.split(",")[0].strip()
+        param_names = [p.strip() for p in param_string.split(",")]
+        arg_values = split_args(arg_string)
 
-        replaced_body = func_body.replace(param_name, func_arg)
+        replaced = func_body
 
-        replaced_body = resolve_vars(replaced_body)
+        for i in range(min(len(param_names), len(arg_values))):
+            replaced = replaced.replace(param_names[i], arg_values[i])
 
-        result = eval_expression(replaced_body)
+        replaced = resolve_vars(replaced)
+
+        result = eval_expression(replaced)
 
         if result is None:
             log("NAN")
         else:
-            if is_debug:
-                debug_uses += 1
-                log(f"{func_name}({func_arg}) = {result}")
-            else:
-                log(f"{func_name}({func_arg}) = {result}")
+            log(f"{func_name}({arg_string}) = {result}")
 
         return
 
@@ -272,23 +278,22 @@ def process():
 
     if "=" in raw:
         try:
-            var_name, var_value = raw.split("=", 1)
+            name, value = raw.split("=", 1)
 
-            var_name = var_name.strip()
-            var_value = resolve_vars(var_value.strip())
+            name = name.strip()
+            value = resolve_vars(value.strip())
 
-            evaluated = eval_expression(var_value)
+            evaluated = eval_expression(value)
 
             if evaluated is None:
                 try:
-                    evaluated = int(var_value)
+                    evaluated = int(value)
                 except:
                     log("NAN")
                     return
 
-            variables[var_name] = evaluated
-
-            log(f"{var_name} = {evaluated}")
+            variables[name] = evaluated
+            log(f"{name} = {evaluated}")
             return
 
         except:
@@ -297,47 +302,47 @@ def process():
 
     # ---------------- expression ----------------
 
-    processed = resolve_vars(raw)
+    expr = resolve_vars(raw)
 
-    expr_result = eval_expression(processed)
+    result = eval_expression(expr)
 
-    if expr_result is not None:
+    if result is not None:
         if is_debug:
             debug_uses += 1
-            log(f"D {raw} = {expr_result}")
+            log(f"D {raw} = {result}")
         else:
-            log(f"{raw} = {expr_result}")
+            log(f"{raw} = {result}")
         return
 
     # ---------------- factorial ----------------
 
     try:
-        number = int(raw)
+        num = int(raw)
     except:
         log("NAN")
         return
 
-    result = factorial(number)
+    fact = factorial(num)
 
-    if number >= 1000:
+    if num >= 1000:
         log(random.choice(roasts_1000))
         return
 
-    if number > 100:
+    if num > 100:
         roll = random.random()
 
         if roll < 0.05:
-            log(f"ok this might break your pc: {result}")
+            log(f"ok this might break your pc: {fact}")
         elif roll < 0.25:
-            log(f"Factorial digit count of {number}: {len(str(result))}")
+            log(f"Factorial digit count of {num}: {len(str(fact))}")
         else:
             log(random.choice(roasts))
         return
 
     if is_debug:
         debug_uses += 1
-        log(f"D Factorial {number} = {result}")
+        log(f"D Factorial {num} = {fact}")
     else:
-        log(f"Factorial of {number} = {result}")
+        log(f"Factorial of {num} = {fact}")
 
 window.mainloop()
