@@ -18,7 +18,7 @@ function printing()
         print(yeah)
 end
 
-wait(2.5)
+task.wait(2.5)
 
 printing()
 
