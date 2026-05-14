@@ -36,15 +36,17 @@ def apply_constants(expr):
         expr = expr.replace(k, v)
     return expr
 
-# ---------------- trig ----------------
+# ---------------- trig + math functions ----------------
 
 def apply_trig(expr):
     def safe_eval(x):
         try:
-            return float(eval(x))
+            return float(eval(x.replace("^", "**")))
         except:
             return 0
 
+    expr = re.sub(r"sqrt\(([^)]+)\)", lambda m: str(math.sqrt(safe_eval(m.group(1)))), expr)
+    expr = re.sub(r"log\(([^)]+)\)", lambda m: str(math.log10(safe_eval(m.group(1)))), expr)
     expr = re.sub(r"sin\(([^)]+)\)", lambda m: str(math.sin(math.radians(safe_eval(m.group(1))))), expr)
     expr = re.sub(r"cos\(([^)]+)\)", lambda m: str(math.cos(math.radians(safe_eval(m.group(1))))), expr)
     expr = re.sub(r"tan\(([^)]+)\)", lambda m: str(math.tan(math.radians(safe_eval(m.group(1))))), expr)
@@ -54,13 +56,14 @@ def apply_trig(expr):
 # ---------------- expression system ----------------
 
 def eval_expression(expr):
-    allowed_chars = set("0123456789+-*/() .")
+    allowed_chars = set("0123456789+-*/()^. ")
 
     for c in expr:
         if c not in allowed_chars:
             return None
 
     try:
+        expr = expr.replace("^", "**")
         result = eval(expr)
 
         if isinstance(result, float) and result.is_integer():
@@ -142,7 +145,7 @@ debug_uses = 0
 log_queue = []
 log_running = False
 
-# ---------------- COLORS (fixed, stable) ----------------
+# ---------------- colors ----------------
 
 BASE_COLOR = "#00ffff"
 
