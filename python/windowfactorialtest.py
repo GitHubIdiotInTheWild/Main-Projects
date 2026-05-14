@@ -11,14 +11,85 @@ def factorial(num):
 debug_uses = 0
 reboot_done = False
 
+roasts = [
+    "What will you even use this for?",
+    "Do you really think this is necessary?",
+    "This is way overkill, but okay.",
+    "Why are you like this?",
+    "Your CPU will kill itself if I revealed this to you",
+    "why tho",
+    "bro??",
+    "???",
+    "Explain.",
+    "Explain yourself."
+]
+
+# fallback font if VCR OSD Mono not installed
+FONT = ("VCR OSD Mono", 12)
+
 def log(text):
     output.config(text=text)
 
-def normal_calc():
+def process():
     global debug_uses, reboot_done
 
-    raw = entry.get()
+    raw = entry.get().strip()
 
+    # debug silent
+    if raw.startswith("debugsilent "):
+        try:
+            num = int(raw.split()[1])
+        except:
+            log("invalid input")
+            return
+
+        fact = factorial(num)
+        log(str(fact))
+        return
+
+    # debug normal
+    if raw.startswith("debug "):
+        try:
+            num = int(raw.split()[1])
+        except:
+            log("invalid input")
+            return
+
+        debug_uses += 1
+        fact = factorial(num)
+
+        log(f"DEBUG factorial of {num} = {fact}")
+        window.update()
+
+        if debug_uses == 10:
+            log("File code unstable.")
+            return
+
+        if debug_uses == 11 and not reboot_done:
+            log("Detected instability... restarting.")
+            window.update()
+            time.sleep(0.5)
+
+            log("Reloading factorialfinder.py")
+            window.update()
+
+            if random.random() < 0.1:
+                time.sleep(1)
+                log("Failed to compile code. Retrying...")
+                window.update()
+
+            time.sleep(1)
+            log("Successfully reloaded! Now patching...")
+            window.update()
+
+            time.sleep(1.5)
+            log("Patched! Will not happen again. Enjoy the free math :)")
+
+            reboot_done = True
+
+        return
+
+    # normal mode
     try:
         num = int(raw)
     except:
@@ -49,83 +120,25 @@ def normal_calc():
     else:
         log(f"Factorial = {fact}")
 
-def debug():
-    global debug_uses, reboot_done
-
-    raw = entry.get()
-
-    try:
-        num = int(raw.split()[-1])
-    except:
-        log("debug needs a number bro")
-        return
-
-    debug_uses += 1
-    fact = factorial(num)
-
-    log(f"DEBUG factorial of {num} = {fact}")
-
-    if debug_uses == 10:
-        log("File code unstable.")
-
-    elif debug_uses == 11 and not reboot_done:
-        log("Detected rising instability... Promptly restarting.")
-        window.update()
-        time.sleep(1)
-
-        log("Reloading factorialfinder.py")
-        window.update()
-
-        if random.random() < 0.1:
-            time.sleep(1)
-            log("Failed to compile code. Retrying...")
-            window.update()
-
-        time.sleep(3)
-        log("Successfully reloaded! Now patching...")
-
-        time.sleep(2)
-        log("Patched! Will not happen again. Enjoy the free math :)")
-
-        reboot_done = True
-
-def debugsilent():
-    raw = entry.get()
-
-    try:
-        num = int(raw.split()[-1])
-    except:
-        log("debugsilent needs a number")
-        return
-
-    fact = factorial(num)
-    log(str(fact))
-
-roasts = [
-    "What will you even use this for?",
-    "Do you really think this is necessary?",
-    "This is way overkill, but okay.",
-    "Why are you like this?",
-    "Your CPU will kill itself if I revealed this to you",
-    "why tho",
-    "bro??",
-    "???",
-    "Explain.",
-    "Explain yourself."
-]
 
 window = tk.Tk()
 window.title("factorial finder")
-window.geometry("400x250")
+window.geometry("500x300")
 
-entry = tk.Entry(window, width=30)
-entry.pack(pady=10)
+# center layout container
+frame = tk.Frame(window)
+frame.place(relx=0.5, rely=0.5, anchor="center")
 
-tk.Button(window, text="calculate", command=normal_calc).pack()
-tk.Button(window, text="debug", command=debug).pack()
-tk.Button(window, text="debugsilent", command=debugsilent).pack()
+label = tk.Label(frame, text="Enter a number:", font=FONT)
+label.pack(pady=5)
 
-output = tk.Label(window, text="", wraplength=350)
-output.pack(pady=20)
+entry = tk.Entry(frame, width=30, font=FONT)
+entry.pack(pady=5)
+
+button = tk.Button(frame, text="run", command=process, font=FONT)
+button.pack(pady=5)
+
+output = tk.Label(frame, text="", font=FONT, wraplength=400)
+output.pack(pady=15)
 
 window.mainloop()
