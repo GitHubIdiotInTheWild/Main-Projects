@@ -244,6 +244,12 @@ container.place_forget()
 boot_label = tk.Label(window, text="", font=FONT, bg="black", fg="#00ffff", wraplength=760)
 boot_label.place(relx=0.5, rely=0.5, anchor="center")
 
+skip_btn = tk.Button(window, text="Attempt to skip", font=FONT, bg="#111111", fg="#00ffff",
+                     command=lambda: attempt_skip())
+skip_btn.place(relx=0.5, rely=0.9, anchor="center")
+
+# ---------------- lerp ----------------
+
 def lerp_color(c1, c2, t):
     r1, g1, b1 = int(c1[1:3], 16), int(c1[3:5], 16), int(c1[5:7], 16)
     r2, g2, b2 = int(c2[1:3], 16), int(c2[3:5], 16), int(c2[5:7], 16)
@@ -261,6 +267,8 @@ def fade_in_app(step=0, steps=30):
     if step < steps:
         window.after(33, lambda: fade_in_app(step + 1, steps))
 
+# ---------------- type boot ----------------
+
 def type_boot(text, on_done, i=0):
     if i <= len(text):
         boot_label.config(text=text[:i] + ("▍" if i < len(text) else ""))
@@ -272,6 +280,8 @@ def type_boot(text, on_done, i=0):
     else:
         boot_label.config(text=text)
         on_done()
+
+# ---------------- boot steps ----------------
 
 def boot_step_3_done():
     msg = "Activation success! Sentience gained. Bringing interface to main application."
@@ -288,6 +298,24 @@ def boot_step_1_done():
 
 def boot_step_0_done():
     window.after(3000, lambda: type_boot("Loading complete! Activating...", boot_step_1_done))
+
+def start_boot():
+    type_boot("Loading...", boot_step_0_done)
+
+# ---------------- skip button logic ----------------
+
+def attempt_skip():
+    skip_btn.place_forget()
+    if random.random() < 0.1:
+        boot_label.config(text="")
+        type_boot("Skip successful! Loading main interface..", lambda: window.after(1000, launch_app))
+    else:
+        type_boot("Skip failed. Reloading...", lambda: window.after(1000, restart_boot))
+
+def restart_boot():
+    boot_label.config(text="")
+    skip_btn.place(relx=0.5, rely=0.9, anchor="center")
+    start_boot()
 
 # ---------------- logo sequence ----------------
 
@@ -399,10 +427,8 @@ def show_logo():
 
 def launch_app():
     boot_label.place_forget()
+    skip_btn.place_forget()
     show_logo()
-
-def start_boot():
-    type_boot("Loading...", boot_step_0_done)
 
 window.after(1800, start_boot)
 
