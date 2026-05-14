@@ -1,6 +1,7 @@
 import tkinter as tk
 import random
 import pygame
+import re
 
 # ---------------- math ----------------
 
@@ -42,6 +43,23 @@ def resolve_vars(expr):
     for k, v in variables.items():
         expr = expr.replace(k, str(v))
     return expr
+
+# ---------------- functions ----------------
+
+functions = {}
+
+def parse_function_call(expr):
+    match = re.match(r"([a-zA-Z]\w*)\((.*)\)", expr)
+    if not match:
+        return None
+
+    name = match.group(1)
+    arg = match.group(2).strip()
+
+    if name not in functions:
+        return None
+
+    return name, arg
 
 # ---------------- sound ----------------
 
@@ -176,7 +194,7 @@ def process():
 
     raw = entry.get().strip()
 
-    # ---------------- debug mode ----------------
+    # ---------------- debug ----------------
 
     is_debug = False
     is_silent = False
@@ -190,15 +208,60 @@ def process():
         is_debug = True
         raw = raw.replace("debug ", "", 1)
 
+    # ---------------- FUNCTION DEFINE ----------------
+
+    if "=" in raw and "(" in raw.split("=")[0]:
+        try:
+            left, body = raw.split("=", 1)
+            fname, params = left.split("(", 1)
+
+            fname = fname.strip()
+            params = params.replace(")", "").strip()
+            body = body.strip()
+
+            functions[fname] = (params, body)
+
+            log(f"{fname} defined")
+            return
+
+        except:
+            log("NAN")
+            return
+
+    # ---------------- FUNCTION CALL ----------------
+
+    fn = parse_function_call(raw)
+
+    if fn is not None:
+        name, arg = fn
+        params, body = functions[name]
+
+        param = params.split(",")[0].strip()
+
+        replaced = body.replace(param, arg)
+
+        replaced = resolve_vars(replaced)
+        result = eval_expression(replaced)
+
+        if result is None:
+            log("NAN")
+        else:
+            if is_debug:
+                debug_uses += 1
+                log(f"{raw} = {result}")
+            else:
+                log(str(result))
+
+        return
+
     # ---------------- variable assignment ----------------
 
     if "=" in raw:
         try:
             name, expr = raw.split("=", 1)
             name = name.strip()
-            expr = expr.strip()
+            expr = resolve_vars(expr.strip())
 
-            expr = resolve_vars(expr)
             value = eval_expression(expr)
 
             if value is None:
@@ -210,22 +273,14 @@ def process():
 
             variables[name] = value
 
-            if is_debug:
-                debug_uses += 1
-                if is_silent:
-                    log(str(value))
-                else:
-                    log(f"{name} = {value}")
-            else:
-                log(f"{name} = {value}")
-
+            log(f"{name} = {value}")
             return
 
         except:
             log("NAN")
             return
 
-    # ---------------- expression system with variables ----------------
+    # ---------------- expression ----------------
 
     raw_fixed = resolve_vars(raw)
     expr_result = eval_expression(raw_fixed)
@@ -233,14 +288,9 @@ def process():
     if expr_result is not None:
         if is_debug:
             debug_uses += 1
-
-            if is_silent:
-                log(str(expr_result))
-            else:
-                log(f"D {raw} = {expr_result}")
+            log(f"D {raw} = {expr_result}")
         else:
             log(f"{raw} = {expr_result}")
-
         return
 
     # ---------------- factorial ----------------
