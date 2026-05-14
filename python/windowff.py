@@ -21,6 +21,7 @@ type_sound = pygame.mixer.Sound("type.wav")
 debug_uses = 0
 reboot_done = False
 is_fullscreen = False
+log_busy = False
 
 roasts = [
     "What will you even use this for?",
@@ -54,7 +55,7 @@ window.configure(bg=BG)
 window.geometry(f"{WINDOW_W}x{WINDOW_H}")
 window.resizable(True, True)
 
-# ---------------- fullscreen system ----------------
+# ---------------- fullscreen ----------------
 
 def toggle_fullscreen(event=None):
     global is_fullscreen
@@ -93,8 +94,15 @@ label.pack(pady=10)
 entry = tk.Entry(container, font=FONT, bg=ENTRY_BG, fg=ENTRY_FG, insertbackground=ENTRY_FG)
 entry.pack(pady=10, ipadx=25, ipady=5)
 
+# ---------------- typewriter log (FIXED) ----------------
+
 def log(text, i=0):
+    global log_busy
+
     if i == 0:
+        if log_busy:
+            return
+        log_busy = True
         output.config(text="")
 
     if i <= len(text):
@@ -108,6 +116,9 @@ def log(text, i=0):
         window.after(25, lambda: log(text, i + 1))
     else:
         output.config(text=text)
+        log_busy = False
+
+# ---------------- main logic ----------------
 
 def process():
     global debug_uses, reboot_done
@@ -169,7 +180,7 @@ def process():
             reboot_done = True
         return
 
-    # normal input
+    # normal mode
     try:
         num = int(raw)
     except:
@@ -200,7 +211,7 @@ def process():
     else:
         log(f"Factorial = {fact}")
 
-# ---------------- buttons ----------------
+# ---------------- button ----------------
 
 button = tk.Button(container, text="run", font=FONT, command=process,
                    bg=ACCENT, fg="black", activebackground=FG)
