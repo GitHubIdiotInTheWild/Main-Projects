@@ -211,7 +211,7 @@ FONT = ("VCR OSD Mono", 16)
 container = tk.Frame(window, bg="black")
 container.place(relx=0.5, rely=0.5, anchor="center")
 
-label = tk.Label(container, text="enter input", font=FONT, bg="black", fg="#bffcff")
+label = tk.Label(container, text="Enter an input.", font=FONT, bg="black", fg="#bffcff")
 label.pack(pady=10)
 
 entry = tk.Entry(container, font=FONT, bg="white", fg="black", insertbackground="black", width=30)
