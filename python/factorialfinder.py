@@ -7,10 +7,11 @@ import sys
 
 raw = input("Enter any number: ")
 
-# debug mode
+## debug mode
 if raw.startswith("debug "):
     num = int(raw.split(" ")[1])
 
+## negative factorial
     if num < 0:
         print("Negative factorial is NOT this universe's problem..")
         sys.exit()
@@ -45,6 +46,7 @@ no = [
     "Explain yourself."
 ]
 
+## elite
 if num == 1337:
     print("Factorial of {num} = Elite")
     sys.exit()
@@ -52,10 +54,15 @@ if num == 1337:
 if num > 100:
     roll = random.random()
 
+## full factorial (lowest chance)
     if roll < 0.05:
         print(f"Wow, you're pretty unlucky. Your PC is gonna kill itself, maybe help it after this or turn it off? Factorial of {num} = {fact}")
+
+## digit amount (uncommon)
     elif roll < 0.25:
         print(f"WHY? Factorial of {num} has {len(str(fact))} digits, if you need it somehow.")
+
+## hell nah
     else:
         print(random.choice(no))
 else:
