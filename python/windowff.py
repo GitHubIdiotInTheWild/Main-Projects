@@ -1,6 +1,5 @@
 import tkinter as tk
 import random
-import time
 
 def factorial(num):
     fact = 1
@@ -24,11 +23,19 @@ roasts = [
     "Explain yourself."
 ]
 
-# fallback font if VCR OSD Mono not installed
 FONT = ("VCR OSD Mono", 12)
 
-def log(text):
-    output.config(text=text)
+# TYPEWRITER LOG FUNCTION
+def log(text, i=0):
+    if i == 0:
+        output.config(text="")
+
+    if i <= len(text):
+        output.config(text=text[:i] + "█")
+        window.after(50, lambda: log(text, i + 1))
+    else:
+        output.config(text=text)
+
 
 def process():
     global debug_uses, reboot_done
@@ -59,7 +66,6 @@ def process():
         fact = factorial(num)
 
         log(f"DEBUGMODE-Factorial of {num} = {fact}")
-        window.update()
 
         if debug_uses == 10:
             log(f"File code unstable. Factorial = {fact}")
@@ -67,23 +73,28 @@ def process():
 
         if debug_uses == 11 and not reboot_done:
             log("Detected instability... Promptly restarting.")
-            window.update()
-            time.sleep(0.5)
 
-            log("Reloading factorialfinder.py")
-            window.update()
+            def stage2():
+                log("Reloading factorialfinder.py")
 
-            if random.random() < 0.1:
-                time.sleep(1)
-                log("Failed to compile code. Retrying...")
-                window.update()
+                def maybe_fail():
+                    if random.random() < 0.1:
+                        log("Failed to compile code. Retrying...")
+                        window.after(1000, stage3)
+                    else:
+                        stage3()
 
-            time.sleep(2)
-            log("Successfully reloaded! Now patching...")
-            window.update()
+                def stage3():
+                    log("Successfully reloaded! Now patching...")
 
-            time.sleep(2.5)
-            log("Patched! Will not happen again. Enjoy the free math :)")
+                    def stage4():
+                        log("Patched! Will not happen again. Enjoy the free math :)")
+
+                    window.after(2500, stage4)
+
+                window.after(500, maybe_fail)
+
+            window.after(500, stage2)
 
             reboot_done = True
 
@@ -125,7 +136,6 @@ window = tk.Tk()
 window.title("factorial finder")
 window.geometry("500x300")
 
-# center layout container
 frame = tk.Frame(window)
 frame.place(relx=0.5, rely=0.5, anchor="center")
 
