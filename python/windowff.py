@@ -20,18 +20,11 @@ type_sound = pygame.mixer.Sound("type.wav")
 
 debug_uses = 0
 reboot_done = False
+is_corrupted = False
 is_fullscreen = False
 
 log_queue = []
 log_running = False
-
-# MUCH slower typing now (this is the key fix)
-type_speed_min = 35
-type_speed_max = 90
-
-# occasional long pauses between messages
-def inter_message_delay():
-    return random.randint(200, 900)
 
 roasts = [
     "What will you even use this for?",
@@ -113,6 +106,17 @@ def log(text):
     log_queue.append(text)
     run_log_queue()
 
+def get_speed():
+    if is_corrupted:
+        return random.randint(25, 90)
+    return random.randint(18, 45)
+
+def get_delay():
+    base = random.randint(60, 180)
+    if is_corrupted:
+        base += random.randint(200, 800)
+    return base
+
 def run_log_queue():
     global log_running
 
@@ -126,28 +130,17 @@ def run_log_queue():
 
     def type_step(i=0):
         if i <= len(text):
-            output.config(text=text[:i] + "┃")
+            output.config(text=text[:i] + "▍")
 
             try:
                 type_sound.play()
             except:
                 pass
 
-            window.after(
-                random.randint(type_speed_min, type_speed_max),
-                lambda: type_step(i + 1)
-            )
+            window.after(get_speed(), lambda: type_step(i + 1))
         else:
             output.config(text=text)
-
-            # MUCH more noticeable pacing difference now
-            delay = inter_message_delay()
-
-            # corruption makes it slower (debug vibe)
-            if debug_uses >= 10:
-                delay += random.randint(200, 800)
-
-            window.after(delay, finish)
+            window.after(get_delay(), finish)
 
     def finish():
         global log_running
@@ -159,7 +152,7 @@ def run_log_queue():
 # ---------------- MAIN LOGIC ----------------
 
 def process():
-    global debug_uses, reboot_done
+    global debug_uses, reboot_done, is_corrupted
 
     raw = entry.get().strip()
 
@@ -187,10 +180,13 @@ def process():
 
         log(f"DEBUGMODE-Factorial of {num} = {fact}")
 
+        # corruption trigger
         if debug_uses == 10:
+            is_corrupted = True
             log("File code unstable.")
             return
 
+        # reboot sequence
         if debug_uses == 11 and not reboot_done:
             reboot_done = True
 
@@ -208,9 +204,12 @@ def process():
                 log("Successfully reloaded! Now patching...")
 
                 def stage4():
+                    global is_corrupted
+                    is_corrupted = False  # IMPORTANT FIX
+
                     log("Patched! Will not happen again. Enjoy the free math :)")
 
-                window.after(3000, stage4)
+                window.after(2500, stage4)
 
             window.after(700, maybe_fail)
 
