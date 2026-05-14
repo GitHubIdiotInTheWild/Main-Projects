@@ -290,7 +290,7 @@ def launch_app():
 def start_boot():
     type_boot("Loading...", boot_step_0_done)
 
-window.after(300, start_boot)
+window.after(1800, start_boot)
 
 # ---------------- log system ----------------
 
