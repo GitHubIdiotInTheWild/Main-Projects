@@ -17,7 +17,7 @@ def factorial(num):
 constants = {
     "pi": "3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679",
     "π": "3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679",
-    "e": "2.7182818284590452353602874713526624977572470936999595749669676277240766303535475945713821785251664274",
+    "e": "2.7182818284590452353602874713526624977572470936999595749669676277240763303535475945713821785251664274",
     "tau": "6.2831853071795864769252867665590057683943387987502116419498891846156328125724179972576696506842341340",
     "phi": "1.6180339887498948482045868343656381177203091798057628621354486227052604628189024497072072041893911374"
 }
@@ -70,6 +70,16 @@ def resolve_vars(expr):
         expr = expr.replace(name, str(variables[name]))
     return expr
 
+# ---------------- ANS ----------------
+
+ans = 0
+
+def apply_ans(expr):
+    return expr.replace("ans", str(ans))
+
+def display_expr(expr):
+    return apply_ans(expr)
+
 # ---------------- functions ----------------
 
 functions = {}
@@ -120,7 +130,12 @@ debug_uses = 0
 log_queue = []
 log_running = False
 
-current_text = ""
+# ---------------- COLORS (fixed, stable) ----------------
+
+BASE_COLOR = "#00ffff"
+
+def set_color():
+    output.config(fg=BASE_COLOR)
 
 # ---------------- roasts ----------------
 
@@ -192,40 +207,7 @@ output.pack(pady=20)
 
 tk.Button(container, text="run", font=FONT, bg="#00e5ff", fg="black", command=lambda: process()).pack(pady=10)
 
-# ---------------- fade answer ----------------
-
-def fade_transition(new_text):
-    global current_text
-
-    old_text = current_text
-    current_text = new_text
-
-    steps = 12
-
-    def lerp(a, b, t):
-        return int(a + (b - a) * t)
-
-    def fade_out(i=0):
-        if i <= steps:
-            t = i / steps
-            shade = lerp(255, 0, t)
-            color = f"#00{shade:02x}{shade:02x}"
-            output.config(text=old_text, fg=color)
-            window.after(20, lambda: fade_out(i + 1))
-        else:
-            fade_in(0)
-
-    def fade_in(i=0):
-        if i <= steps:
-            t = i / steps
-            shade = lerp(0, 255, t)
-            color = f"#00{shade:02x}{shade:02x}"
-            output.config(text=new_text, fg=color)
-            window.after(20, lambda: fade_in(i + 1))
-        else:
-            output.config(text=new_text, fg="#00ffff")
-
-    fade_out()
+set_color()
 
 # ---------------- log system ----------------
 
@@ -251,8 +233,9 @@ def run_log_queue():
                 pass
             window.after(25, lambda: type_step(i + 1))
         else:
-            fade_transition(text)
-            window.after(120, finish)
+            output.config(text=text)
+            set_color()
+            finish()
 
     def finish():
         global log_running
@@ -261,10 +244,10 @@ def run_log_queue():
 
     type_step()
 
-# ---------------- main ----------------
+# ---------------- MAIN ----------------
 
 def process():
-    global debug_uses
+    global debug_uses, ans
 
     raw = entry.get().strip()
 
@@ -279,25 +262,6 @@ def process():
     elif raw.startswith("debug "):
         is_debug = True
         raw = raw.replace("debug ", "", 1)
-
-    # ---------------- function define ----------------
-
-    if "=" in raw and "(" in raw.split("=")[0]:
-        try:
-            left, right = raw.split("=", 1)
-
-            func_name, params = left.split("(", 1)
-            func_name = func_name.strip()
-            params = params.replace(")", "").strip()
-            func_body = right.strip()
-
-            functions[func_name] = (params, func_body)
-
-            log(f"{func_name} defined")
-            return
-        except:
-            log("NAN")
-            return
 
     # ---------------- function call ----------------
 
@@ -317,6 +281,7 @@ def process():
             replaced = replaced.replace(param_names[i], arg_values[i])
 
         replaced = resolve_vars(replaced)
+        replaced = apply_ans(replaced)
         replaced = apply_constants(replaced)
         replaced = apply_trig(replaced)
 
@@ -325,7 +290,8 @@ def process():
         if result is None:
             log("NAN")
         else:
-            log(f"{func_name}({arg_string}) = {result}")
+            ans = result
+            log(f"{func_name}({display_expr(arg_string)}) = {result}")
 
         return
 
@@ -336,7 +302,7 @@ def process():
             name, value = raw.split("=", 1)
 
             name = name.strip()
-            value = resolve_vars(value.strip())
+            value = apply_ans(resolve_vars(value.strip()))
 
             evaluated = eval_expression(value)
 
@@ -348,6 +314,7 @@ def process():
                     return
 
             variables[name] = evaluated
+            ans = evaluated
             log(f"{name} = {evaluated}")
             return
 
@@ -357,25 +324,27 @@ def process():
 
     # ---------------- expression ----------------
 
-    expr = resolve_vars(raw)
+    expr = apply_ans(resolve_vars(raw))
     expr = apply_constants(expr)
     expr = apply_trig(expr)
 
     result = eval_expression(expr)
 
     if result is not None:
-        log(f"{raw} = {result}")
+        ans = result
+        log(f"{display_expr(raw)} = {result}")
         return
 
-    # ---------------- factorial ----------------
+    # ---------------- factorial (FIXED) ----------------
 
     try:
-        num = int(raw)
+        num = int(apply_ans(raw))
     except:
         log("NAN")
         return
 
     fact = factorial(num)
+    ans = fact
 
     if num >= 1000:
         log(random.choice(roasts_1000))
