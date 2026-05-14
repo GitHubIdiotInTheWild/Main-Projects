@@ -265,6 +265,18 @@ def process():
         is_debug = True
         raw = raw.replace("debug ", "", 1)
 
+    # ---------------- function definition ----------------
+
+    func_def = re.match(r"([a-zA-Z]\w*)\(([^)]*)\)\s*=\s*(.+)", raw)
+    if func_def:
+        func_name = func_def.group(1)
+        param_str = func_def.group(2)
+        func_body = func_def.group(3).strip()
+        param_names = [p.strip() for p in param_str.split(",") if p.strip()]
+        functions[func_name] = (param_names, func_body)
+        log(f"{func_name}({param_str}) defined", COLOR_DEF)
+        return
+
     # ---------------- function call ----------------
 
     parsed = parse_function_call(raw)
@@ -298,8 +310,8 @@ def process():
 
         ans = result
         log(f"{func_name}({display_expr(arg_string)}) = {result}", COLOR_EXPR)
-
         return
+
     # ---------------- variable assignment ----------------
 
     if "=" in raw:
@@ -333,6 +345,7 @@ def process():
     expr = apply_constants(expr)
     expr = apply_trig(expr)
 
+    # ---------------- bare number = factorial (historical behavior) ----------------
 
     if raw.strip().isdigit():
         num = int(raw)
@@ -341,26 +354,30 @@ def process():
         log(f"{num}! = {fact}", COLOR_FACT)
         return
 
-result = eval_expression(expr)
+    # ---------------- normal expression ----------------
 
-if result is not None:
-    ans = result
-    log(f"{raw} = {result}", COLOR_EXPR)
-    return
+    result = eval_expression(expr)
 
-    # ---------------- factorial (FIXED) ----------------
+    if result is not None:
+        ans = result
+        log(f"{raw} = {result}", COLOR_EXPR)
+        return
+
+    # ---------------- factorial fallback ----------------
 
     try:
         raw_fixed = apply_ans(raw)
         num = eval_expression(raw_fixed)
+        if num is None:
+            log("NAN", COLOR_EXPR)
+            return
+        num = int(num)
     except:
         log("NAN", COLOR_EXPR)
         return
 
-    num = int(num)
     fact = factorial(num)
-    if "factorial" in raw.lower() or raw.strip().isdigit():
-        ans = fact
+    ans = fact
 
     if num >= 1000:
         log(random.choice(roasts_1000), COLOR_FACT)
