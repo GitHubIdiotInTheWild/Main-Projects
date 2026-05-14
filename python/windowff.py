@@ -126,6 +126,9 @@ type_sound = pygame.mixer.Sound("type.wav")
 
 # ---------------- state ----------------
 
+COLOR_DEF = "#ffd700"   # gold
+COLOR_EXPR = "#b388ff"  # royal purple
+COLOR_FACT = "#ff6b6b"  # light red
 debug_uses = 0
 log_queue = []
 log_running = False
@@ -211,8 +214,8 @@ set_color()
 
 # ---------------- log system ----------------
 
-def log(text):
-    log_queue.append(text)
+def log(text, color="#00ffff"):
+    log_queue.append((text, color))
     run_log_queue()
 
 def run_log_queue():
@@ -222,18 +225,18 @@ def run_log_queue():
         return
 
     log_running = True
-    text = log_queue.pop(0)
+    text, color = log_queue.pop(0)
 
     def type_step(i=0):
         if i <= len(text):
-            output.config(text=text[:i] + "▍")
+            output.config(text=text[:i] + "▍", fg=color)
             try:
                 type_sound.play()
             except:
                 pass
             window.after(25, lambda: type_step(i + 1))
         else:
-            output.config(text=text)
+            output.config(text=text, fg=color)
             set_color()
             finish()
 
@@ -315,7 +318,7 @@ def process():
 
             variables[name] = evaluated
             ans = evaluated
-            log(f"{name} = {evaluated}")
+            log(f"{name} = {evaluated}", COLOR_DEF)
             return
 
         except:
@@ -324,21 +327,20 @@ def process():
 
     # ---------------- expression ----------------
 
-    expr = apply_ans(resolve_vars(raw))
+    expr = resolve_vars(raw)
     expr = apply_constants(expr)
     expr = apply_trig(expr)
 
     result = eval_expression(expr)
 
     if result is not None:
-        ans = result
-        log(f"{display_expr(raw)} = {result}")
-        return
+        return log(f"{raw} = {result}")
 
     # ---------------- factorial (FIXED) ----------------
 
     try:
-        num = int(apply_ans(raw))
+        raw_fixed = apply_ans(raw)
+        num = int(raw_fixed)
     except:
         log("NAN")
         return
