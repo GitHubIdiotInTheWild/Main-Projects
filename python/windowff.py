@@ -16,7 +16,6 @@ def eval_expression(expr):
     if any(c.isalpha() for c in expr):
         return None
 
-    # only trigger expression mode if operators exist
     if not any(op in expr for op in ["+", "-", "*", "/", "(", ")"]):
         return None
 
@@ -25,9 +24,24 @@ def eval_expression(expr):
         if not all(c in allowed for c in expr):
             return None
 
-        return eval(expr)
+        result = eval(expr)
+
+        if isinstance(result, float) and result.is_integer():
+            result = int(result)
+
+        return result
+
     except:
         return None
+
+# ---------------- variables ----------------
+
+variables = {}
+
+def resolve_vars(expr):
+    for k, v in variables.items():
+        expr = expr.replace(k, str(v))
+    return expr
 
 # ---------------- sound ----------------
 
@@ -42,7 +56,7 @@ reboot_done = False
 log_queue = []
 log_running = False
 
-# ---------------- roasts >100 <1000) ----------------
+# ---------------- ROASTS ----------------
 
 roasts = [
     "What are you even doing?",
@@ -70,8 +84,6 @@ roasts = [
     "Nah.",
     "Ehhhhh..."
 ]
-
-# ---------------- roasts (1000+) ----------------
 
 roasts_1000 = [
     "I GIVE UP",
@@ -109,43 +121,16 @@ FONT = ("VCR OSD Mono", 16)
 container = tk.Frame(window, bg="black")
 container.place(relx=0.5, rely=0.5, anchor="center")
 
-label = tk.Label(
-    container,
-    text="Enter a number:",
-    font=FONT,
-    bg="black",
-    fg="#bffcff"
-)
+label = tk.Label(container, text="Enter a number:", font=FONT, bg="black", fg="#bffcff")
 label.pack(pady=10)
 
-entry = tk.Entry(
-    container,
-    font=FONT,
-    bg="white",
-    fg="black",
-    insertbackground="black",
-    width=30
-)
+entry = tk.Entry(container, font=FONT, bg="white", fg="black", insertbackground="black", width=30)
 entry.pack(pady=10)
 
-output = tk.Label(
-    container,
-    text="",
-    font=FONT,
-    bg="black",
-    fg="#bffcff",
-    wraplength=900
-)
+output = tk.Label(container, text="", font=FONT, bg="black", fg="#bffcff", wraplength=900)
 output.pack(pady=20)
 
-button = tk.Button(
-    container,
-    text="run",
-    font=FONT,
-    bg="#00e5ff",
-    fg="black",
-    command=lambda: process()
-)
+button = tk.Button(container, text="run", font=FONT, bg="#00e5ff", fg="black", command=lambda: process())
 button.pack(pady=10)
 
 # ---------------- log system ----------------
@@ -184,7 +169,7 @@ def run_log_queue():
 
     type_step()
 
-# ---------------- unused for now ----------------
+# ---------------- MAIN ----------------
 
 def process():
     global debug_uses, reboot_done
@@ -205,9 +190,46 @@ def process():
         is_debug = True
         raw = raw.replace("debug ", "", 1)
 
-    # ---------------- expression system ----------------
+    # ---------------- variable assignment ----------------
 
-    expr_result = eval_expression(raw)
+    if "=" in raw:
+        try:
+            name, expr = raw.split("=", 1)
+            name = name.strip()
+            expr = expr.strip()
+
+            expr = resolve_vars(expr)
+            value = eval_expression(expr)
+
+            if value is None:
+                try:
+                    value = int(expr)
+                except:
+                    log("NAN")
+                    return
+
+            variables[name] = value
+
+            if is_debug:
+                debug_uses += 1
+                if is_silent:
+                    log(str(value))
+                else:
+                    log(f"{name} = {value}")
+            else:
+                log(f"{name} = {value}")
+
+            return
+
+        except:
+            log("NAN")
+            return
+
+    # ---------------- expression system with variables ----------------
+
+    raw_fixed = resolve_vars(raw)
+    expr_result = eval_expression(raw_fixed)
+
     if expr_result is not None:
         if is_debug:
             debug_uses += 1
@@ -231,29 +253,20 @@ def process():
 
     fact = factorial(num)
 
-    # ---------------- roast 1000+ function ----------------
-
     if num >= 1000:
         log(random.choice(roasts_1000))
         return
-
-    # ---------------- roast 100-999 function ----------------
 
     if num > 100:
         roll = random.random()
 
         if roll < 0.05:
             log(f"ok this might break your pc: {fact}")
-
         elif roll < 0.25:
             log(f"Factorial digit count of {num}: {len(str(fact))}")
-
         else:
             log(random.choice(roasts))
-
         return
-
-    # ---------------- normal output ----------------
 
     if is_debug:
         debug_uses += 1
