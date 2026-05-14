@@ -360,12 +360,19 @@ def fade_in_app(step=0, steps=30):
     if step < steps:
         window.after(33, lambda: fade_in_app(step + 1, steps))
     else:
-        # show side panels and decorations after fade
+        # show and lift all decorations above the logo canvas
         panel_frame.place(relx=1.0, rely=0.5, anchor="e", x=-18, y=0)
         history_frame.place(relx=0.0, rely=0.5, anchor="w", x=18, y=0)
         version_label.place(relx=1.0, rely=1.0, anchor="se", x=-10, y=-10)
         clock_label.place(relx=1.0, rely=0.0, anchor="ne", x=-10, y=10)
         credit_label.place(relx=0.0, rely=1.0, anchor="sw", x=10, y=-10)
+        panel_frame.lift()
+        history_frame.lift()
+        version_label.lift()
+        clock_label.lift()
+        credit_label.lift()
+        border_canvas.lift()
+        draw_border()
 
 # ---------------- type boot ----------------
 
@@ -522,8 +529,6 @@ def show_logo():
         output.config(fg="#000000")
         run_btn.config(bg="#000000")
         fade_in_app()
-
-    fade_in_logo()
 
 def launch_app():
     boot_label.place_forget()
