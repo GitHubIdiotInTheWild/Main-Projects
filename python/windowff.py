@@ -74,7 +74,7 @@ reboot_done = False
 log_queue = []
 log_running = False
 
-# ---------------- ROASTS ----------------
+# ---------------- roasts ----------------
 
 roasts = [
     "What are you even doing?",
@@ -208,7 +208,7 @@ def process():
         is_debug = True
         raw = raw.replace("debug ", "", 1)
 
-    # ---------------- FUNCTION DEFINE ----------------
+    # ---------------- function define ----------------
 
     if "=" in raw and "(" in raw.split("=")[0]:
         try:
@@ -228,7 +228,7 @@ def process():
             log("NAN")
             return
 
-    # ---------------- FUNCTION CALL ----------------
+    # ---------------- function call ----------------
 
     fn = parse_function_call(raw)
 
