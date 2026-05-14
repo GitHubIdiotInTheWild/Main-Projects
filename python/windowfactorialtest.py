@@ -58,15 +58,15 @@ def process():
         debug_uses += 1
         fact = factorial(num)
 
-        log(f"DEBUG factorial of {num} = {fact}")
+        log(f"DEBUGMODE-Factorial of {num} = {fact}")
         window.update()
 
         if debug_uses == 10:
-            log("File code unstable.")
+            log(f"File code unstable. Factorial = {fact}")
             return
 
         if debug_uses == 11 and not reboot_done:
-            log("Detected instability... restarting.")
+            log("Detected instability... Promptly restarting.")
             window.update()
             time.sleep(0.5)
 
@@ -78,11 +78,11 @@ def process():
                 log("Failed to compile code. Retrying...")
                 window.update()
 
-            time.sleep(1)
+            time.sleep(2)
             log("Successfully reloaded! Now patching...")
             window.update()
 
-            time.sleep(1.5)
+            time.sleep(2.5)
             log("Patched! Will not happen again. Enjoy the free math :)")
 
             reboot_done = True
@@ -93,32 +93,32 @@ def process():
     try:
         num = int(raw)
     except:
-        log("bro that’s not a number")
+        log("NAN, please insert a valid number.")
         return
 
     if num < 0:
-        log("Negative factorial is NOT this universe's problem..")
+        log("Negative factorial is NOT this universe's problem.")
         return
 
     fact = factorial(num)
 
     if num == 1337:
-        log("Factorial = Elite")
+        log("Factorial = Elite.")
         return
 
     if num > 100:
         roll = random.random()
 
         if roll < 0.05:
-            log(f"unlucky. factorial = {fact}")
+            log(f"Unlucky, your PC might break. Factorial of {num} = {fact}")
 
         elif roll < 0.25:
-            log(f"WHY? digits = {len(str(fact))}")
+            log(f"WHY? Factorial digit count of {num} = {len(str(fact))}")
 
         else:
             log(random.choice(roasts))
     else:
-        log(f"Factorial = {fact}")
+        log(f"Factorial of {num} = {fact}")
 
 
 window = tk.Tk()
