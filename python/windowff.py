@@ -265,41 +265,41 @@ def process():
         is_debug = True
         raw = raw.replace("debug ", "", 1)
 
-# ---------------- function call ----------------
+    # ---------------- function call ----------------
 
-parsed = parse_function_call(raw)
+    parsed = parse_function_call(raw)
 
-if parsed is not None:
-    func_name, arg_string = parsed
+    if parsed is not None:
+        func_name, arg_string = parsed
 
-    if func_name not in functions:
-        log("NAN", COLOR_EXPR)
+        if func_name not in functions:
+            log("NAN", COLOR_EXPR)
+            return
+
+        param_names, func_body = functions[func_name]
+
+        arg_values = split_args(arg_string)
+
+        replaced = func_body
+
+        for i in range(min(len(param_names), len(arg_values))):
+            replaced = replaced.replace(param_names[i], arg_values[i])
+
+        replaced = resolve_vars(replaced)
+        replaced = apply_ans(replaced)
+        replaced = apply_constants(replaced)
+        replaced = apply_trig(replaced)
+
+        result = eval_expression(replaced)
+
+        if result is None:
+            log("NAN", COLOR_EXPR)
+            return
+
+        ans = result
+        log(f"{func_name}({display_expr(arg_string)}) = {result}", COLOR_EXPR)
+
         return
-
-    param_names, func_body = functions[func_name]
-
-    arg_values = split_args(arg_string)
-
-    replaced = func_body
-
-    for i in range(min(len(param_names), len(arg_values))):
-        replaced = replaced.replace(param_names[i], arg_values[i])
-
-    replaced = resolve_vars(replaced)
-    replaced = apply_ans(replaced)
-    replaced = apply_constants(replaced)
-    replaced = apply_trig(replaced)
-
-    result = eval_expression(replaced)
-
-    if result is None:
-        log("NAN", COLOR_EXPR)
-        return
-
-    ans = result
-    log(f"{func_name}({display_expr(arg_string)}) = {result}", COLOR_EXPR)
-
-    return
     # ---------------- variable assignment ----------------
 
     if "=" in raw:
