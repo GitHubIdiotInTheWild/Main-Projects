@@ -1,6 +1,5 @@
 import tkinter as tk
 import random
-import tkinter.font as tkfont
 import pygame
 
 # ---------------- math ----------------
@@ -10,6 +9,22 @@ def factorial(num):
     for i in range(1, num + 1):
         fact *= i
     return fact
+
+# ---------------- addition ----------------
+
+def try_addition(expr):
+    if any(c.isalpha() for c in expr):
+        return None
+
+    if "+" not in expr:
+        return None
+
+    try:
+        parts = expr.split("+")
+        nums = [int(p.strip()) for p in parts]
+        return expr + " = " + str(sum(nums))
+    except:
+        return None
 
 # ---------------- sound ----------------
 
@@ -21,101 +36,39 @@ type_sound = pygame.mixer.Sound("type.wav")
 debug_uses = 0
 reboot_done = False
 is_corrupted = False
-is_fullscreen = False
 
 log_queue = []
 log_running = False
-
-roasts = [
-    "What will you even use this for?",
-    "Do you really think this is necessary?",
-    "This is way overkill, but okay.",
-    "Why are you like this?",
-    "Your CPU will kill itself if I revealed this to you",
-    "why tho",
-    "bro??",
-    "???",
-    "Explain.",
-    "Explain yourself."
-]
-
-# ---------------- style ----------------
-
-BG = "#000000"
-FG = "#bffcff"
-ENTRY_BG = "#ffffff"
-ENTRY_FG = "#000000"
-ACCENT = "#00e5ff"
-
-WINDOW_W = 800
-WINDOW_H = 450
 
 # ---------------- window ----------------
 
 window = tk.Tk()
 window.title("factorial finder")
-window.configure(bg=BG)
-window.geometry(f"{WINDOW_W}x{WINDOW_H}")
-window.resizable(True, True)
+window.geometry("800x450")
+window.configure(bg="black")
 
-# ---------------- fullscreen ----------------
+FONT = ("VCR OSD Mono", 16)
 
-def toggle_fullscreen(event=None):
-    global is_fullscreen
-    is_fullscreen = not is_fullscreen
-    window.attributes("-fullscreen", is_fullscreen)
-
-def exit_fullscreen(event=None):
-    global is_fullscreen
-    is_fullscreen = False
-    window.attributes("-fullscreen", False)
-
-window.bind("<F11>", toggle_fullscreen)
-window.bind("<Escape>", exit_fullscreen)
-
-# ---------------- font ----------------
-
-def get_font():
-    try:
-        fonts = list(tkfont.families())
-        if "VCR OSD Mono" in fonts:
-            return ("VCR OSD Mono", 14)
-    except:
-        pass
-    return ("Consolas", 14)
-
-FONT = get_font()
-
-# ---------------- UI ----------------
-
-container = tk.Frame(window, bg=BG)
+container = tk.Frame(window, bg="black")
 container.place(relx=0.5, rely=0.5, anchor="center")
 
-label = tk.Label(container, text="Enter a number:", font=FONT, bg=BG, fg=FG)
+label = tk.Label(container, text="Enter a number:", font=FONT, bg="black", fg="#bffcff")
 label.pack(pady=10)
 
-entry = tk.Entry(container, font=FONT, bg=ENTRY_BG, fg=ENTRY_FG, insertbackground=ENTRY_FG)
-entry.pack(pady=10, ipadx=25, ipady=5)
+entry = tk.Entry(container, font=FONT, bg="white", fg="black", insertbackground="black", width=30)
+entry.pack(pady=10)
 
-output = tk.Label(container, text="", font=FONT, bg=BG, fg=FG, wraplength=750)
+output = tk.Label(container, text="", font=FONT, bg="black", fg="#bffcff", wraplength=900)
 output.pack(pady=20)
 
-# ---------------- LOG SYSTEM ----------------
+button = tk.Button(container, text="run", font=FONT, bg="#00e5ff", fg="black", command=lambda: process())
+button.pack(pady=10)
+
+# ---------------- log system ----------------
 
 def log(text):
     log_queue.append(text)
     run_log_queue()
-
-def get_speed():
-    if is_corrupted:
-        return random.randint(25, 90)
-    return random.randint(18, 45)
-
-def get_delay():
-    base = random.randint(60, 180)
-    if is_corrupted:
-        base += random.randint(200, 800)
-    return base
 
 def run_log_queue():
     global log_running
@@ -126,21 +79,17 @@ def run_log_queue():
     log_running = True
     text = log_queue.pop(0)
 
-    output.config(text="")
-
     def type_step(i=0):
         if i <= len(text):
-            output.config(text=text[:i] + "▍")
-
+            output.config(text=text[:i] + "▏")
             try:
                 type_sound.play()
             except:
                 pass
-
-            window.after(get_speed(), lambda: type_step(i + 1))
+            window.after(25, lambda: type_step(i + 1))
         else:
             output.config(text=text)
-            window.after(get_delay(), finish)
+            window.after(120, finish)
 
     def finish():
         global log_running
@@ -149,25 +98,23 @@ def run_log_queue():
 
     type_step()
 
-# ---------------- MAIN LOGIC ----------------
+# ---------------- MAIN ----------------
 
 def process():
     global debug_uses, reboot_done, is_corrupted
 
     raw = entry.get().strip()
 
-    # debugsilent
+    # debug silent
     if raw.startswith("debugsilent "):
         try:
             num = int(raw.split()[1])
+            log(str(factorial(num)))
         except:
             log("invalid input")
-            return
-
-        log(str(factorial(num)))
         return
 
-    # debug
+    # debug mode
     if raw.startswith("debug "):
         try:
             num = int(raw.split()[1])
@@ -178,7 +125,7 @@ def process():
         debug_uses += 1
         fact = factorial(num)
 
-        log(f"DEBUGMODE-Factorial of {num} = {fact}")
+        log(f"DFactorial of {num} = {fact}")
 
         # corruption trigger
         if debug_uses == 10:
@@ -186,70 +133,47 @@ def process():
             log("File code unstable.")
             return
 
-        # reboot sequence
+        # reboot arc
         if debug_uses == 11 and not reboot_done:
             reboot_done = True
 
             log("Detected instability... restarting.")
             log("Reloading factorialfinder.py")
 
-            def maybe_fail():
+            def step2():
                 if random.random() < 0.1:
                     log("Failed to compile code. Retrying...")
-                    window.after(1200, stage3)
+                    window.after(2900, step3)
                 else:
-                    stage3()
+                    step3()
 
-            def stage3():
+            def step3():
                 log("Successfully reloaded! Now patching...")
 
-                def stage4():
+                def step4():
                     global is_corrupted
-                    is_corrupted = False  # IMPORTANT FIX
-
+                    is_corrupted = False
                     log("Patched! Will not happen again. Enjoy the free math :)")
 
-                window.after(2500, stage4)
+                window.after(2500, step4)
 
-            window.after(700, maybe_fail)
+            window.after(1700, step2)
 
         return
 
-    # normal input
+    # addition FIRST
+    add_result = try_addition(raw)
+    if add_result is not None:
+        log(add_result)
+        return
+
+    # normal number
     try:
         num = int(raw)
     except:
-        log("NAN, please insert a valid number.")
+        log("NAN")
         return
 
-    if num < 0:
-        log("Negative factorial is NOT this universe's problem.")
-        return
-
-    fact = factorial(num)
-
-    if num == 1337:
-        log("Factorial = Elite.")
-        return
-
-    if num > 100:
-        roll = random.random()
-
-        if roll < 0.05:
-            log(f"Unlucky, your PC might break. Factorial = {fact}")
-
-        elif roll < 0.25:
-            log(f"WHY? digits = {len(str(fact))}")
-
-        else:
-            log(random.choice(roasts))
-    else:
-        log(f"Factorial = {fact}")
-
-# ---------------- button ----------------
-
-button = tk.Button(container, text="run", font=FONT, command=process,
-                   bg=ACCENT, fg="black", activebackground=FG)
-button.pack(pady=10)
+    log(f"Factorial = {factorial(num)}")
 
 window.mainloop()
