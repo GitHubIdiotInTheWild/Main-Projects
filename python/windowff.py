@@ -265,38 +265,40 @@ def process():
         is_debug = True
         raw = raw.replace("debug ", "", 1)
 
-    # ---------------- function call ----------------
+ # ---------------- function call ----------------
 
-    parsed = parse_function_call(raw)
+parsed = parse_function_call(raw)
 
-    if parsed is not None:
-        func_name, arg_string = parsed
+if parsed is not None:
+    func_name, arg_string = parsed
 
-        param_string, func_body = functions[func_name]
-
-        param_names = [p.strip() for p in param_string.split(",")]
-        arg_values = split_args(arg_string)
-
-        replaced = func_body
-
-        for i in range(min(len(param_names), len(arg_values))):
-            replaced = replaced.replace(param_names[i], arg_values[i])
-
-        replaced = resolve_vars(replaced)
-        replaced = apply_ans(replaced)
-        replaced = apply_constants(replaced)
-        replaced = apply_trig(replaced)
-
-        result = eval_expression(replaced)
-
-        if result is None:
-            log("NAN")
-        else:
-            ans = result
-            log(f"{func_name}({display_expr(arg_string)}) = {result}")
-
+    if func_name not in functions:
+        log("NAN", COLOR_EXPR)
         return
 
+    param_names, func_body = functions[func_name]
+
+    arg_values = split_args(arg_string)
+
+    replaced = func_body
+
+    for i in range(min(len(param_names), len(arg_values))):
+        replaced = replaced.replace(param_names[i], arg_values[i])
+
+    replaced = apply_ans(resolve_vars(replaced))
+    replaced = apply_constants(replaced)
+    replaced = apply_trig(replaced)
+
+    result = eval_expression(replaced)
+
+    if result is None:
+        log("NAN", COLOR_EXPR)
+        return
+
+    ans = result
+    log(f"{func_name}({display_expr(arg_string)}) = {result}", COLOR_EXPR)
+
+    return
     # ---------------- variable assignment ----------------
 
     if "=" in raw:
@@ -312,7 +314,7 @@ def process():
                 try:
                     evaluated = int(value)
                 except:
-                    log("NAN")
+                    log("NAN", COLOR_EXPR)
                     return
 
             variables[name] = evaluated
@@ -321,7 +323,7 @@ def process():
             return
 
         except:
-            log("NAN")
+            log("NAN", COLOR_EXPR)
             return
 
     # ---------------- expression ----------------
@@ -330,10 +332,20 @@ def process():
     expr = apply_constants(expr)
     expr = apply_trig(expr)
 
-    result = eval_expression(expr)
 
-    if result is not None:
-        return log(f"{raw} = {result}")
+    if raw.strip().isdigit():
+        num = int(raw)
+        fact = factorial(num)
+        ans = fact
+        log(f"{num}! = {fact}", COLOR_FACT)
+        return
+
+result = eval_expression(expr)
+
+if result is not None:
+    ans = result
+    log(f"{raw} = {result}", COLOR_EXPR)
+    return
 
     # ---------------- factorial (FIXED) ----------------
 
@@ -341,7 +353,7 @@ def process():
         raw_fixed = apply_ans(raw)
         num = eval_expression(raw_fixed)
     except:
-        log("NAN")
+        log("NAN", COLOR_EXPR)
         return
 
     num = int(num)
@@ -350,24 +362,24 @@ def process():
         ans = fact
 
     if num >= 1000:
-        log(random.choice(roasts_1000))
+        log(random.choice(roasts_1000), COLOR_FACT)
         return
 
     if num > 100:
         roll = random.random()
 
         if roll < 0.05:
-            log(f"ok this might break your pc: {fact}")
+            log(f"ok this might break your pc: {fact}", COLOR_FACT)
         elif roll < 0.25:
-            log(f"Factorial digit count of {num}: {len(str(fact))}")
+            log(f"Factorial digit count of {num}: {len(str(fact))}", COLOR_FACT)
         else:
-            log(random.choice(roasts))
+            log(random.choice(roasts), COLOR_FACT)
         return
 
     if is_debug:
         debug_uses += 1
-        log(f"D Factorial {num} = {fact}")
+        log(f"D Factorial {num} = {fact}", COLOR_FACT)
     else:
-        log(f"Factorial of {num} = {fact}")
+        log(f"Factorial of {num} = {fact}", COLOR_FACT)
 
 window.mainloop()
