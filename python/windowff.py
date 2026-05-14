@@ -265,7 +265,7 @@ def process():
         is_debug = True
         raw = raw.replace("debug ", "", 1)
 
- # ---------------- function call ----------------
+# ---------------- function call ----------------
 
 parsed = parse_function_call(raw)
 
@@ -274,7 +274,7 @@ if parsed is not None:
 
     if func_name not in functions:
         log("NAN", COLOR_EXPR)
-return
+        return
 
     param_names, func_body = functions[func_name]
 
