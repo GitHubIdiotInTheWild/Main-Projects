@@ -10,9 +10,9 @@ def factorial(num):
         fact *= i
     return fact
 
-# ---------------- addition ----------------
+# ---------------- expression system ----------------
 
-def try_addition(expr):
+def eval_addition(expr):
     if any(c.isalpha() for c in expr):
         return None
 
@@ -22,7 +22,7 @@ def try_addition(expr):
     try:
         parts = expr.split("+")
         nums = [int(p.strip()) for p in parts]
-        return expr + " = " + str(sum(nums))
+        return nums, sum(nums)
     except:
         return None
 
@@ -35,15 +35,41 @@ type_sound = pygame.mixer.Sound("type.wav")
 
 debug_uses = 0
 reboot_done = False
-is_corrupted = False
 
 log_queue = []
 log_running = False
 
+roasts = [
+    "What are you even doing?",
+    "This is really unnecessary.",
+    "You really typed THAT in huh?",
+    "Why are you like this?",
+    "Your CPU is suffering silently",
+    "Okay, but WHY though??",
+    "What?",
+    "Why?",
+    "How?",
+    "by spu7nix.",
+    "Please stop",
+    "This is cursed behavior.",
+    "Explain yourself.",
+    "Explain.",
+    "Let's talk about this..",
+    "uhh, what the hell?"
+    "Busbis would hate you for this.",
+    "Shh....",
+    "no. just no.",
+    "Nuh uh.",
+    "No.",
+    "I'm not gonna do that.",
+    "Nah.",
+    "Ehhhhh..."
+]
+
 # ---------------- window ----------------
 
 window = tk.Tk()
-window.title("factorial finder")
+window.title("Sentient Mathematics")
 window.geometry("800x450")
 window.configure(bg="black")
 
@@ -82,10 +108,12 @@ def run_log_queue():
     def type_step(i=0):
         if i <= len(text):
             output.config(text=text[:i] + "▏")
+
             try:
                 type_sound.play()
             except:
                 pass
+
             window.after(25, lambda: type_step(i + 1))
         else:
             output.config(text=text)
@@ -98,82 +126,80 @@ def run_log_queue():
 
     type_step()
 
-# ---------------- MAIN ----------------
+# ---------------- idk ----------------
 
 def process():
-    global debug_uses, reboot_done, is_corrupted
+    global debug_uses, reboot_done
 
     raw = entry.get().strip()
 
-    # debug silent
+    # ---------------- Debug mode ----------------
+
+    is_debug = False
+    is_silent = False
+
     if raw.startswith("debugsilent "):
-        try:
-            num = int(raw.split()[1])
-            log(str(factorial(num)))
-        except:
-            log("invalid input")
-        return
+        is_debug = True
+        is_silent = True
+        raw = raw.replace("debugsilent ", "", 1)
 
-    # debug mode
-    if raw.startswith("debug "):
-        try:
-            num = int(raw.split()[1])
-        except:
-            log("invalid input")
-            return
+    elif raw.startswith("debug "):
+        is_debug = True
+        raw = raw.replace("debug ", "", 1)
 
-        debug_uses += 1
-        fact = factorial(num)
+    # ---------------- addition ----------------
 
-        log(f"DFactorial of {num} = {fact}")
+    add = eval_addition(raw)
+    if add is not None:
+        nums, total = add
 
-        # corruption trigger
-        if debug_uses == 10:
-            is_corrupted = True
-            log("File code unstable.")
-            return
+        if is_debug:
+            debug_uses += 1
 
-        # reboot arc
-        if debug_uses == 11 and not reboot_done:
-            reboot_done = True
-
-            log("Detected instability... restarting.")
-            log("Reloading factorialfinder.py")
-
-            def step2():
-                if random.random() < 0.1:
-                    log("Failed to compile code. Retrying...")
-                    window.after(2900, step3)
-                else:
-                    step3()
-
-            def step3():
-                log("Successfully reloaded! Now patching...")
-
-                def step4():
-                    global is_corrupted
-                    is_corrupted = False
-                    log("Patched! Will not happen again. Enjoy the free math :)")
-
-                window.after(2500, step4)
-
-            window.after(1700, step2)
+            if is_silent:
+                log(str(total))
+            else:
+                log(f"D {nums} = {total}")
+        else:
+            log(f"{raw} = {total}")
 
         return
 
-    # addition FIRST
-    add_result = try_addition(raw)
-    if add_result is not None:
-        log(add_result)
-        return
+    # ---------------- factorials ----------------
 
-    # normal number
     try:
         num = int(raw)
     except:
         log("NAN")
         return
 
-    log(f"Factorial = {factorial(num)}")
+    fact = factorial(num)
+
+    # ---------------- rsystem----------------
+
+    if num > 100:
+        roll = random.random()
+
+        if roll < 0.05:
+            log(f"ok this might break your pc: {fact}")
+
+        elif roll < 0.25:
+            log(f"digits: {len(str(fact))}")
+
+        else:
+            log(random.choice(roasts))
+
+        return
+
+    # ---------------- outputs ----------------
+
+    if is_debug:
+        debug_uses += 1
+        if is_silent:
+            log(str(fact))
+        else:
+            log(f"D factorial {num} = {fact}")
+    else:
+        log(f"Factorial = {fact}")
 
 window.mainloop()
