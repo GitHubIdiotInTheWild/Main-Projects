@@ -224,6 +224,11 @@ output.pack(pady=20)
 run_btn = tk.Button(container, text="Give output", font=FONT, bg="#00e5ff", fg="black", command=lambda: process())
 run_btn.pack(pady=10)
 
+tk.Button(container, text="clear", font=FONT, bg="#111111", fg="#00ffff", command=lambda: output.config(text="")).pack(pady=4)
+tk.Button(container, text="clear vars", font=FONT, bg="#111111", fg="#ffd700", command=lambda: clear_vars()).pack(pady=4)
+tk.Button(container, text="copy", font=FONT, bg="#111111", fg="#b388ff", command=lambda: copy_output()).pack(pady=4)
+tk.Button(container, text="help", font=FONT, bg="#111111", fg="#ff6b6b", command=lambda: show_help()).pack(pady=4)
+
 set_color()
 
 # hide main UI until boot sequence finishes
@@ -395,6 +400,31 @@ def start_boot():
     type_boot("Loading...", boot_step_0_done)
 
 window.after(1800, start_boot)
+
+# ---------------- helper functions ----------------
+
+def clear_vars():
+    variables.clear()
+    functions.clear()
+    log("variables and functions cleared.", COLOR_DEF)
+
+def copy_output():
+    text = output.cget("text")
+    window.clipboard_clear()
+    window.clipboard_append(text)
+
+def show_help():
+    help_text = (
+        "arithmetic: + - * / () | exponents: ^ | "
+        "sqrt(x) log(x) sin(x) cos(x) tan(x) | "
+        "constants: pi e tau phi | "
+        "variables: x = 5 | "
+        "functions: f(x) = x*2 then f(5) | "
+        "ans = last result | "
+        "bare number = factorial | "
+        "debug / debugsilent prefix"
+    )
+    log(help_text, BASE_COLOR)
 
 # ---------------- log system ----------------
 
