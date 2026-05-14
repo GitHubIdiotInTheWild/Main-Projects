@@ -351,7 +351,7 @@ def process():
         num = int(raw)
         fact = factorial(num)
         ans = fact
-        log(f"{num}! = {fact}", COLOR_FACT)
+        log(f"Factorial of {num} = {fact}", COLOR_FACT)
         return
 
     # ---------------- normal expression ----------------
