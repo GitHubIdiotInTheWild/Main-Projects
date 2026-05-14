@@ -351,6 +351,21 @@ def process():
         num = int(raw)
         fact = factorial(num)
         ans = fact
+
+        if num >= 1000:
+            log(random.choice(roasts_1000), COLOR_FACT)
+            return
+
+        if num > 100:
+            roll = random.random()
+            if roll < 0.05:
+                log(f"ok this might break your pc: {fact}", COLOR_FACT)
+            elif roll < 0.25:
+                log(f"Factorial digit count of {num}: {len(str(fact))}", COLOR_FACT)
+            else:
+                log(random.choice(roasts), COLOR_FACT)
+            return
+
         log(f"Factorial of {num} = {fact}", COLOR_FACT)
         return
 
