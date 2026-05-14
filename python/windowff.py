@@ -237,7 +237,6 @@ def run_log_queue():
             window.after(25, lambda: type_step(i + 1))
         else:
             output.config(text=text, fg=color)
-            set_color()
             finish()
 
     def finish():
@@ -340,13 +339,15 @@ def process():
 
     try:
         raw_fixed = apply_ans(raw)
-        num = int(raw_fixed)
+        num = eval_expression(raw_fixed)
     except:
         log("NAN")
         return
 
+    num = int(num)
     fact = factorial(num)
-    ans = fact
+    if "factorial" in raw.lower() or raw.strip().isdigit():
+        ans = fact
 
     if num >= 1000:
         log(random.choice(roasts_1000))
