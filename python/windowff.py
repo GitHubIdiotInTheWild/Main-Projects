@@ -25,9 +25,13 @@ is_fullscreen = False
 log_queue = []
 log_running = False
 
-# typing variability (THIS FIXES YOUR ISSUE)
-type_speed_min = 18
-type_speed_max = 45
+# MUCH slower typing now (this is the key fix)
+type_speed_min = 35
+type_speed_max = 90
+
+# occasional long pauses between messages
+def inter_message_delay():
+    return random.randint(200, 900)
 
 roasts = [
     "What will you even use this for?",
@@ -129,14 +133,21 @@ def run_log_queue():
             except:
                 pass
 
-            # FIX: variable typing speed (THIS is what you were missing)
-            window.after(random.randint(type_speed_min, type_speed_max),
-                         lambda: type_step(i + 1))
+            window.after(
+                random.randint(type_speed_min, type_speed_max),
+                lambda: type_step(i + 1)
+            )
         else:
             output.config(text=text)
 
-            # FIX: more natural pacing between messages
-            window.after(random.randint(80, 300), finish)
+            # MUCH more noticeable pacing difference now
+            delay = inter_message_delay()
+
+            # corruption makes it slower (debug vibe)
+            if debug_uses >= 10:
+                delay += random.randint(200, 800)
+
+            window.after(delay, finish)
 
     def finish():
         global log_running
@@ -152,7 +163,7 @@ def process():
 
     raw = entry.get().strip()
 
-    # ---------------- debugsilent ----------------
+    # debugsilent
     if raw.startswith("debugsilent "):
         try:
             num = int(raw.split()[1])
@@ -163,7 +174,7 @@ def process():
         log(str(factorial(num)))
         return
 
-    # ---------------- debug ----------------
+    # debug
     if raw.startswith("debug "):
         try:
             num = int(raw.split()[1])
@@ -189,7 +200,7 @@ def process():
             def maybe_fail():
                 if random.random() < 0.1:
                     log("Failed to compile code. Retrying...")
-                    window.after(1000, stage3)
+                    window.after(1200, stage3)
                 else:
                     stage3()
 
@@ -199,13 +210,13 @@ def process():
                 def stage4():
                     log("Patched! Will not happen again. Enjoy the free math :)")
 
-                window.after(2500, stage4)
+                window.after(3000, stage4)
 
-            window.after(500, maybe_fail)
+            window.after(700, maybe_fail)
 
         return
 
-    # ---------------- normal input ----------------
+    # normal input
     try:
         num = int(raw)
     except:
