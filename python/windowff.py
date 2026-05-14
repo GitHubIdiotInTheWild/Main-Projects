@@ -3,6 +3,15 @@ import random
 import pygame
 import re
 import math
+import os
+import sys
+
+# ---------------- resource path ----------------
+
+def resource_path(filename):
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, filename)
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), filename)
 
 # ---------------- math ----------------
 
@@ -122,7 +131,7 @@ def split_args(arg_string):
 # ---------------- sound ----------------
 
 pygame.mixer.init()
-type_sound = pygame.mixer.Sound("type.wav")
+type_sound = pygame.mixer.Sound(resource_path("type.wav"))
 
 # ---------------- state ----------------
 
@@ -400,7 +409,6 @@ def process():
 
     if num > 100:
         roll = random.random()
-
         if roll < 0.05:
             log(f"ok this might break your pc: {fact}", COLOR_FACT)
         elif roll < 0.25:
