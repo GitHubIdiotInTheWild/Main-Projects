@@ -1,11 +1,17 @@
 import tkinter as tk
 import random
+import pygame
 
 def factorial(num):
     fact = 1
     for i in range(1, num + 1):
         fact *= i
     return fact
+
+
+# sound setup
+pygame.mixer.init()
+type_sound = pygame.mixer.Sound("type.wav")
 
 debug_uses = 0
 reboot_done = False
@@ -25,14 +31,22 @@ roasts = [
 
 FONT = ("VCR OSD Mono", 12)
 
-# TYPEWRITER LOG
+
+# TYPEWRITER LOG WITH SOUND
 def log(text, i=0):
     if i == 0:
         output.config(text="")
 
     if i <= len(text):
-        output.config(text=text[:i] + "▌")  # thin cursor
-        window.after(25, lambda: log(text, i + 1))  # faster typing
+        output.config(text=text[:i] + "┃")
+
+        # play typing sound
+        try:
+            type_sound.play()
+        except:
+            pass
+
+        window.after(25, lambda: log(text, i + 1))
     else:
         output.config(text=text)
 
@@ -42,6 +56,7 @@ def process():
 
     raw = entry.get().strip()
 
+    # debugsilent
     if raw.startswith("debugsilent "):
         try:
             num = int(raw.split()[1])
@@ -53,6 +68,7 @@ def process():
         log(str(fact))
         return
 
+    # debug
     if raw.startswith("debug "):
         try:
             num = int(raw.split()[1])
@@ -98,6 +114,7 @@ def process():
 
         return
 
+    # normal input
     try:
         num = int(raw)
     except:
@@ -126,9 +143,10 @@ def process():
         else:
             log(random.choice(roasts))
     else:
-        log(f"Factorial of {num} = {fact}")
+        log(f"Factorial = {fact}")
 
 
+# UI
 window = tk.Tk()
 window.title("factorial finder")
 window.geometry("500x300")
