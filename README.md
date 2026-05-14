@@ -4,8 +4,8 @@ Our Guilded server has been removed due to their [stupid update](https://www.gui
 
 Links:
 [Discord](https://discord.gg/8nR7PmUAfN)
-[Sentient Mathematics landing page](githubidiotinthewild.github.io)
 
+[Sentient Mathematics landing page](https://githubidiotinthewild.github.io/Main-Projects/)
 
 
 hope uh nothing wrong happens and i can't fix it
