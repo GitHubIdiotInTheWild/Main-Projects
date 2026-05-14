@@ -25,6 +25,10 @@ is_fullscreen = False
 log_queue = []
 log_running = False
 
+# typing variability (THIS FIXES YOUR ISSUE)
+type_speed_min = 18
+type_speed_max = 45
+
 roasts = [
     "What will you even use this for?",
     "Do you really think this is necessary?",
@@ -99,7 +103,7 @@ entry.pack(pady=10, ipadx=25, ipady=5)
 output = tk.Label(container, text="", font=FONT, bg=BG, fg=FG, wraplength=750)
 output.pack(pady=20)
 
-# ---------------- LOG SYSTEM (FIXED) ----------------
+# ---------------- LOG SYSTEM ----------------
 
 def log(text):
     log_queue.append(text)
@@ -125,10 +129,14 @@ def run_log_queue():
             except:
                 pass
 
-            window.after(25, lambda: type_step(i + 1))
+            # FIX: variable typing speed (THIS is what you were missing)
+            window.after(random.randint(type_speed_min, type_speed_max),
+                         lambda: type_step(i + 1))
         else:
             output.config(text=text)
-            window.after(random.randint(60, 180), finish)  # FIXED timing variation
+
+            # FIX: more natural pacing between messages
+            window.after(random.randint(80, 300), finish)
 
     def finish():
         global log_running
@@ -195,7 +203,7 @@ def process():
 
             window.after(500, maybe_fail)
 
-        return   # FIXED: prevents fallback NAN bug
+        return
 
     # ---------------- normal input ----------------
     try:
