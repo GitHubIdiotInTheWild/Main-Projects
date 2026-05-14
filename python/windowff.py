@@ -21,7 +21,9 @@ type_sound = pygame.mixer.Sound("type.wav")
 debug_uses = 0
 reboot_done = False
 is_fullscreen = False
-log_busy = False
+
+log_queue = []
+log_running = False
 
 roasts = [
     "What will you even use this for?",
@@ -94,31 +96,48 @@ label.pack(pady=10)
 entry = tk.Entry(container, font=FONT, bg=ENTRY_BG, fg=ENTRY_FG, insertbackground=ENTRY_FG)
 entry.pack(pady=10, ipadx=25, ipady=5)
 
-# ---------------- typewriter log (FIXED) ----------------
+output = tk.Label(container, text="", font=FONT, bg=BG, fg=FG, wraplength=750)
+output.pack(pady=20)
 
-def log(text, i=0):
-    global log_busy
+# ---------------- LOG SYSTEM (FIXED ORDER ENGINE) ----------------
 
-    if i == 0:
-        if log_busy:
-            return
-        log_busy = True
-        output.config(text="")
+def log(text):
+    log_queue.append(text)
+    run_log_queue()
 
-    if i <= len(text):
-        output.config(text=text[:i] + "┃")
+def run_log_queue():
+    global log_running
 
-        try:
-            type_sound.play()
-        except:
-            pass
+    if log_running or not log_queue:
+        return
 
-        window.after(25, lambda: log(text, i + 1))
-    else:
-        output.config(text=text)
-        log_busy = False
+    log_running = True
+    text = log_queue.pop(0)
 
-# ---------------- main logic ----------------
+    output.config(text="")
+
+    def type_step(i=0):
+        if i <= len(text):
+            output.config(text=text[:i] + "┃")
+
+            try:
+                type_sound.play()
+            except:
+                pass
+
+            window.after(25, lambda: type_step(i + 1))
+        else:
+            output.config(text=text)
+            window.after(150, finish)
+
+    def finish():
+        global log_running
+        log_running = False
+        run_log_queue()
+
+    type_step()
+
+# ---------------- MAIN LOGIC ----------------
 
 def process():
     global debug_uses, reboot_done
@@ -136,7 +155,7 @@ def process():
         log(str(factorial(num)))
         return
 
-    # debug
+    # debug mode
     if raw.startswith("debug "):
         try:
             num = int(raw.split()[1])
@@ -149,38 +168,37 @@ def process():
 
         log(f"DEBUGMODE-Factorial of {num} = {fact}")
 
+        # instability trigger
         if debug_uses == 10:
             log("File code unstable.")
             return
 
+        # reboot sequence
         if debug_uses == 11 and not reboot_done:
-            log("Detected instability... restarting.")
-
-            def stage2():
-                log("Reloading factorialfinder.py")
-
-                def maybe_fail():
-                    if random.random() < 0.1:
-                        log("Failed to compile code. Retrying...")
-                        window.after(1000, stage3)
-                    else:
-                        stage3()
-
-                def stage3():
-                    log("Successfully reloaded! Now patching...")
-
-                    def stage4():
-                        log("Patched! Will not happen again. Enjoy the free math :)")
-
-                    window.after(2500, stage4)
-
-                window.after(500, maybe_fail)
-
-            window.after(500, stage2)
             reboot_done = True
-        return
 
-    # normal mode
+            log("Detected instability... restarting.")
+            log("Reloading factorialfinder.py")
+
+            def maybe_fail():
+                if random.random() < 0.1:
+                    log("Failed to compile code. Retrying...")
+                    window.after(1000, stage3)
+                else:
+                    stage3()
+
+            def stage3():
+                log("Successfully reloaded! Now patching...")
+
+                def stage4():
+                    log("Patched! Will not happen again. Enjoy the free math :)")
+
+                window.after(2500, stage4)
+
+            window.after(500, maybe_fail)
+            return
+
+    # normal input
     try:
         num = int(raw)
     except:
@@ -216,8 +234,5 @@ def process():
 button = tk.Button(container, text="run", font=FONT, command=process,
                    bg=ACCENT, fg="black", activebackground=FG)
 button.pack(pady=10)
-
-output = tk.Label(container, text="", font=FONT, bg=BG, fg=FG, wraplength=750)
-output.pack(pady=20)
 
 window.mainloop()
