@@ -220,9 +220,77 @@ entry.pack(pady=10)
 output = tk.Label(container, text="", font=FONT, bg="black", fg="#bffcff", wraplength=900)
 output.pack(pady=20)
 
-tk.Button(container, text="run", font=FONT, bg="#00e5ff", fg="black", command=lambda: process()).pack(pady=10)
+run_btn = tk.Button(container, text="run", font=FONT, bg="#00e5ff", fg="black", command=lambda: process())
+run_btn.pack(pady=10)
 
 set_color()
+
+# hide main UI until boot sequence finishes
+container.place_forget()
+
+# ---------------- boot sequence ----------------
+
+boot_label = tk.Label(window, text="", font=FONT, bg="black", fg="#00ffff", wraplength=760)
+boot_label.place(relx=0.5, rely=0.5, anchor="center")
+
+def lerp_color(c1, c2, t):
+    r1, g1, b1 = int(c1[1:3], 16), int(c1[3:5], 16), int(c1[5:7], 16)
+    r2, g2, b2 = int(c2[1:3], 16), int(c2[3:5], 16), int(c2[5:7], 16)
+    r = int(r1 + (r2 - r1) * t)
+    g = int(g1 + (g2 - g1) * t)
+    b = int(b1 + (b2 - b1) * t)
+    return f"#{r:02x}{g:02x}{b:02x}"
+
+def fade_in_app(step=0, steps=30):
+    t = step / steps
+    label.config(fg=lerp_color("#000000", "#bffcff", t))
+    entry.config(bg=lerp_color("#000000", "#ffffff", t))
+    output.config(fg=lerp_color("#000000", BASE_COLOR, t))
+    run_btn.config(bg=lerp_color("#000000", "#00e5ff", t))
+    if step < steps:
+        window.after(33, lambda: fade_in_app(step + 1, steps))
+
+def type_boot(text, on_done, i=0):
+    if i <= len(text):
+        boot_label.config(text=text[:i] + ("▍" if i < len(text) else ""))
+        try:
+            type_sound.play()
+        except:
+            pass
+        window.after(25, lambda: type_boot(text, on_done, i + 1))
+    else:
+        boot_label.config(text=text)
+        on_done()
+
+def boot_step_3_done():
+    msg = "Activation success! Sentience gained. Bringing interface to main application."
+    def after_last():
+        window.after(1800, launch_app)
+    type_boot(msg, after_last)
+
+def boot_step_2_done():
+    window.after(7000, boot_step_3_done)
+
+def boot_step_1_done():
+    msg = "Activation failed. Promptly restarting..."
+    type_boot(msg, boot_step_2_done)
+
+def boot_step_0_done():
+    window.after(4000, lambda: type_boot("Loading complete! Activating...", boot_step_1_done))
+
+def launch_app():
+    boot_label.place_forget()
+    container.place(relx=0.5, rely=0.5, anchor="center")
+    label.config(fg="#000000")
+    entry.config(bg="#000000")
+    output.config(fg="#000000")
+    run_btn.config(bg="#000000")
+    fade_in_app()
+
+def start_boot():
+    type_boot("Loading...", boot_step_0_done)
+
+window.after(300, start_boot)
 
 # ---------------- log system ----------------
 
@@ -428,3 +496,4 @@ def process():
         log(f"Factorial of {num} = {fact}", COLOR_FACT)
 
 window.mainloop()
+## script end :)
