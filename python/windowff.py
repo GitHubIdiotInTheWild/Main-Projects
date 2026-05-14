@@ -15,35 +15,40 @@ def factorial(num):
 # ---------------- constants ----------------
 
 constants = {
-    "pi": math.pi,
-    "e": math.e,
-    "tau": math.tau,
-    "phi": (1 + 5 ** 0.5) / 2
+    "pi": str(math.pi),
+    "π": str(math.pi),
+    "e": str(math.e),
+    "tau": str(math.tau),
+    "phi": str((1 + 5 ** 0.5) / 2)
 }
 
 def apply_constants(expr):
-    for k in constants:
-        expr = expr.replace(k, str(constants[k]))
+    for k, v in constants.items():
+        expr = expr.replace(k, v)
     return expr
 
 # ---------------- trig ----------------
 
 def apply_trig(expr):
+    def safe_eval(x):
+        try:
+            return float(eval(x))
+        except:
+            return 0
+
     try:
-        expr = re.sub(r"sin\(([^)]+)\)", lambda m: str(math.sin(math.radians(eval(m.group(1))))), expr)
-        expr = re.sub(r"cos\(([^)]+)\)", lambda m: str(math.cos(math.radians(eval(m.group(1))))), expr)
-        expr = re.sub(r"tan\(([^)]+)\)", lambda m: str(math.tan(math.radians(eval(m.group(1))))), expr)
+        expr = re.sub(r"sin\(([^)]+)\)", lambda m: str(math.sin(math.radians(safe_eval(m.group(1))))), expr)
+        expr = re.sub(r"cos\(([^)]+)\)", lambda m: str(math.cos(math.radians(safe_eval(m.group(1))))), expr)
+        expr = re.sub(r"tan\(([^)]+)\)", lambda m: str(math.tan(math.radians(safe_eval(m.group(1))))), expr)
     except:
         pass
+
     return expr
 
 # ---------------- expression system ----------------
 
 def eval_expression(expr):
-    expr = apply_constants(expr)
-    expr = apply_trig(expr)
-
-    allowed_chars = set("0123456789+-*/() ")
+    allowed_chars = set("0123456789+-*/() .")
 
     for c in expr:
         if c not in allowed_chars:
@@ -193,19 +198,19 @@ output.pack(pady=20)
 
 tk.Button(container, text="run", font=FONT, bg="#00e5ff", fg="black", command=lambda: process()).pack(pady=10)
 
-# ---------------- fade (ADD ON ONLY) ----------------
+# ---------------- fade ----------------
 
 def fade(text):
-    steps = 6
+    steps = 10
 
     def step(i=0):
         if i <= steps:
-            shade = int(255 * (i / steps))
-            color = f"#{shade:02x}{shade:02x}ff"
+            shade = int(200 + (55 * (i / steps)))
+            color = f"#00{shade:02x}{shade:02x}"
             output.config(text=text, fg=color)
             window.after(30, lambda: step(i + 1))
         else:
-            output.config(text=text, fg="#bffcff")
+            output.config(text=text, fg="#00ffff")
 
     step()
 
@@ -267,8 +272,8 @@ def process():
     if "=" in raw and "(" in raw.split("=")[0]:
         try:
             left, right = raw.split("=", 1)
-            func_name, params = left.split("(", 1)
 
+            func_name, params = left.split("(", 1)
             func_name = func_name.strip()
             params = params.replace(")", "").strip()
             func_body = right.strip()
@@ -299,6 +304,8 @@ def process():
             replaced = replaced.replace(param_names[i], arg_values[i])
 
         replaced = resolve_vars(replaced)
+        replaced = apply_constants(replaced)
+        replaced = apply_trig(replaced)
 
         result = eval_expression(replaced)
 
@@ -338,6 +345,8 @@ def process():
     # ---------------- expression ----------------
 
     expr = resolve_vars(raw)
+    expr = apply_constants(expr)
+    expr = apply_trig(expr)
 
     result = eval_expression(expr)
 
