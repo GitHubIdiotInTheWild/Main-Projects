@@ -243,14 +243,14 @@ def process():
         replaced = resolve_vars(replaced)
         result = eval_expression(replaced)
 
-if result is None:
-    log("NAN")
-else:
-    if is_debug:
-        debug_uses += 1
-        log(f"{name}({arg}) = {result}")
-    else:
-        log(f"{name}({arg}) = {result}")
+        if result is None:
+            log("NAN")
+        else:
+            if is_debug:
+                debug_uses += 1
+                log(f"{name}({arg}) = {result}")
+            else:
+                log(f"{name}({arg}) = {result}")
 
         return
 
