@@ -69,9 +69,9 @@ def debug():
         log("File code unstable.")
 
     elif debug_uses == 11 and not reboot_done:
-        log("Detected instability... restarting.")
+        log("Detected rising instability... Promptly restarting.")
         window.update()
-        time.sleep(0.5)
+        time.sleep(1)
 
         log("Reloading factorialfinder.py")
         window.update()
@@ -82,10 +82,10 @@ def debug():
             window.update()
 
         time.sleep(3)
-        log("successfully reloaded!")
+        log("Successfully reloaded! Now patching...")
 
         time.sleep(2)
-        log("Patched! Will not happen again.")
+        log("Patched! Will not happen again. Enjoy the free math :)")
 
         reboot_done = True
 
