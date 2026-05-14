@@ -351,6 +351,7 @@ def process():
     # ---------------- expression ----------------
 
     expr = resolve_vars(raw)
+    expr = apply_ans(expr)
     expr = apply_constants(expr)
     expr = apply_trig(expr)
 
