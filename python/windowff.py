@@ -136,7 +136,7 @@ def run_log_queue():
 
     def type_step(i=0):
         if i <= len(text):
-            output.config(text=text[:i] + "▏")
+            output.config(text=text[:i] + "▍")
 
             try:
                 type_sound.play()
