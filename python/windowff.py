@@ -11,7 +11,7 @@ def factorial(num):
         fact *= i
     return fact
 
-# ---------------- sound (unchanged like you wanted) ----------------
+# ---------------- sound ----------------
 
 pygame.mixer.init()
 type_sound = pygame.mixer.Sound("type.wav")
@@ -20,6 +20,7 @@ type_sound = pygame.mixer.Sound("type.wav")
 
 debug_uses = 0
 reboot_done = False
+is_fullscreen = False
 
 roasts = [
     "What will you even use this for?",
@@ -42,18 +43,33 @@ ENTRY_BG = "#ffffff"
 ENTRY_FG = "#000000"
 ACCENT = "#00e5ff"
 
-# ---------------- window FIRST (important fix) ----------------
-
 WINDOW_W = 800
 WINDOW_H = 450
+
+# ---------------- window ----------------
 
 window = tk.Tk()
 window.title("factorial finder")
 window.configure(bg=BG)
 window.geometry(f"{WINDOW_W}x{WINDOW_H}")
-window.resizable(False, False)
+window.resizable(True, True)
 
-# ---------------- safe font detection ----------------
+# ---------------- fullscreen system ----------------
+
+def toggle_fullscreen(event=None):
+    global is_fullscreen
+    is_fullscreen = not is_fullscreen
+    window.attributes("-fullscreen", is_fullscreen)
+
+def exit_fullscreen(event=None):
+    global is_fullscreen
+    is_fullscreen = False
+    window.attributes("-fullscreen", False)
+
+window.bind("<F11>", toggle_fullscreen)
+window.bind("<Escape>", exit_fullscreen)
+
+# ---------------- font ----------------
 
 def get_font():
     try:
@@ -83,10 +99,12 @@ def log(text, i=0):
 
     if i <= len(text):
         output.config(text=text[:i] + "┃")
+
         try:
             type_sound.play()
         except:
             pass
+
         window.after(25, lambda: log(text, i + 1))
     else:
         output.config(text=text)
@@ -96,7 +114,7 @@ def process():
 
     raw = entry.get().strip()
 
-    # debug silent
+    # debugsilent
     if raw.startswith("debugsilent "):
         try:
             num = int(raw.split()[1])
@@ -107,7 +125,7 @@ def process():
         log(str(factorial(num)))
         return
 
-    # debug mode
+    # debug
     if raw.startswith("debug "):
         try:
             num = int(raw.split()[1])
@@ -151,7 +169,7 @@ def process():
             reboot_done = True
         return
 
-    # normal mode
+    # normal input
     try:
         num = int(raw)
     except:
@@ -182,6 +200,7 @@ def process():
     else:
         log(f"Factorial = {fact}")
 
+# ---------------- buttons ----------------
 
 button = tk.Button(container, text="run", font=FONT, command=process,
                    bg=ACCENT, fg="black", activebackground=FG)
