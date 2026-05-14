@@ -216,6 +216,7 @@ label.pack(pady=10)
 
 entry = tk.Entry(container, font=FONT, bg="white", fg="black", insertbackground="black", width=30)
 entry.pack(pady=10)
+entry.bind("<Return>", lambda event: process())
 
 output = tk.Label(container, text="", font=FONT, bg="black", fg="#bffcff", wraplength=900)
 output.pack(pady=20)
