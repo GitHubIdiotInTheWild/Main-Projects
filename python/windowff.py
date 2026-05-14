@@ -5,6 +5,7 @@ import re
 import math
 import os
 import sys
+import datetime
 
 # ---------------- resource path ----------------
 
@@ -138,12 +139,13 @@ type_sound = pygame.mixer.Sound(resource_path("type.wav"))
 
 # ---------------- state ----------------
 
-COLOR_DEF = "#ffd700"   # gold
-COLOR_EXPR = "#b388ff"  # royal purple
-COLOR_FACT = "#ff6b6b"  # light red
+COLOR_DEF = "#ffd700"
+COLOR_EXPR = "#b388ff"
+COLOR_FACT = "#ff6b6b"
 debug_uses = 0
 log_queue = []
 log_running = False
+result_history = []
 
 # ---------------- colors ----------------
 
@@ -203,10 +205,96 @@ roasts_1000 = [
 
 window = tk.Tk()
 window.title("Sentient Mathematics")
-window.geometry("800x450")
+window.geometry("1000x520")
 window.configure(bg="black")
 
-FONT = ("VCR OSD Mono", 16)
+FONT        = ("VCR OSD Mono", 16)
+FONT_SMALL  = ("VCR OSD Mono", 10)
+FONT_MEDIUM = ("VCR OSD Mono", 12)
+
+# ---------------- CRT border canvas ----------------
+
+border_canvas = tk.Canvas(window, bg="black", highlightthickness=0)
+border_canvas.place(x=0, y=0, relwidth=1, relheight=1)
+
+def draw_border():
+    border_canvas.delete("border")
+    w = window.winfo_width()
+    h = window.winfo_height()
+    pad = 6
+    border_canvas.create_rectangle(pad, pad, w - pad, h - pad,
+                                   outline="#004444", width=2, tags="border")
+    border_canvas.create_rectangle(pad + 3, pad + 3, w - pad - 3, h - pad - 3,
+                                   outline="#002222", width=1, tags="border")
+
+window.after(100, draw_border)
+window.bind("<Configure>", lambda e: draw_border())
+
+# ---------------- version label ----------------
+
+version_label = tk.Label(window, text="v1.2", font=FONT_SMALL, bg="black", fg="#003333")
+version_label.place(relx=1.0, rely=1.0, anchor="se", x=-10, y=-10)
+
+# ---------------- clock ----------------
+
+clock_label = tk.Label(window, text="", font=FONT_SMALL, bg="black", fg="#004444")
+clock_label.place(relx=1.0, rely=0.0, anchor="ne", x=-10, y=10)
+
+def update_clock():
+    now = datetime.datetime.now().strftime("%H:%M:%S")
+    clock_label.config(text=now)
+    window.after(1000, update_clock)
+
+update_clock()
+
+# ---------------- credit label ----------------
+
+credit_label = tk.Label(window, text="made by @trumpsalt on yt", font=FONT_SMALL, bg="black", fg="#003333")
+credit_label.place(relx=0.0, rely=1.0, anchor="sw", x=10, y=-10)
+
+# ---------------- variable panel (right side) ----------------
+
+panel_frame = tk.Frame(window, bg="black")
+panel_frame.place(relx=1.0, rely=0.5, anchor="e", x=-18, y=0)
+
+panel_title = tk.Label(panel_frame, text="// vars & funcs", font=FONT_SMALL, bg="black", fg="#004444")
+panel_title.pack(anchor="w", pady=(0, 4))
+
+panel_text = tk.Label(panel_frame, text="", font=FONT_SMALL, bg="black", fg="#006666",
+                      justify="left", wraplength=160)
+panel_text.pack(anchor="w")
+
+def update_panel():
+    lines = []
+    for k, v in variables.items():
+        lines.append(f"{k} = {v}")
+    for k, (params, body) in functions.items():
+        lines.append(f"{k}({','.join(params)}) =")
+        lines.append(f"  {body}")
+    panel_text.config(text="\n".join(lines) if lines else "none")
+    window.after(300, update_panel)
+
+update_panel()
+
+# ---------------- history panel (left side) ----------------
+
+history_frame = tk.Frame(window, bg="black")
+history_frame.place(relx=0.0, rely=0.5, anchor="w", x=18, y=0)
+
+history_title = tk.Label(history_frame, text="// history", font=FONT_SMALL, bg="black", fg="#004444")
+history_title.pack(anchor="w", pady=(0, 4))
+
+history_text = tk.Label(history_frame, text="", font=FONT_SMALL, bg="black", fg="#006666",
+                         justify="left", wraplength=160)
+history_text.pack(anchor="w")
+
+def add_history(entry_str, result_str):
+    result_history.append(f"{entry_str} = {result_str}")
+    if len(result_history) > 5:
+        result_history.pop(0)
+    history_text.config(text="\n".join(result_history))
+
+# ---------------- main container ----------------
 
 container = tk.Frame(window, bg="black")
 container.place(relx=0.5, rely=0.5, anchor="center")
@@ -218,7 +306,7 @@ entry = tk.Entry(container, font=FONT, bg="white", fg="black", insertbackground=
 entry.pack(pady=10)
 entry.bind("<Return>", lambda event: process())
 
-output = tk.Label(container, text="", font=FONT, bg="black", fg="#bffcff", wraplength=900)
+output = tk.Label(container, text="", font=FONT, bg="black", fg="#bffcff", wraplength=400)
 output.pack(pady=20)
 
 run_btn = tk.Button(container, text="Give output", font=FONT, bg="#00e5ff", fg="black", command=lambda: process())
@@ -238,6 +326,11 @@ set_color()
 
 # hide main UI until boot sequence finishes
 container.place_forget()
+panel_frame.place_forget()
+history_frame.place_forget()
+version_label.place_forget()
+clock_label.place_forget()
+credit_label.place_forget()
 
 # ---------------- boot sequence ----------------
 
@@ -266,6 +359,13 @@ def fade_in_app(step=0, steps=30):
     run_btn.config(bg=lerp_color("#000000", "#00e5ff", t))
     if step < steps:
         window.after(33, lambda: fade_in_app(step + 1, steps))
+    else:
+        # show side panels and decorations after fade
+        panel_frame.place(relx=1.0, rely=0.5, anchor="e", x=-18, y=0)
+        history_frame.place(relx=0.0, rely=0.5, anchor="w", x=18, y=0)
+        version_label.place(relx=1.0, rely=1.0, anchor="se", x=-10, y=-10)
+        clock_label.place(relx=1.0, rely=0.0, anchor="ne", x=-10, y=10)
+        credit_label.place(relx=0.0, rely=1.0, anchor="sw", x=10, y=-10)
 
 # ---------------- type boot ----------------
 
@@ -324,8 +424,8 @@ logo_canvas = None
 def show_logo():
     global logo_canvas
 
-    w = window.winfo_width() or 800
-    h = window.winfo_height() or 450
+    w = window.winfo_width() or 1000
+    h = window.winfo_height() or 520
     cx     = w // 2
     base_y = h // 2
 
@@ -554,6 +654,7 @@ def process():
             return
 
         ans = result
+        add_history(f"{func_name}({arg_string})", str(result))
         log(f"{func_name}({display_expr(arg_string)}) = {result}", COLOR_EXPR)
         return
 
@@ -597,6 +698,7 @@ def process():
         num = int(raw)
         fact = factorial(num)
         ans = fact
+        add_history(str(num), f"{num}!")
 
         if num >= 1000:
             log(random.choice(roasts_1000), COLOR_FACT)
@@ -621,6 +723,7 @@ def process():
 
     if result is not None:
         ans = result
+        add_history(raw, str(result))
         log(f"{raw} = {result}", COLOR_EXPR)
         return
 
@@ -639,6 +742,7 @@ def process():
 
     fact = factorial(num)
     ans = fact
+    add_history(str(num), f"{num}!")
 
     if num >= 1000:
         log(random.choice(roasts_1000), COLOR_FACT)
