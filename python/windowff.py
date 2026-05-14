@@ -285,7 +285,8 @@ if parsed is not None:
     for i in range(min(len(param_names), len(arg_values))):
         replaced = replaced.replace(param_names[i], arg_values[i])
 
-    replaced = apply_ans(resolve_vars(replaced))
+    replaced = resolve_vars(replaced)
+    replaced = apply_ans(replaced)
     replaced = apply_constants(replaced)
     replaced = apply_trig(replaced)
 
