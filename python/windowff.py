@@ -17,11 +17,11 @@ def eval_expression(expr):
         return None
 
     # only trigger expression mode if operators exist
-    if not any(op in expr for op in ["+", "*", "(", ")"]):
+    if not any(op in expr for op in ["+", "-", "*", "(", ")"]):
         return None
 
     try:
-        allowed = set("0123456789+*() ")
+        allowed = set("0123456789+-*() ")
         if not all(c in allowed for c in expr):
             return None
 
