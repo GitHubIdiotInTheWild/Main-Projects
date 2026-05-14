@@ -28,15 +28,17 @@ roasts = [
     "Explain yourself."
 ]
 
-# COLORS
 BG = "#000000"
 FG = "#bffcff"
 ENTRY_BG = "#ffffff"
 ENTRY_FG = "#000000"
 ACCENT = "#00e5ff"
 
-# BASE FONT SIZE (auto scales depending on fullscreen)
-BASE_SIZE = 12
+BASE_FONT_SIZE = 14
+
+
+def get_font(size):
+    return ("Consolas", size)
 
 
 def log(text, i=0):
@@ -61,7 +63,6 @@ def process():
 
     raw = entry.get().strip()
 
-    # debugsilent
     if raw.startswith("debugsilent "):
         try:
             num = int(raw.split()[1])
@@ -69,11 +70,9 @@ def process():
             log("invalid input")
             return
 
-        fact = factorial(num)
-        log(str(fact))
+        log(str(factorial(num)))
         return
 
-    # debug
     if raw.startswith("debug "):
         try:
             num = int(raw.split()[1])
@@ -116,10 +115,8 @@ def process():
             window.after(500, stage2)
 
             reboot_done = True
-
         return
 
-    # normal input
     try:
         num = int(raw)
     except:
@@ -140,43 +137,44 @@ def process():
         roll = random.random()
 
         if roll < 0.05:
-            log(f"Unlucky, your PC might break. Factorial of {num} = {fact}")
-
+            log(f"Unlucky, your PC might break. Factorial = {fact}")
         elif roll < 0.25:
-            log(f"WHY? Factorial digit count of {num} = {len(str(fact))}")
-
+            log(f"WHY? digits = {len(str(fact))}")
         else:
             log(random.choice(roasts))
     else:
         log(f"Factorial = {fact}")
 
 
-# UI SETUP
+def resize(event):
+    # scale font based on window size
+    size = max(10, int(event.width / 60))
+
+    f = get_font(size)
+
+    label.config(font=f)
+    entry.config(font=f)
+    button.config(font=f)
+    output.config(font=f)
+
+
 window = tk.Tk()
 window.title("factorial finder")
 window.configure(bg=BG)
-
-# fullscreen ON by default (optional but fits your vibe)
 window.state("zoomed")
 
-frame = tk.Frame(window, bg=BG)
-frame.place(relx=0.5, rely=0.5, anchor="center")
+window.bind("<Configure>", resize)
 
-label = tk.Label(frame, text="Enter a number:", font=("Consolas", BASE_SIZE),
-                 bg=BG, fg=FG)
+label = tk.Label(window, text="Enter a number:", bg=BG, fg=FG)
 label.pack(pady=10)
 
-entry = tk.Entry(frame, width=30, font=("Consolas", BASE_SIZE),
-                 bg=ENTRY_BG, fg=ENTRY_FG, insertbackground=ENTRY_FG)
-entry.pack(pady=10)
+entry = tk.Entry(window, bg=ENTRY_BG, fg=ENTRY_FG, insertbackground=ENTRY_FG)
+entry.pack(pady=10, ipadx=20, ipady=5)
 
-button = tk.Button(frame, text="run", command=process,
-                   font=("Consolas", BASE_SIZE),
-                   bg=ACCENT, fg="black", activebackground=FG)
+button = tk.Button(window, text="run", command=process, bg=ACCENT, fg="black")
 button.pack(pady=10)
 
-output = tk.Label(frame, text="", font=("Consolas", BASE_SIZE),
-                  bg=BG, fg=FG, wraplength=600)
+output = tk.Label(window, text="", bg=BG, fg=FG, wraplength=900, justify="center")
 output.pack(pady=20)
 
 window.mainloop()
