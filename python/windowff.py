@@ -212,33 +212,43 @@ FONT        = ("VCR OSD Mono", 16)
 FONT_SMALL  = ("VCR OSD Mono", 10)
 FONT_MEDIUM = ("VCR OSD Mono", 12)
 
-# ---------------- CRT border canvas ----------------
+# ---------------- lerp ----------------
 
-border_canvas = tk.Canvas(window, bg="black", highlightthickness=0)
+def lerp_color(c1, c2, t):
+    r1, g1, b1 = int(c1[1:3], 16), int(c1[3:5], 16), int(c1[5:7], 16)
+    r2, g2, b2 = int(c2[1:3], 16), int(c2[3:5], 16), int(c2[5:7], 16)
+    r = int(r1 + (r2 - r1) * t)
+    g = int(g1 + (g2 - g1) * t)
+    b = int(b1 + (b2 - b1) * t)
+    return f"#{r:02x}{g:02x}{b:02x}"
+
+# ---------------- CRT border canvas ----------------
+# created last so it stays on top via lift()
+
+border_canvas = tk.Canvas(window, bg="", highlightthickness=0)
 border_canvas.place(x=0, y=0, relwidth=1, relheight=1)
 
 def draw_border():
     border_canvas.delete("border")
     w = window.winfo_width()
     h = window.winfo_height()
+    if w < 10 or h < 10:
+        return
     pad = 6
     border_canvas.create_rectangle(pad, pad, w - pad, h - pad,
                                    outline="#004444", width=2, tags="border")
     border_canvas.create_rectangle(pad + 3, pad + 3, w - pad - 3, h - pad - 3,
                                    outline="#002222", width=1, tags="border")
 
-window.after(100, draw_border)
 window.bind("<Configure>", lambda e: draw_border())
 
 # ---------------- version label ----------------
 
 version_label = tk.Label(window, text="v1.2", font=FONT_SMALL, bg="black", fg="#003333")
-version_label.place(relx=1.0, rely=1.0, anchor="se", x=-10, y=-10)
 
 # ---------------- clock ----------------
 
 clock_label = tk.Label(window, text="", font=FONT_SMALL, bg="black", fg="#004444")
-clock_label.place(relx=1.0, rely=0.0, anchor="ne", x=-10, y=10)
 
 def update_clock():
     now = datetime.datetime.now().strftime("%H:%M:%S")
@@ -250,16 +260,12 @@ update_clock()
 # ---------------- credit label ----------------
 
 credit_label = tk.Label(window, text="made by @trumpsalt on yt", font=FONT_SMALL, bg="black", fg="#003333")
-credit_label.place(relx=0.0, rely=1.0, anchor="sw", x=10, y=-10)
 
 # ---------------- variable panel (right side) ----------------
 
 panel_frame = tk.Frame(window, bg="black")
-panel_frame.place(relx=1.0, rely=0.5, anchor="e", x=-18, y=0)
-
 panel_title = tk.Label(panel_frame, text="// vars & funcs", font=FONT_SMALL, bg="black", fg="#004444")
 panel_title.pack(anchor="w", pady=(0, 4))
-
 panel_text = tk.Label(panel_frame, text="", font=FONT_SMALL, bg="black", fg="#006666",
                       justify="left", wraplength=160)
 panel_text.pack(anchor="w")
@@ -279,11 +285,8 @@ update_panel()
 # ---------------- history panel (left side) ----------------
 
 history_frame = tk.Frame(window, bg="black")
-history_frame.place(relx=0.0, rely=0.5, anchor="w", x=18, y=0)
-
 history_title = tk.Label(history_frame, text="// history", font=FONT_SMALL, bg="black", fg="#004444")
 history_title.pack(anchor="w", pady=(0, 4))
-
 history_text = tk.Label(history_frame, text="", font=FONT_SMALL, bg="black", fg="#006666",
                          justify="left", wraplength=160)
 history_text.pack(anchor="w")
@@ -297,7 +300,6 @@ def add_history(entry_str, result_str):
 # ---------------- main container ----------------
 
 container = tk.Frame(window, bg="black")
-container.place(relx=0.5, rely=0.5, anchor="center")
 
 label = tk.Label(container, text="Enter an input.", font=FONT, bg="black", fg="#bffcff")
 label.pack(pady=10)
@@ -322,16 +324,6 @@ btn_row2.pack(pady=4)
 tk.Button(btn_row2, text="copy", font=FONT, bg="#111111", fg="#b388ff", command=lambda: copy_output()).pack(side="left", padx=6)
 tk.Button(btn_row2, text="help", font=FONT, bg="#111111", fg="#ff6b6b", command=lambda: show_help()).pack(side="left", padx=6)
 
-set_color()
-
-# hide main UI until boot sequence finishes
-container.place_forget()
-panel_frame.place_forget()
-history_frame.place_forget()
-version_label.place_forget()
-clock_label.place_forget()
-credit_label.place_forget()
-
 # ---------------- boot sequence ----------------
 
 boot_label = tk.Label(window, text="", font=FONT, bg="black", fg="#00ffff", wraplength=760)
@@ -340,39 +332,6 @@ boot_label.place(relx=0.5, rely=0.5, anchor="center")
 skip_btn = tk.Button(window, text="Attempt to skip", font=FONT, bg="#111111", fg="#00ffff",
                      command=lambda: attempt_skip())
 skip_btn.place(relx=0.5, rely=0.9, anchor="center")
-
-# ---------------- lerp ----------------
-
-def lerp_color(c1, c2, t):
-    r1, g1, b1 = int(c1[1:3], 16), int(c1[3:5], 16), int(c1[5:7], 16)
-    r2, g2, b2 = int(c2[1:3], 16), int(c2[3:5], 16), int(c2[5:7], 16)
-    r = int(r1 + (r2 - r1) * t)
-    g = int(g1 + (g2 - g1) * t)
-    b = int(b1 + (b2 - b1) * t)
-    return f"#{r:02x}{g:02x}{b:02x}"
-
-def fade_in_app(step=0, steps=30):
-    t = step / steps
-    label.config(fg=lerp_color("#000000", "#bffcff", t))
-    entry.config(bg=lerp_color("#000000", "#ffffff", t))
-    output.config(fg=lerp_color("#000000", BASE_COLOR, t))
-    run_btn.config(bg=lerp_color("#000000", "#00e5ff", t))
-    if step < steps:
-        window.after(33, lambda: fade_in_app(step + 1, steps))
-    else:
-        # show and lift all decorations above the logo canvas
-        panel_frame.place(relx=1.0, rely=0.5, anchor="e", x=-18, y=0)
-        history_frame.place(relx=0.0, rely=0.5, anchor="w", x=18, y=0)
-        version_label.place(relx=1.0, rely=1.0, anchor="se", x=-10, y=-10)
-        clock_label.place(relx=1.0, rely=0.0, anchor="ne", x=-10, y=10)
-        credit_label.place(relx=0.0, rely=1.0, anchor="sw", x=10, y=-10)
-        panel_frame.lift()
-        history_frame.lift()
-        version_label.lift()
-        clock_label.lift()
-        credit_label.lift()
-        border_canvas.lift()
-        draw_border()
 
 # ---------------- type boot ----------------
 
@@ -424,6 +383,44 @@ def restart_boot():
     skip_btn.place(relx=0.5, rely=0.9, anchor="center")
     start_boot()
 
+# ---------------- show all UI elements ----------------
+
+def show_ui(cx, ui_y):
+    container.place(x=cx, y=ui_y, anchor="n")
+    panel_frame.place(relx=1.0, rely=0.5, anchor="e", x=-18, y=0)
+    history_frame.place(relx=0.0, rely=0.5, anchor="w", x=18, y=0)
+    version_label.place(relx=1.0, rely=1.0, anchor="se", x=-10, y=-10)
+    clock_label.place(relx=1.0, rely=0.0, anchor="ne", x=-10, y=10)
+    credit_label.place(relx=0.0, rely=1.0, anchor="sw", x=10, y=-10)
+
+    # lift everything above logo_canvas
+    container.lift()
+    panel_frame.lift()
+    history_frame.lift()
+    version_label.lift()
+    clock_label.lift()
+    credit_label.lift()
+
+    # border canvas always on very top
+    border_canvas.lift()
+    draw_border()
+
+    # start fade in
+    label.config(fg="#000000")
+    entry.config(bg="#000000")
+    output.config(fg="#000000")
+    run_btn.config(bg="#000000")
+    fade_in_app()
+
+def fade_in_app(step=0, steps=30):
+    t = step / steps
+    label.config(fg=lerp_color("#000000", "#bffcff", t))
+    entry.config(bg=lerp_color("#000000", "#ffffff", t))
+    output.config(fg=lerp_color("#000000", BASE_COLOR, t))
+    run_btn.config(bg=lerp_color("#000000", "#00e5ff", t))
+    if step < steps:
+        window.after(33, lambda: fade_in_app(step + 1, steps))
+
 # ---------------- logo sequence ----------------
 
 logo_canvas = None
@@ -438,6 +435,9 @@ def show_logo():
 
     logo_canvas = tk.Canvas(window, bg="black", highlightthickness=0)
     logo_canvas.place(x=0, y=0, relwidth=1, relheight=1)
+
+    # make sure boot label is gone
+    boot_label.place_forget()
 
     LOGO_FONT = ("Share Tech Mono", 30)
     GAP = 46
@@ -522,13 +522,9 @@ def show_logo():
 
     def finish_logo():
         ui_y = y2(rest_cy) + 50
-        container.place(x=cx, y=ui_y, anchor="n")
-        container.lift()
-        label.config(fg="#000000")
-        entry.config(bg="#000000")
-        output.config(fg="#000000")
-        run_btn.config(bg="#000000")
-        fade_in_app()
+        show_ui(cx, ui_y)
+
+    fade_in_logo()
 
 def launch_app():
     boot_label.place_forget()
