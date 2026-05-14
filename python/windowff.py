@@ -17,11 +17,11 @@ def eval_expression(expr):
         return None
 
     # only trigger expression mode if operators exist
-    if not any(op in expr for op in ["+", "-", "*", "(", ")"]):
+    if not any(op in expr for op in ["+", "-", "*", "/", "(", ")"]):
         return None
 
     try:
-        allowed = set("0123456789+-*() ")
+        allowed = set("0123456789+-*/() ")
         if not all(c in allowed for c in expr):
             return None
 
@@ -42,7 +42,7 @@ reboot_done = False
 log_queue = []
 log_running = False
 
-# ---------------- ROASTS (normal < 1000) ----------------
+# ---------------- roasts >100 <1000) ----------------
 
 roasts = [
     "What are you even doing?",
@@ -71,7 +71,7 @@ roasts = [
     "Ehhhhh..."
 ]
 
-# ---------------- ROASTS (1000+) ----------------
+# ---------------- roasts (1000+) ----------------
 
 roasts_1000 = [
     "I GIVE UP",
@@ -184,7 +184,7 @@ def run_log_queue():
 
     type_step()
 
-# ---------------- MAIN ----------------
+# ---------------- unused for now ----------------
 
 def process():
     global debug_uses, reboot_done
@@ -231,13 +231,13 @@ def process():
 
     fact = factorial(num)
 
-    # ---------------- 1000+ MELTDOWN ----------------
+    # ---------------- roast 1000+ function ----------------
 
     if num >= 1000:
         log(random.choice(roasts_1000))
         return
 
-    # ---------------- 100+ ROAST TIER ----------------
+    # ---------------- roast 100-999 function ----------------
 
     if num > 100:
         roll = random.random()
