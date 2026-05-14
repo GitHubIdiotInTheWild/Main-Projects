@@ -99,7 +99,7 @@ entry.pack(pady=10, ipadx=25, ipady=5)
 output = tk.Label(container, text="", font=FONT, bg=BG, fg=FG, wraplength=750)
 output.pack(pady=20)
 
-# ---------------- LOG SYSTEM (FIXED ORDER ENGINE) ----------------
+# ---------------- LOG SYSTEM (FIXED) ----------------
 
 def log(text):
     log_queue.append(text)
@@ -128,7 +128,7 @@ def run_log_queue():
             window.after(25, lambda: type_step(i + 1))
         else:
             output.config(text=text)
-            window.after(150, finish)
+            window.after(random.randint(60, 180), finish)  # FIXED timing variation
 
     def finish():
         global log_running
@@ -144,7 +144,7 @@ def process():
 
     raw = entry.get().strip()
 
-    # debugsilent
+    # ---------------- debugsilent ----------------
     if raw.startswith("debugsilent "):
         try:
             num = int(raw.split()[1])
@@ -155,7 +155,7 @@ def process():
         log(str(factorial(num)))
         return
 
-    # debug mode
+    # ---------------- debug ----------------
     if raw.startswith("debug "):
         try:
             num = int(raw.split()[1])
@@ -168,12 +168,10 @@ def process():
 
         log(f"DEBUGMODE-Factorial of {num} = {fact}")
 
-        # instability trigger
         if debug_uses == 10:
             log("File code unstable.")
             return
 
-        # reboot sequence
         if debug_uses == 11 and not reboot_done:
             reboot_done = True
 
@@ -196,9 +194,10 @@ def process():
                 window.after(2500, stage4)
 
             window.after(500, maybe_fail)
-            return
 
-    # normal input
+        return   # FIXED: prevents fallback NAN bug
+
+    # ---------------- normal input ----------------
     try:
         num = int(raw)
     except:
