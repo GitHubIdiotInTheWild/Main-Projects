@@ -285,15 +285,9 @@ logo_canvas = None
 def show_logo():
     global logo_canvas
 
-    try:
-        startup_sound = pygame.mixer.Sound(resource_path("startup.wav"))
-        startup_sound.play()
-    except:
-        pass
-
     w = window.winfo_width() or 800
     h = window.winfo_height() or 450
-    cx    = w // 2
+    cx     = w // 2
     base_y = h // 2
 
     logo_canvas = tk.Canvas(window, bg="black", highlightthickness=0)
@@ -307,10 +301,10 @@ def show_logo():
 
     glow_off = [(-1,0),(1,0),(0,-1),(0,1)]
 
-    g1 = [logo_canvas.create_text(cx+dx, y1(base_y)+dy, text="sentient",     font=LOGO_FONT, fill="#002929") for dx,dy in glow_off]
-    g2 = [logo_canvas.create_text(cx+dx, y2(base_y)+dy, text="mathematics.", font=LOGO_FONT, fill="#002929") for dx,dy in glow_off]
-    m1 = logo_canvas.create_text(cx, y1(base_y), text="sentient",     font=LOGO_FONT, fill="#00ffff")
-    m2 = logo_canvas.create_text(cx, y2(base_y), text="mathematics.", font=LOGO_FONT, fill="#00ffff")
+    g1 = [logo_canvas.create_text(cx+dx, y1(base_y)+dy, text="sentient",     font=LOGO_FONT, fill="#000000") for dx,dy in glow_off]
+    g2 = [logo_canvas.create_text(cx+dx, y2(base_y)+dy, text="mathematics.", font=LOGO_FONT, fill="#000000") for dx,dy in glow_off]
+    m1 = logo_canvas.create_text(cx, y1(base_y), text="sentient",     font=LOGO_FONT, fill="#000000")
+    m2 = logo_canvas.create_text(cx, y2(base_y), text="mathematics.", font=LOGO_FONT, fill="#000000")
 
     def place_at(cy):
         for item,(dx,dy) in zip(g1, glow_off): logo_canvas.coords(item, cx+dx, y1(cy)+dy)
@@ -318,8 +312,52 @@ def show_logo():
         logo_canvas.coords(m1, cx, y1(cy))
         logo_canvas.coords(m2, cx, y2(cy))
 
-    SLIDE = 90
+    def set_colors(t):
+        gc = lerp_color("#000000", "#002929", t)
+        mc = lerp_color("#000000", "#00ffff", t)
+        for item in g1 + g2: logo_canvas.itemconfig(item, fill=gc)
+        logo_canvas.itemconfig(m1, fill=mc)
+        logo_canvas.itemconfig(m2, fill=mc)
+
+    SLIDE = 155
     rest_cy = base_y - SLIDE
+
+    startup_sound = None
+    try:
+        startup_sound = pygame.mixer.Sound(resource_path("startup.wav"))
+        startup_sound.set_volume(0)
+        startup_sound.play()
+    except:
+        pass
+
+    music_path = resource_path("background.mp3")
+    music_loaded = False
+    try:
+        pygame.mixer.music.load(music_path)
+        pygame.mixer.music.set_volume(0)
+        pygame.mixer.music.play(-1)
+        music_loaded = True
+        print(f"[music] loaded and playing: {music_path}")
+    except Exception as e:
+        print(f"[music] failed to load: {e} | path: {music_path}")
+
+    def fade_in_music(step=0, steps=60):
+        if music_loaded:
+            pygame.mixer.music.set_volume(step / steps)
+        if step < steps:
+            window.after(50, lambda: fade_in_music(step + 1, steps))
+
+    def fade_in_logo(step=0, steps=25):
+        t = step / steps
+        set_colors(t)
+        if startup_sound:
+            try: startup_sound.set_volume(t)
+            except: pass
+        if step < steps:
+            window.after(30, lambda: fade_in_logo(step + 1, steps))
+        else:
+            fade_in_music()
+            animate()
 
     def animate(phase=0.0, elapsed=0):
         place_at(base_y + math.sin(phase) * 5)
@@ -346,7 +384,7 @@ def show_logo():
         run_btn.config(bg="#000000")
         fade_in_app()
 
-    animate()
+    fade_in_logo()
 
 def launch_app():
     boot_label.place_forget()
@@ -561,4 +599,4 @@ def process():
         log(f"Factorial of {num} = {fact}", COLOR_FACT)
 
 window.mainloop()
-## script end :)
+## script end :
