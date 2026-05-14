@@ -1,7 +1,9 @@
 import tkinter as tk
 import random
-import pygame
 import tkinter.font as tkfont
+import pygame
+
+# ---------------- math ----------------
 
 def factorial(num):
     fact = 1
@@ -9,9 +11,12 @@ def factorial(num):
         fact *= i
     return fact
 
+# ---------------- sound (unchanged like you wanted) ----------------
 
 pygame.mixer.init()
 type_sound = pygame.mixer.Sound("type.wav")
+
+# ---------------- state ----------------
 
 debug_uses = 0
 reboot_done = False
@@ -29,25 +34,48 @@ roasts = [
     "Explain yourself."
 ]
 
+# ---------------- style ----------------
+
 BG = "#000000"
 FG = "#bffcff"
 ENTRY_BG = "#ffffff"
 ENTRY_FG = "#000000"
 ACCENT = "#00e5ff"
 
+# ---------------- window FIRST (important fix) ----------------
 
-# try force vcr osd mono, fallback if not found
+WINDOW_W = 800
+WINDOW_H = 450
+
+window = tk.Tk()
+window.title("factorial finder")
+window.configure(bg=BG)
+window.geometry(f"{WINDOW_W}x{WINDOW_H}")
+window.resizable(False, False)
+
+# ---------------- safe font detection ----------------
+
 def get_font():
-    available = list(tkfont.families())
-
-    if "VCR OSD Mono" in available:
-        return ("VCR OSD Mono", 14)
-    else:
-        return ("Consolas", 14)
-
+    try:
+        fonts = list(tkfont.families())
+        if "VCR OSD Mono" in fonts:
+            return ("VCR OSD Mono", 14)
+    except:
+        pass
+    return ("Consolas", 14)
 
 FONT = get_font()
 
+# ---------------- UI ----------------
+
+container = tk.Frame(window, bg=BG)
+container.place(relx=0.5, rely=0.5, anchor="center")
+
+label = tk.Label(container, text="Enter a number:", font=FONT, bg=BG, fg=FG)
+label.pack(pady=10)
+
+entry = tk.Entry(container, font=FONT, bg=ENTRY_BG, fg=ENTRY_FG, insertbackground=ENTRY_FG)
+entry.pack(pady=10, ipadx=25, ipady=5)
 
 def log(text, i=0):
     if i == 0:
@@ -55,22 +83,20 @@ def log(text, i=0):
 
     if i <= len(text):
         output.config(text=text[:i] + "┃")
-
         try:
             type_sound.play()
         except:
             pass
-
         window.after(25, lambda: log(text, i + 1))
     else:
         output.config(text=text)
-
 
 def process():
     global debug_uses, reboot_done
 
     raw = entry.get().strip()
 
+    # debug silent
     if raw.startswith("debugsilent "):
         try:
             num = int(raw.split()[1])
@@ -81,6 +107,7 @@ def process():
         log(str(factorial(num)))
         return
 
+    # debug mode
     if raw.startswith("debug "):
         try:
             num = int(raw.split()[1])
@@ -121,10 +148,10 @@ def process():
                 window.after(500, maybe_fail)
 
             window.after(500, stage2)
-
             reboot_done = True
         return
 
+    # normal mode
     try:
         num = int(raw)
     except:
@@ -156,53 +183,11 @@ def process():
         log(f"Factorial = {fact}")
 
 
-# --- UI (UNDERTALE STYLE FIXED WINDOW) ---
-
-WINDOW_W = 800
-WINDOW_H = 450
-
-window = tk.Tk()
-window.title("factorial finder")
-window.configure(bg=BG)
-
-window.geometry(f"{WINDOW_W}x{WINDOW_H}")
-window.resizable(False, False)
-
-container = tk.Frame(window, bg=BG)
-container.place(relx=0.5, rely=0.5, anchor="center")
-
-label = tk.Label(container, text="Enter a number:", font=FONT, bg=BG, fg=FG)
-label.pack(pady=10)
-
-entry = tk.Entry(
-    container,
-    font=FONT,
-    bg=ENTRY_BG,
-    fg=ENTRY_FG,
-    insertbackground=ENTRY_FG
-)
-entry.pack(pady=10, ipadx=25, ipady=5)
-
-button = tk.Button(
-    container,
-    text="run",
-    font=FONT,
-    command=process,
-    bg=ACCENT,
-    fg="black",
-    activebackground=FG
-)
+button = tk.Button(container, text="run", font=FONT, command=process,
+                   bg=ACCENT, fg="black", activebackground=FG)
 button.pack(pady=10)
 
-output = tk.Label(
-    container,
-    text="",
-    font=FONT,
-    bg=BG,
-    fg=FG,
-    wraplength=750,
-    justify="center"
-)
+output = tk.Label(container, text="", font=FONT, bg=BG, fg=FG, wraplength=750)
 output.pack(pady=20)
 
 window.mainloop()
