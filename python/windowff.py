@@ -36,12 +36,9 @@ def apply_trig(expr):
         except:
             return 0
 
-    try:
-        expr = re.sub(r"sin\(([^)]+)\)", lambda m: str(math.sin(math.radians(safe_eval(m.group(1))))), expr)
-        expr = re.sub(r"cos\(([^)]+)\)", lambda m: str(math.cos(math.radians(safe_eval(m.group(1))))), expr)
-        expr = re.sub(r"tan\(([^)]+)\)", lambda m: str(math.tan(math.radians(safe_eval(m.group(1))))), expr)
-    except:
-        pass
+    expr = re.sub(r"sin\(([^)]+)\)", lambda m: str(math.sin(math.radians(safe_eval(m.group(1))))), expr)
+    expr = re.sub(r"cos\(([^)]+)\)", lambda m: str(math.cos(math.radians(safe_eval(m.group(1))))), expr)
+    expr = re.sub(r"tan\(([^)]+)\)", lambda m: str(math.tan(math.radians(safe_eval(m.group(1))))), expr)
 
     return expr
 
@@ -69,10 +66,9 @@ def eval_expression(expr):
 variables = {}
 
 def resolve_vars(expr):
-    new_expr = expr
     for name in variables:
-        new_expr = new_expr.replace(name, str(variables[name]))
-    return new_expr
+        expr = expr.replace(name, str(variables[name]))
+    return expr
 
 # ---------------- functions ----------------
 
@@ -80,7 +76,6 @@ functions = {}
 
 def parse_function_call(expr):
     match = re.match(r"([a-zA-Z]\w*)\((.*)\)", expr)
-
     if not match:
         return None
 
@@ -125,6 +120,8 @@ debug_uses = 0
 log_queue = []
 log_running = False
 
+current_text = ""
+
 # ---------------- roasts ----------------
 
 roasts = [
@@ -168,9 +165,6 @@ roasts_1000 = [
     "I AM BEGGING YOU",
     "WHAT ARE YOU EVEN DOING?!",
     "THIS IS TORTURE",
-    "PLEASE RECONSIDER",
-    "I REGRET EVERYTHING",
-    "SYSTEM MELTDOWN",
     "WHY?!",
     "STOP :("
 ]
@@ -198,21 +192,40 @@ output.pack(pady=20)
 
 tk.Button(container, text="run", font=FONT, bg="#00e5ff", fg="black", command=lambda: process()).pack(pady=10)
 
-# ---------------- fade ----------------
+# ---------------- fade answer ----------------
 
-def fade(text):
-    steps = 10
+def fade_transition(new_text):
+    global current_text
 
-    def step(i=0):
+    old_text = current_text
+    current_text = new_text
+
+    steps = 12
+
+    def lerp(a, b, t):
+        return int(a + (b - a) * t)
+
+    def fade_out(i=0):
         if i <= steps:
-            shade = int(200 + (55 * (i / steps)))
+            t = i / steps
+            shade = lerp(255, 0, t)
             color = f"#00{shade:02x}{shade:02x}"
-            output.config(text=text, fg=color)
-            window.after(30, lambda: step(i + 1))
+            output.config(text=old_text, fg=color)
+            window.after(20, lambda: fade_out(i + 1))
         else:
-            output.config(text=text, fg="#00ffff")
+            fade_in(0)
 
-    step()
+    def fade_in(i=0):
+        if i <= steps:
+            t = i / steps
+            shade = lerp(0, 255, t)
+            color = f"#00{shade:02x}{shade:02x}"
+            output.config(text=new_text, fg=color)
+            window.after(20, lambda: fade_in(i + 1))
+        else:
+            output.config(text=new_text, fg="#00ffff")
+
+    fade_out()
 
 # ---------------- log system ----------------
 
@@ -238,7 +251,7 @@ def run_log_queue():
                 pass
             window.after(25, lambda: type_step(i + 1))
         else:
-            fade(text)
+            fade_transition(text)
             window.after(120, finish)
 
     def finish():
@@ -248,7 +261,7 @@ def run_log_queue():
 
     type_step()
 
-# ---------------- MAIN ----------------
+# ---------------- main ----------------
 
 def process():
     global debug_uses
