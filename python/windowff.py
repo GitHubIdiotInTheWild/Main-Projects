@@ -21,14 +21,16 @@ def eval_expression(expr):
         return None
 
     try:
-        allowed = set("0123456789+-*/() ")
-        if not all(c in allowed for c in expr):
-            return None
+        allowed_chars = set("0123456789+-*/() ")
+        for c in expr:
+            if c not in allowed_chars:
+                return None
 
         result = eval(expr)
 
-        if isinstance(result, float) and result.is_integer():
-            result = int(result)
+        if isinstance(result, float):
+            if result.is_integer():
+                result = int(result)
 
         return result
 
@@ -40,9 +42,13 @@ def eval_expression(expr):
 variables = {}
 
 def resolve_vars(expr):
-    for k, v in variables.items():
-        expr = expr.replace(k, str(v))
-    return expr
+    new_expr = expr
+
+    for var_name in variables:
+        var_value = str(variables[var_name])
+        new_expr = new_expr.replace(var_name, var_value)
+
+    return new_expr
 
 # ---------------- functions ----------------
 
@@ -50,16 +56,17 @@ functions = {}
 
 def parse_function_call(expr):
     match = re.match(r"([a-zA-Z]\w*)\((.*)\)", expr)
-    if not match:
+
+    if match is None:
         return None
 
-    name = match.group(1)
-    arg = match.group(2).strip()
+    func_name = match.group(1)
+    func_arg = match.group(2).strip()
 
-    if name not in functions:
+    if func_name not in functions:
         return None
 
-    return name, arg
+    return func_name, func_arg
 
 # ---------------- sound ----------------
 
@@ -69,7 +76,6 @@ type_sound = pygame.mixer.Sound("type.wav")
 # ---------------- state ----------------
 
 debug_uses = 0
-reboot_done = False
 
 log_queue = []
 log_running = False
@@ -98,7 +104,6 @@ roasts = [
     "no. just no.",
     "Nuh uh.",
     "No.",
-    "I'm not gonna do that.",
     "Nah.",
     "Ehhhhh..."
 ]
@@ -121,9 +126,7 @@ roasts_1000 = [
     "PLEASE RECONSIDER",
     "I REGRET EVERYTHING",
     "SYSTEM MELTDOWN",
-    "WHAT IS THIS EVEN FOR?!",
     "WHY?!",
-    "DON'T DO THIS TO ME",
     "STOP :("
 ]
 
@@ -139,7 +142,7 @@ FONT = ("VCR OSD Mono", 16)
 container = tk.Frame(window, bg="black")
 container.place(relx=0.5, rely=0.5, anchor="center")
 
-label = tk.Label(container, text="Enter a number:", font=FONT, bg="black", fg="#bffcff")
+label = tk.Label(container, text="Enter input:", font=FONT, bg="black", fg="#bffcff")
 label.pack(pady=10)
 
 entry = tk.Entry(container, font=FONT, bg="white", fg="black", insertbackground="black", width=30)
@@ -160,10 +163,15 @@ def log(text):
 def run_log_queue():
     global log_running
 
-    if log_running or not log_queue:
+    if log_running:
+        if len(log_queue) == 0:
+            return
+
+    if len(log_queue) == 0:
         return
 
     log_running = True
+
     text = log_queue.pop(0)
 
     def type_step(i=0):
@@ -190,7 +198,7 @@ def run_log_queue():
 # ---------------- MAIN ----------------
 
 def process():
-    global debug_uses, reboot_done
+    global debug_uses
 
     raw = entry.get().strip()
 
@@ -212,16 +220,19 @@ def process():
 
     if "=" in raw and "(" in raw.split("=")[0]:
         try:
-            left, body = raw.split("=", 1)
-            fname, params = left.split("(", 1)
+            left_side, right_side = raw.split("=", 1)
 
-            fname = fname.strip()
-            params = params.replace(")", "").strip()
-            body = body.strip()
+            func_header = left_side
+            func_body = right_side.strip()
 
-            functions[fname] = (params, body)
+            func_name, func_params = func_header.split("(", 1)
+            func_name = func_name.strip()
 
-            log(f"{fname} defined")
+            func_params = func_params.replace(")", "").strip()
+
+            functions[func_name] = (func_params, func_body)
+
+            log(f"{func_name} defined")
             return
 
         except:
@@ -230,27 +241,30 @@ def process():
 
     # ---------------- function call ----------------
 
-    fn = parse_function_call(raw)
+    parsed = parse_function_call(raw)
 
-    if fn is not None:
-        name, arg = fn
-        params, body = functions[name]
+    if parsed is not None:
+        func_name = parsed[0]
+        func_arg = parsed[1]
 
-        param = params.split(",")[0].strip()
+        func_params, func_body = functions[func_name]
 
-        replaced = body.replace(param, arg)
+        param_name = func_params.split(",")[0].strip()
 
-        replaced = resolve_vars(replaced)
-        result = eval_expression(replaced)
+        replaced_body = func_body.replace(param_name, func_arg)
+
+        replaced_body = resolve_vars(replaced_body)
+
+        result = eval_expression(replaced_body)
 
         if result is None:
             log("NAN")
         else:
             if is_debug:
                 debug_uses += 1
-                log(f"{name}({arg}) = {result}")
+                log(f"{func_name}({func_arg}) = {result}")
             else:
-                log(f"{name}({arg}) = {result}")
+                log(f"{func_name}({func_arg}) = {result}")
 
         return
 
@@ -258,22 +272,23 @@ def process():
 
     if "=" in raw:
         try:
-            name, expr = raw.split("=", 1)
-            name = name.strip()
-            expr = resolve_vars(expr.strip())
+            var_name, var_value = raw.split("=", 1)
 
-            value = eval_expression(expr)
+            var_name = var_name.strip()
+            var_value = resolve_vars(var_value.strip())
 
-            if value is None:
+            evaluated = eval_expression(var_value)
+
+            if evaluated is None:
                 try:
-                    value = int(expr)
+                    evaluated = int(var_value)
                 except:
                     log("NAN")
                     return
 
-            variables[name] = value
+            variables[var_name] = evaluated
 
-            log(f"{name} = {value}")
+            log(f"{var_name} = {evaluated}")
             return
 
         except:
@@ -282,8 +297,9 @@ def process():
 
     # ---------------- expression ----------------
 
-    raw_fixed = resolve_vars(raw)
-    expr_result = eval_expression(raw_fixed)
+    processed = resolve_vars(raw)
+
+    expr_result = eval_expression(processed)
 
     if expr_result is not None:
         if is_debug:
@@ -296,35 +312,32 @@ def process():
     # ---------------- factorial ----------------
 
     try:
-        num = int(raw)
+        number = int(raw)
     except:
         log("NAN")
         return
 
-    fact = factorial(num)
+    result = factorial(number)
 
-    if num >= 1000:
+    if number >= 1000:
         log(random.choice(roasts_1000))
         return
 
-    if num > 100:
+    if number > 100:
         roll = random.random()
 
         if roll < 0.05:
-            log(f"ok this might break your pc: {fact}")
+            log(f"ok this might break your pc: {result}")
         elif roll < 0.25:
-            log(f"Factorial digit count of {num}: {len(str(fact))}")
+            log(f"Factorial digit count of {number}: {len(str(result))}")
         else:
             log(random.choice(roasts))
         return
 
     if is_debug:
         debug_uses += 1
-        if is_silent:
-            log(str(fact))
-        else:
-            log(f"D Factorial {num} = {fact}")
+        log(f"D Factorial {number} = {result}")
     else:
-        log(f"Factorial of {num} = {fact}")
+        log(f"Factorial of {number} = {result}")
 
 window.mainloop()
