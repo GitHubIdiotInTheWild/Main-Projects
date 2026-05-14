@@ -9,7 +9,6 @@ def factorial(num):
     return fact
 
 
-# sound setup
 pygame.mixer.init()
 type_sound = pygame.mixer.Sound("type.wav")
 
@@ -29,10 +28,17 @@ roasts = [
     "Explain yourself."
 ]
 
-FONT = ("VCR OSD Mono", 12)
+# COLORS
+BG = "#000000"
+FG = "#bffcff"
+ENTRY_BG = "#ffffff"
+ENTRY_FG = "#000000"
+ACCENT = "#00e5ff"
+
+# BASE FONT SIZE (auto scales depending on fullscreen)
+BASE_SIZE = 12
 
 
-# TYPEWRITER LOG WITH SOUND
 def log(text, i=0):
     if i == 0:
         output.config(text="")
@@ -40,7 +46,6 @@ def log(text, i=0):
     if i <= len(text):
         output.config(text=text[:i] + "┃")
 
-        # play typing sound
         try:
             type_sound.play()
         except:
@@ -82,11 +87,11 @@ def process():
         log(f"DEBUGMODE-Factorial of {num} = {fact}")
 
         if debug_uses == 10:
-            log(f"File code unstable. Factorial = {fact}")
+            log("File code unstable.")
             return
 
         if debug_uses == 11 and not reboot_done:
-            log("Detected instability... Promptly restarting.")
+            log("Detected instability... restarting.")
 
             def stage2():
                 log("Reloading factorialfinder.py")
@@ -146,24 +151,32 @@ def process():
         log(f"Factorial = {fact}")
 
 
-# UI
+# UI SETUP
 window = tk.Tk()
 window.title("factorial finder")
-window.geometry("500x300")
+window.configure(bg=BG)
 
-frame = tk.Frame(window)
+# fullscreen ON by default (optional but fits your vibe)
+window.state("zoomed")
+
+frame = tk.Frame(window, bg=BG)
 frame.place(relx=0.5, rely=0.5, anchor="center")
 
-label = tk.Label(frame, text="Enter a number:", font=FONT)
-label.pack(pady=5)
+label = tk.Label(frame, text="Enter a number:", font=("Consolas", BASE_SIZE),
+                 bg=BG, fg=FG)
+label.pack(pady=10)
 
-entry = tk.Entry(frame, width=30, font=FONT)
-entry.pack(pady=5)
+entry = tk.Entry(frame, width=30, font=("Consolas", BASE_SIZE),
+                 bg=ENTRY_BG, fg=ENTRY_FG, insertbackground=ENTRY_FG)
+entry.pack(pady=10)
 
-button = tk.Button(frame, text="run", command=process, font=FONT)
-button.pack(pady=5)
+button = tk.Button(frame, text="run", command=process,
+                   font=("Consolas", BASE_SIZE),
+                   bg=ACCENT, fg="black", activebackground=FG)
+button.pack(pady=10)
 
-output = tk.Label(frame, text="", font=FONT, wraplength=400)
-output.pack(pady=15)
+output = tk.Label(frame, text="", font=("Consolas", BASE_SIZE),
+                  bg=BG, fg=FG, wraplength=600)
+output.pack(pady=20)
 
 window.mainloop()
