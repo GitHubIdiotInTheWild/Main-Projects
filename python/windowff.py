@@ -291,48 +291,55 @@ def show_logo():
     except:
         pass
 
-    logo_canvas = tk.Canvas(window, bg="black", highlightthickness=0, width=800, height=450)
-    logo_canvas.place(x=0, y=0)
+    w = window.winfo_width() or 800
+    h = window.winfo_height() or 450
+    cx    = w // 2
+    base_y = h // 2
 
-    cx, base_y = 400, 225
-    LOGO_FONT = ("Share Tech Mono", 30, "italic")
-    TEXT = "sentient mathematics."
+    logo_canvas = tk.Canvas(window, bg="black", highlightthickness=0)
+    logo_canvas.place(x=0, y=0, relwidth=1, relheight=1)
 
-    glow_offsets = [(-5,-5),(-5,0),(-5,5),(0,-5),(0,5),(5,-5),(5,0),(5,5)]
-    mid_offsets  = [(-2,0),(2,0),(0,-2),(0,2)]
-    all_offsets  = glow_offsets + mid_offsets + [(0,0)]
+    LOGO_FONT = ("Share Tech Mono", 30)
+    GAP = 46
 
-    glow_dark = [logo_canvas.create_text(cx+dx, base_y+dy, text=TEXT, font=LOGO_FONT, fill="#003333") for dx,dy in glow_offsets]
-    glow_mid  = [logo_canvas.create_text(cx+dx, base_y+dy, text=TEXT, font=LOGO_FONT, fill="#006666") for dx,dy in mid_offsets]
-    main_item = logo_canvas.create_text(cx, base_y, text=TEXT, font=LOGO_FONT, fill="#00ffff")
-    crt_bar   = logo_canvas.create_rectangle(0, -55, 800, -15, fill="#aaffff", stipple="gray25", outline="")
+    def y1(cy): return cy - GAP // 2
+    def y2(cy): return cy + GAP // 2 + 8
 
-    all_items = glow_dark + glow_mid + [main_item]
+    glow_off = [(-1,0),(1,0),(0,-1),(0,1)]
 
-    def update_y(y):
-        for item, (dx, dy) in zip(all_items, all_offsets):
-            logo_canvas.coords(item, cx + dx, y + dy)
+    g1 = [logo_canvas.create_text(cx+dx, y1(base_y)+dy, text="sentient",     font=LOGO_FONT, fill="#002929") for dx,dy in glow_off]
+    g2 = [logo_canvas.create_text(cx+dx, y2(base_y)+dy, text="mathematics.", font=LOGO_FONT, fill="#002929") for dx,dy in glow_off]
+    m1 = logo_canvas.create_text(cx, y1(base_y), text="sentient",     font=LOGO_FONT, fill="#00ffff")
+    m2 = logo_canvas.create_text(cx, y2(base_y), text="mathematics.", font=LOGO_FONT, fill="#00ffff")
 
-    def animate(phase=0.0, crt_pos=-55.0, elapsed=0):
-        update_y(base_y + math.sin(phase) * 6)
-        new_crt = crt_pos + 4 if crt_pos + 4 < 465 else -55.0
-        logo_canvas.coords(crt_bar, 0, new_crt, 800, new_crt + 40)
+    def place_at(cy):
+        for item,(dx,dy) in zip(g1, glow_off): logo_canvas.coords(item, cx+dx, y1(cy)+dy)
+        for item,(dx,dy) in zip(g2, glow_off): logo_canvas.coords(item, cx+dx, y2(cy)+dy)
+        logo_canvas.coords(m1, cx, y1(cy))
+        logo_canvas.coords(m2, cx, y2(cy))
+
+    SLIDE = 90
+    rest_cy = base_y - SLIDE
+
+    def animate(phase=0.0, elapsed=0):
+        place_at(base_y + math.sin(phase) * 5)
         if elapsed < 3500:
-            window.after(40, lambda: animate(phase + 0.08, new_crt, elapsed + 40))
+            window.after(40, lambda: animate(phase + 0.08, elapsed + 40))
         else:
             slide_up(0)
 
-    def slide_up(step, steps=28):
+    def slide_up(step, steps=22):
         t = 1 - (1 - step / steps) ** 3
-        update_y(base_y + (28 - base_y) * t)
+        place_at(base_y - SLIDE * t)
         if step < steps:
             window.after(25, lambda: slide_up(step + 1, steps))
         else:
-            window.after(150, finish_logo)
+            window.after(600, finish_logo)
 
     def finish_logo():
-        logo_canvas.destroy()
-        container.place(relx=0.5, rely=0.5, anchor="center")
+        ui_y = y2(rest_cy) + 50
+        container.place(x=cx, y=ui_y, anchor="n")
+        container.lift()
         label.config(fg="#000000")
         entry.config(bg="#000000")
         output.config(fg="#000000")
