@@ -31,7 +31,7 @@ def log(text, i=0):
         output.config(text="")
 
     if i <= len(text):
-        output.config(text=text[:i] + "│")  # thin cursor
+        output.config(text=text[:i] + "▌")  # thin cursor
         window.after(25, lambda: log(text, i + 1))  # faster typing
     else:
         output.config(text=text)
