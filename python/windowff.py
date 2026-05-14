@@ -269,7 +269,6 @@ def lerp_color(c1, c2, t):
     g = int(g1 + (g2 - g1) * t)
     b = int(b1 + (b2 - b1) * t)
     return f"#{r:02x}{g:02x}{b:02x}"
-
 # ---------------- logo sequence ----------------
 
 logo_canvas = None
