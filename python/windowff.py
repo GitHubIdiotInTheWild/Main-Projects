@@ -25,14 +25,14 @@ roasts = [
 
 FONT = ("VCR OSD Mono", 12)
 
-# TYPEWRITER LOG FUNCTION
+# TYPEWRITER LOG
 def log(text, i=0):
     if i == 0:
         output.config(text="")
 
     if i <= len(text):
-        output.config(text=text[:i] + "█")
-        window.after(50, lambda: log(text, i + 1))
+        output.config(text=text[:i] + "│")  # thin cursor
+        window.after(25, lambda: log(text, i + 1))  # faster typing
     else:
         output.config(text=text)
 
@@ -42,7 +42,6 @@ def process():
 
     raw = entry.get().strip()
 
-    # debug silent
     if raw.startswith("debugsilent "):
         try:
             num = int(raw.split()[1])
@@ -54,7 +53,6 @@ def process():
         log(str(fact))
         return
 
-    # debug normal
     if raw.startswith("debug "):
         try:
             num = int(raw.split()[1])
@@ -100,7 +98,6 @@ def process():
 
         return
 
-    # normal mode
     try:
         num = int(raw)
     except:
