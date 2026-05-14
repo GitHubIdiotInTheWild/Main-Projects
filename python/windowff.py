@@ -1,348 +1,348 @@
-import tkinter as tk
-import random
-import pygame
-import re
+    import tkinter as tk
+    import random
+    import pygame
+    import re
 
-# ---------------- math ----------------
+    # ---------------- math ----------------
 
-def factorial(num):
-    fact = 1
-    for i in range(1, num + 1):
-        fact *= i
-    return fact
+    def factorial(num):
+        fact = 1
+        for i in range(1, num + 1):
+            fact *= i
+        return fact
 
-# ---------------- expression system ----------------
+    # ---------------- expression system ----------------
 
-def eval_expression(expr):
-    allowed_chars = set("0123456789+-*/() ")
+    def eval_expression(expr):
+        allowed_chars = set("0123456789+-*/() ")
 
-    for c in expr:
-        if c not in allowed_chars:
+        for c in expr:
+            if c not in allowed_chars:
+                return None
+
+        try:
+            result = eval(expr)
+
+            if isinstance(result, float):
+                if result.is_integer():
+                    result = int(result)
+
+            return result
+        except:
             return None
 
-    try:
-        result = eval(expr)
+    # ---------------- variables ----------------
 
-        if isinstance(result, float):
-            if result.is_integer():
-                result = int(result)
+    variables = {}
 
-        return result
-    except:
-        return None
+    def resolve_vars(expr):
+        new_expr = expr
 
-# ---------------- variables ----------------
+        for name in variables:
+            new_expr = new_expr.replace(name, str(variables[name]))
 
-variables = {}
+        return new_expr
 
-def resolve_vars(expr):
-    new_expr = expr
+    # ---------------- functions ----------------
 
-    for name in variables:
-        new_expr = new_expr.replace(name, str(variables[name]))
+    functions = {}
 
-    return new_expr
+    def parse_function_call(expr):
+        match = re.match(r"([a-zA-Z]\w*)\((.*)\)", expr)
 
-# ---------------- functions ----------------
+        if not match:
+            return None
 
-functions = {}
+        name = match.group(1)
+        args = match.group(2)
 
-def parse_function_call(expr):
-    match = re.match(r"([a-zA-Z]\w*)\((.*)\)", expr)
+        if name not in functions:
+            return None
 
-    if not match:
-        return None
-
-    name = match.group(1)
-    args = match.group(2)
-
-    if name not in functions:
-        return None
-
-    return name, args
+        return name, args
 
 
-def split_args(arg_string):
-    args = []
-    current = ""
-    depth = 0
+    def split_args(arg_string):
+        args = []
+        current = ""
+        depth = 0
 
-    for c in arg_string:
-        if c == "," and depth == 0:
+        for c in arg_string:
+            if c == "," and depth == 0:
+                args.append(current.strip())
+                current = ""
+            else:
+                if c == "(":
+                    depth += 1
+                elif c == ")":
+                    depth -= 1
+                current += c
+
+        if current:
             args.append(current.strip())
-            current = ""
-        else:
-            if c == "(":
-                depth += 1
-            elif c == ")":
-                depth -= 1
-            current += c
 
-    if current:
-        args.append(current.strip())
+        return args
 
-    return args
+    # ---------------- sound ----------------
 
-# ---------------- sound ----------------
+    pygame.mixer.init()
+    type_sound = pygame.mixer.Sound("type.wav")
 
-pygame.mixer.init()
-type_sound = pygame.mixer.Sound("type.wav")
+    # ---------------- state ----------------
 
-# ---------------- state ----------------
+    debug_uses = 0
 
-debug_uses = 0
+    log_queue = []
+    log_running = False
 
-log_queue = []
-log_running = False
+    # ---------------- roasts ----------------
 
-# ---------------- roasts ----------------
+    roasts = [
+        "What are you even doing?",
+        "This is really unnecessary.",
+        "You really typed THAT in huh?",
+        "Why are you like this?",
+        "Your CPU is suffering silently",
+        "Okay, but WHY though??",
+        "What?",
+        "Why?",
+        "How?",
+        "by Spu7Nix.",
+        "Please stop",
+        "This is cursed behavior.",
+        "Explain yourself.",
+        "Explain.",
+        "Let's talk about this..",
+        "uhh, what the hell?",
+        "Busbis would hate you for this.",
+        "Shh....",
+        "no. just no.",
+        "Nuh uh.",
+        "No.",
+        "Nah.",
+        "Ehhhhh..."
+    ]
 
-roasts = [
-    "What are you even doing?",
-    "This is really unnecessary.",
-    "You really typed THAT in huh?",
-    "Why are you like this?",
-    "Your CPU is suffering silently",
-    "Okay, but WHY though??",
-    "What?",
-    "Why?",
-    "How?",
-    "by Spu7Nix.",
-    "Please stop",
-    "This is cursed behavior.",
-    "Explain yourself.",
-    "Explain.",
-    "Let's talk about this..",
-    "uhh, what the hell?",
-    "Busbis would hate you for this.",
-    "Shh....",
-    "no. just no.",
-    "Nuh uh.",
-    "No.",
-    "Nah.",
-    "Ehhhhh..."
-]
+    roasts_1000 = [
+        "I GIVE UP",
+        "NO. JUST NO.",
+        "CLOSE ME PLEASE",
+        "STOP DOING THIS",
+        "<_>",
+        "THIS IS TOO MUCH",
+        "WHY WOULD YOU DO THIS?!",
+        "PLEASE STOP",
+        "I CAN'T HANDLE THIS",
+        "NO PLEASE",
+        "THIS WASN'T PART OF THE DEAL",
+        "I AM BEGGING YOU",
+        "WHAT ARE YOU EVEN DOING?!",
+        "THIS IS TORTURE",
+        "PLEASE RECONSIDER",
+        "I REGRET EVERYTHING",
+        "SYSTEM MELTDOWN",
+        "WHY?!",
+        "STOP :("
+    ]
 
-roasts_1000 = [
-    "I GIVE UP",
-    "NO. JUST NO.",
-    "CLOSE ME PLEASE",
-    "STOP DOING THIS",
-    "<_>",
-    "THIS IS TOO MUCH",
-    "WHY WOULD YOU DO THIS?!",
-    "PLEASE STOP",
-    "I CAN'T HANDLE THIS",
-    "NO PLEASE",
-    "THIS WASN'T PART OF THE DEAL",
-    "I AM BEGGING YOU",
-    "WHAT ARE YOU EVEN DOING?!",
-    "THIS IS TORTURE",
-    "PLEASE RECONSIDER",
-    "I REGRET EVERYTHING",
-    "SYSTEM MELTDOWN",
-    "WHY?!",
-    "STOP :("
-]
+    # ---------------- window ----------------
 
-# ---------------- window ----------------
+    window = tk.Tk()
+    window.title("Sentient Mathematics")
+    window.geometry("800x450")
+    window.configure(bg="black")
 
-window = tk.Tk()
-window.title("Sentient Mathematics")
-window.geometry("800x450")
-window.configure(bg="black")
+    FONT = ("VCR OSD Mono", 16)
 
-FONT = ("VCR OSD Mono", 16)
+    container = tk.Frame(window, bg="black")
+    container.place(relx=0.5, rely=0.5, anchor="center")
 
-container = tk.Frame(window, bg="black")
-container.place(relx=0.5, rely=0.5, anchor="center")
+    label = tk.Label(container, text="enter input", font=FONT, bg="black", fg="#bffcff")
+    label.pack(pady=10)
 
-label = tk.Label(container, text="enter input", font=FONT, bg="black", fg="#bffcff")
-label.pack(pady=10)
+    entry = tk.Entry(container, font=FONT, bg="white", fg="black", insertbackground="black", width=30)
+    entry.pack(pady=10)
 
-entry = tk.Entry(container, font=FONT, bg="white", fg="black", insertbackground="black", width=30)
-entry.pack(pady=10)
+    output = tk.Label(container, text="", font=FONT, bg="black", fg="#bffcff", wraplength=900)
+    output.pack(pady=20)
 
-output = tk.Label(container, text="", font=FONT, bg="black", fg="#bffcff", wraplength=900)
-output.pack(pady=20)
+    tk.Button(container, text="run", font=FONT, bg="#00e5ff", fg="black", command=lambda: process()).pack(pady=10)
 
-tk.Button(container, text="run", font=FONT, bg="#00e5ff", fg="black", command=lambda: process()).pack(pady=10)
+    # ---------------- log system ----------------
 
-# ---------------- log system ----------------
-
-def log(text):
-    log_queue.append(text)
-    run_log_queue()
-
-def run_log_queue():
-    global log_running
-
-    if log_running or not log_queue:
-        return
-
-    log_running = True
-    text = log_queue.pop(0)
-
-    def type_step(i=0):
-        if i <= len(text):
-            output.config(text=text[:i] + "▍")
-
-            try:
-                type_sound.play()
-            except:
-                pass
-
-            window.after(25, lambda: type_step(i + 1))
-        else:
-            output.config(text=text)
-            window.after(120, finish)
-
-    def finish():
-        global log_running
-        log_running = False
+    def log(text):
+        log_queue.append(text)
         run_log_queue()
 
-    type_step()
+    def run_log_queue():
+        global log_running
 
-# ---------------- MAIN ----------------
-
-def process():
-    global debug_uses
-
-    raw = entry.get().strip()
-
-    # ---------------- debug ----------------
-
-    is_debug = False
-    is_silent = False
-
-    if raw.startswith("debugsilent "):
-        is_debug = True
-        is_silent = True
-        raw = raw.replace("debugsilent ", "", 1)
-
-    elif raw.startswith("debug "):
-        is_debug = True
-        raw = raw.replace("debug ", "", 1)
-
-    # ---------------- function define ----------------
-
-    if "=" in raw and "(" in raw.split("=")[0]:
-        try:
-            left, right = raw.split("=", 1)
-
-            func_name, params = left.split("(", 1)
-            func_name = func_name.strip()
-            params = params.replace(")", "").strip()
-
-            func_body = right.strip()
-
-            functions[func_name] = (params, func_body)
-
-            log(f"{func_name} defined")
+        if log_running or not log_queue:
             return
 
-        except:
-            log("NAN")
-            return
+        log_running = True
+        text = log_queue.pop(0)
 
-    # ---------------- function call ----------------
+        def type_step(i=0):
+            if i <= len(text):
+                output.config(text=text[:i] + "▍")
 
-    parsed = parse_function_call(raw)
-
-    if parsed is not None:
-        func_name, arg_string = parsed
-
-        param_string, func_body = functions[func_name]
-
-        param_names = [p.strip() for p in param_string.split(",")]
-        arg_values = split_args(arg_string)
-
-        replaced = func_body
-
-        for i in range(min(len(param_names), len(arg_values))):
-            replaced = replaced.replace(param_names[i], arg_values[i])
-
-        replaced = resolve_vars(replaced)
-
-        result = eval_expression(replaced)
-
-        if result is None:
-            log("NAN")
-        else:
-            log(f"{func_name}({arg_string}) = {result}")
-
-        return
-
-    # ---------------- variable assignment ----------------
-
-    if "=" in raw:
-        try:
-            name, value = raw.split("=", 1)
-
-            name = name.strip()
-            value = resolve_vars(value.strip())
-
-            evaluated = eval_expression(value)
-
-            if evaluated is None:
                 try:
-                    evaluated = int(value)
+                    type_sound.play()
                 except:
-                    log("NAN")
-                    return
+                    pass
 
-            variables[name] = evaluated
-            log(f"{name} = {evaluated}")
+                window.after(25, lambda: type_step(i + 1))
+            else:
+                output.config(text=text)
+                window.after(120, finish)
+
+        def finish():
+            global log_running
+            log_running = False
+            run_log_queue()
+
+        type_step()
+
+    # ---------------- MAIN ----------------
+
+    def process():
+        global debug_uses
+
+        raw = entry.get().strip()
+
+        # ---------------- debug ----------------
+
+        is_debug = False
+        is_silent = False
+
+        if raw.startswith("debugsilent "):
+            is_debug = True
+            is_silent = True
+            raw = raw.replace("debugsilent ", "", 1)
+
+        elif raw.startswith("debug "):
+            is_debug = True
+            raw = raw.replace("debug ", "", 1)
+
+        # ---------------- function define ----------------
+
+        if "=" in raw and "(" in raw.split("=")[0]:
+            try:
+                left, right = raw.split("=", 1)
+
+                func_name, params = left.split("(", 1)
+                func_name = func_name.strip()
+                params = params.replace(")", "").strip()
+
+                func_body = right.strip()
+
+                functions[func_name] = (params, func_body)
+
+                log(f"{func_name} defined")
+                return
+
+            except:
+                log("NAN")
+                return
+
+        # ---------------- function call ----------------
+
+        parsed = parse_function_call(raw)
+
+        if parsed is not None:
+            func_name, arg_string = parsed
+
+            param_string, func_body = functions[func_name]
+
+            param_names = [p.strip() for p in param_string.split(",")]
+            arg_values = split_args(arg_string)
+
+            replaced = func_body
+
+            for i in range(min(len(param_names), len(arg_values))):
+                replaced = replaced.replace(param_names[i], arg_values[i])
+
+            replaced = resolve_vars(replaced)
+
+            result = eval_expression(replaced)
+
+            if result is None:
+                log("NAN")
+            else:
+                log(f"{func_name}({arg_string}) = {result}")
+
             return
 
+        # ---------------- variable assignment ----------------
+
+        if "=" in raw:
+            try:
+                name, value = raw.split("=", 1)
+
+                name = name.strip()
+                value = resolve_vars(value.strip())
+
+                evaluated = eval_expression(value)
+
+                if evaluated is None:
+                    try:
+                        evaluated = int(value)
+                    except:
+                        log("NAN")
+                        return
+
+                variables[name] = evaluated
+                log(f"{name} = {evaluated}")
+                return
+
+            except:
+                log("NAN")
+                return
+
+        # ---------------- expression ----------------
+
+        expr = resolve_vars(raw)
+
+        result = eval_expression(expr)
+
+        if result is not None:
+            if is_debug:
+                debug_uses += 1
+                log(f"D {raw} = {result}")
+            else:
+                log(f"{raw} = {result}")
+            return
+
+        # ---------------- factorial ----------------
+
+        try:
+            num = int(raw)
         except:
             log("NAN")
             return
 
-    # ---------------- expression ----------------
+        fact = factorial(num)
 
-    expr = resolve_vars(raw)
+        if num >= 1000:
+            log(random.choice(roasts_1000))
+            return
 
-    result = eval_expression(expr)
+        if num > 100:
+            roll = random.random()
 
-    if result is not None:
+            if roll < 0.05:
+                log(f"ok this might break your pc: {fact}")
+            elif roll < 0.25:
+                log(f"Factorial digit count of {num}: {len(str(fact))}")
+            else:
+                log(random.choice(roasts))
+            return
+
         if is_debug:
             debug_uses += 1
-            log(f"D {raw} = {result}")
+            log(f"D Factorial {num} = {fact}")
         else:
-            log(f"{raw} = {result}")
-        return
+            log(f"Factorial of {num} = {fact}")
 
-    # ---------------- factorial ----------------
-
-    try:
-        num = int(raw)
-    except:
-        log("NAN")
-        return
-
-    fact = factorial(num)
-
-    if num >= 1000:
-        log(random.choice(roasts_1000))
-        return
-
-    if num > 100:
-        roll = random.random()
-
-        if roll < 0.05:
-            log(f"ok this might break your pc: {fact}")
-        elif roll < 0.25:
-            log(f"Factorial digit count of {num}: {len(str(fact))}")
-        else:
-            log(random.choice(roasts))
-        return
-
-    if is_debug:
-        debug_uses += 1
-        log(f"D Factorial {num} = {fact}")
-    else:
-        log(f"Factorial of {num} = {fact}")
-
-window.mainloop()
+    window.mainloop()
