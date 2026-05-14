@@ -26,6 +26,28 @@ def eval_addition(expr):
     except:
         return None
 
+
+# ---------------- NEW: multiplication system ----------------
+
+def eval_multiplication(expr):
+    if any(c.isalpha() for c in expr):
+        return None
+
+    if "*" not in expr:
+        return None
+
+    try:
+        parts = expr.split("*")
+        nums = [int(p.strip()) for p in parts]
+
+        result = 1
+        for n in nums:
+            result *= n
+
+        return nums, result
+    except:
+        return None
+
 # ---------------- sound ----------------
 
 pygame.mixer.init()
@@ -181,6 +203,24 @@ def process():
     add = eval_addition(raw)
     if add is not None:
         nums, total = add
+
+        if is_debug:
+            debug_uses += 1
+
+            if is_silent:
+                log(str(total))
+            else:
+                log(f"D {nums} = {total}")
+        else:
+            log(f"{raw} = {total}")
+
+        return
+
+    # ---------------- multiplication (NEW) ----------------
+
+    mul = eval_multiplication(raw)
+    if mul is not None:
+        nums, total = mul
 
         if is_debug:
             debug_uses += 1
