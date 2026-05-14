@@ -1,6 +1,7 @@
 import tkinter as tk
 import random
 import pygame
+import tkinter.font as tkfont
 
 def factorial(num):
     fact = 1
@@ -34,11 +35,18 @@ ENTRY_BG = "#ffffff"
 ENTRY_FG = "#000000"
 ACCENT = "#00e5ff"
 
-BASE_FONT_SIZE = 14
+
+# try force vcr osd mono, fallback if not found
+def get_font():
+    available = list(tkfont.families())
+
+    if "VCR OSD Mono" in available:
+        return ("VCR OSD Mono", 14)
+    else:
+        return ("Consolas", 14)
 
 
-def get_font(size):
-    return ("Consolas", size)
+FONT = get_font()
 
 
 def log(text, i=0):
@@ -138,43 +146,63 @@ def process():
 
         if roll < 0.05:
             log(f"Unlucky, your PC might break. Factorial = {fact}")
+
         elif roll < 0.25:
             log(f"WHY? digits = {len(str(fact))}")
+
         else:
             log(random.choice(roasts))
     else:
         log(f"Factorial = {fact}")
 
 
-def resize(event):
-    # scale font based on window size
-    size = max(10, int(event.width / 60))
+# --- UI (UNDERTALE STYLE FIXED WINDOW) ---
 
-    f = get_font(size)
-
-    label.config(font=f)
-    entry.config(font=f)
-    button.config(font=f)
-    output.config(font=f)
-
+WINDOW_W = 800
+WINDOW_H = 450
 
 window = tk.Tk()
 window.title("factorial finder")
 window.configure(bg=BG)
-window.state("zoomed")
 
-window.bind("<Configure>", resize)
+window.geometry(f"{WINDOW_W}x{WINDOW_H}")
+window.resizable(False, False)
 
-label = tk.Label(window, text="Enter a number:", bg=BG, fg=FG)
+container = tk.Frame(window, bg=BG)
+container.place(relx=0.5, rely=0.5, anchor="center")
+
+label = tk.Label(container, text="Enter a number:", font=FONT, bg=BG, fg=FG)
 label.pack(pady=10)
 
-entry = tk.Entry(window, bg=ENTRY_BG, fg=ENTRY_FG, insertbackground=ENTRY_FG)
-entry.pack(pady=10, ipadx=20, ipady=5)
+entry = tk.Entry(
+    container,
+    font=FONT,
+    bg=ENTRY_BG,
+    fg=ENTRY_FG,
+    insertbackground=ENTRY_FG
+)
+entry.pack(pady=10, ipadx=25, ipady=5)
 
-button = tk.Button(window, text="run", command=process, bg=ACCENT, fg="black")
+button = tk.Button(
+    container,
+    text="run",
+    font=FONT,
+    command=process,
+    bg=ACCENT,
+    fg="black",
+    activebackground=FG
+)
 button.pack(pady=10)
 
-output = tk.Label(window, text="", bg=BG, fg=FG, wraplength=900, justify="center")
+output = tk.Label(
+    container,
+    text="",
+    font=FONT,
+    bg=BG,
+    fg=FG,
+    wraplength=750,
+    justify="center"
+)
 output.pack(pady=20)
 
 window.mainloop()
