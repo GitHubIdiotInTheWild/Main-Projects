@@ -220,7 +220,7 @@ entry.pack(pady=10)
 output = tk.Label(container, text="", font=FONT, bg="black", fg="#bffcff", wraplength=900)
 output.pack(pady=20)
 
-run_btn = tk.Button(container, text="run", font=FONT, bg="#00e5ff", fg="black", command=lambda: process())
+run_btn = tk.Button(container, text="Give output", font=FONT, bg="#00e5ff", fg="black", command=lambda: process())
 run_btn.pack(pady=10)
 
 set_color()
