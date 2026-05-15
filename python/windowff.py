@@ -210,7 +210,7 @@ window.geometry("1000x520")
 window.configure(bg="black")
 
 FONT        = ("VCR OSD Mono", 16)
-FONT_SMALL  = ("VCR OSD Mono", 10)
+FONT_SMALL  = ("VCR OSD Mono", 13)
 FONT_MEDIUM = ("VCR OSD Mono", 12)
 
 # ---------------- lerp ----------------
@@ -226,9 +226,6 @@ def lerp_color(c1, c2, t):
 # ---------------- CRT border canvas ----------------
 # created last so it stays on top via lift()
 
-border_canvas = tk.Canvas(window, bg="black", highlightthickness=0)
-border_canvas.place(x=0, y=0, relwidth=1, relheight=1)
-
 def draw_border():
     border_canvas.delete("border")
     w = window.winfo_width()
@@ -241,6 +238,9 @@ def draw_border():
     border_canvas.create_rectangle(pad + 3, pad + 3, w - pad - 3, h - pad - 3,
                                    outline="#002222", width=1, tags="border")
 
+border_canvas = tk.Canvas(window, bg="black", highlightthickness=0)
+border_canvas.place(x=0, y=0, relwidth=1, relheight=1)
+window.after(100, draw_border)
 window.bind("<Configure>", lambda e: draw_border())
 
 # ---------------- version label ----------------
@@ -436,6 +436,15 @@ def show_logo():
 
     logo_canvas = tk.Canvas(window, bg="black", highlightthickness=0)
     logo_canvas.place(x=0, y=0, relwidth=1, relheight=1)
+    
+    # draw border directly on logo canvas so it stays visible
+    w = window.winfo_width() or 1000
+    h = window.winfo_height() or 520
+    pad = 6
+    logo_canvas.create_rectangle(pad, pad, w - pad, h - pad,
+                                 outline="#004444", width=2)
+    logo_canvas.create_rectangle(pad + 3, pad + 3, w - pad - 3, h - pad - 3,
+                                 outline="#002222", width=1)
 
     # make sure boot label is gone
     boot_label.place_forget()
