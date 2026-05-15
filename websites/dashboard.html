@@ -286,6 +286,20 @@ window.addEventListener("load", () => {
 
     lines.forEach((line, i) => {
         line.style.animationDelay = (i * 0.3) + "s";
+
+        function checkMidnightReset() {
+    const now = new Date();
+
+    const hh = now.getUTCHours();
+    const mm = now.getUTCMinutes();
+    const ss = now.getUTCSeconds();
+
+    if (hh === 0 && mm === 0 && ss === 0) {
+        window.location.href = "index.html";
+    }
+}
+
+setInterval(checkMidnightReset, 1000);
     });
 });
 
