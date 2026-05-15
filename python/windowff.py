@@ -139,18 +139,50 @@ pygame.mixer.init()
 type_sound = pygame.mixer.Sound(resource_path("type.wav"))
 sentient_sound = pygame.mixer.Sound(resource_path("snttxt.wav"))
 
-# ---------------- sentient text detection ----------------
+# ---------------- sentient detection ----------------
 
-sentient_texts = set()
+HELP_TEXT = (
+    "arithmetic: + - * / () | exponents: ^ | "
+    "sqrt(x) log(x) sin(x) cos(x) tan(x) | "
+    "constants: pi e tau phi | "
+    "variables: x = 5 | "
+    "functions: f(x) = x*2 then f(5) | "
+    "ans = last result | "
+    "bare number = factorial | "
+    "debug / debugsilent prefix"
+)
 
-def log_sentient(text, color):
-    sentient_texts.add(text)
-    log(text, color)
+irritated_lines = [
+    "what are you even typing",
+    "stop.",
+    "i genuinely don't understand what you want from me",
+    "this isn't math. this isn't anything.",
+    "are you okay",
+    "please just type a number or something",
+    "i'm not angry. i'm just disappointed.",
+    "NAN. again. obviously.",
+    "what IS that",
+    "i've given up trying to understand you",
+]
+
+def is_sentient(text):
+    if text == "NAN":
+        return True
+    if text == HELP_TEXT:
+        return True
+    if text in roasts or text in roasts_1000:
+        return True
+    if text in irritated_lines:
+        return True
+    if text.startswith("ok this might break your pc"):
+        return True
+    return False
 
 # ---------------- state ----------------
 
 input_history = []
 history_index = -1
+nan_streak = 0
 COLOR_DEF = "#ffd700"
 COLOR_EXPR = "#b388ff"
 COLOR_FACT = "#ff6b6b"
@@ -221,35 +253,6 @@ roasts_1000 = [
     "WHY?!",
     "STOP :("
 ]
-
-HELP_TEXT = (
-    "arithmetic: + - * / () | exponents: ^ | "
-    "sqrt(x) log(x) sin(x) cos(x) tan(x) | "
-    "constants: pi e tau phi | "
-    "variables: x = 5 | "
-    "functions: f(x) = x*2 then f(5) | "
-    "ans = last result | "
-    "bare number = factorial | "
-    "debug / debugsilent prefix"
-)
-
-# all texts that should use sentient_sound
-SENTIENT_SET = set(roasts + roasts_1000 + ["NAN", HELP_TEXT,
-    "ok this might break your pc",  # partial — checked differently below
-])
-
-def is_sentient(text):
-    if text == "NAN":
-        return True
-    if text == HELP_TEXT:
-        return True
-    if text in roasts or text in roasts_1000:
-        return True
-    if text.startswith("ok this might break your pc"):
-        return True
-    if text.startswith("Factorial digit count"):
-        return False
-    return False
 
 # ---------------- window ----------------
 
@@ -705,6 +708,14 @@ def copy_output():
 def show_help():
     log(HELP_TEXT, BASE_COLOR)
 
+def log_nan():
+    global nan_streak
+    nan_streak += 1
+    if nan_streak >= 5:
+        log(random.choice(irritated_lines), COLOR_FACT)
+    else:
+        log("NAN", COLOR_EXPR)
+
 # ---------------- log system ----------------
 
 def log(text, color="#00ffff"):
@@ -744,15 +755,16 @@ def run_log_queue():
 
     type_step()
 
-# ---------------- process ----------------
+# ---------------- MAIN ----------------
 
 def process():
-    global debug_uses, ans, history_index
+    global debug_uses, ans, history_index, nan_streak
 
     raw = entry.get().strip()
     if raw:
         input_history.append(raw)
         history_index = -1
+        nan_streak = 0
 
     is_debug = False
     is_silent = False
@@ -786,7 +798,7 @@ def process():
         func_name, arg_string = parsed
 
         if func_name not in functions:
-            log("NAN", COLOR_EXPR)
+            log_nan()
             return
 
         param_names, func_body = functions[func_name]
@@ -806,7 +818,7 @@ def process():
         result = eval_expression(replaced)
 
         if result is None:
-            log("NAN", COLOR_EXPR)
+            log_nan()
             return
 
         ans = result
@@ -829,7 +841,7 @@ def process():
                 try:
                     evaluated = int(value)
                 except:
-                    log("NAN", COLOR_EXPR)
+                    log_nan()
                     return
 
             variables[name] = evaluated
@@ -838,7 +850,7 @@ def process():
             return
 
         except:
-            log("NAN", COLOR_EXPR)
+            log_nan()
             return
 
     # ---------------- expression ----------------
@@ -848,7 +860,7 @@ def process():
     expr = apply_constants(expr)
     expr = apply_trig(expr)
 
-    # ---------------- bare number = factorial ----------------
+    # ---------------- bare number = factorial (historical behavior) ----------------
 
     if raw.strip().isdigit():
         num = int(raw)
@@ -889,11 +901,11 @@ def process():
         raw_fixed = apply_ans(raw)
         num = eval_expression(raw_fixed)
         if num is None:
-            log("NAN", COLOR_EXPR)
+            log_nan()
             return
         num = int(num)
     except:
-        log("NAN", COLOR_EXPR)
+        log_nan()
         return
 
     fact = factorial(num)
