@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Archive Dashboard</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700&family=Montserrat:wght@400;500&family=Open+Sans:wght@400;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+<style>
+
+@font-face {
+    font-family: "VCR";
+    src: url("VCR_OSD_MONO.ttf");
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #050505;
+    color: #e6e6e6;
+    font-family: "Open Sans", sans-serif;
+    overflow-x: hidden;
+}
+
+/* scanlines */
+.scanlines {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+        transparent 0px,
+        rgba(255,255,255,0.02) 1px,
+        transparent 2px
+    );
+    opacity: 0.4;
+}
+
+/* top bar */
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px 40px;
+    border-bottom: 1px solid #1a1a1a;
+}
+
+.logo {
+    font-family: "Share Tech Mono", monospace;
+    color: #c40000;
+    font-size: 1.5rem;
+    letter-spacing: 5px;
+}
+
+.status {
+    font-family: "VCR", monospace;
+    color: #777;
+}
+
+/* layout */
+.container {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 30px;
+    padding: 40px;
+}
+
+/* folders grid */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.card {
+    background: #0a0a0a;
+    border: 1px solid #1f1f1f;
+    padding: 20px;
+    cursor: pointer;
+    transition: 0.3s;
+    position: relative;
+    overflow: hidden;
+}
+
+.card:hover {
+    border-color: #c40000;
+    transform: translateY(-3px);
+    box-shadow: 0 0 20px rgba(196,0,0,0.2);
+}
+
+.card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,0,0,0.05), transparent);
+    transform: translateX(-100%);
+}
+
+.card:hover::after {
+    animation: scan 1s linear;
+}
+
+@keyframes scan {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.card-title {
+    font-family: "Inter", sans-serif;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #eaeaea;
+    margin-bottom: 8px;
+}
+
+.card-desc {
+    font-family: "Montserrat", sans-serif;
+    font-size: 0.85rem;
+    color: #888;
+    line-height: 1.5;
+}
+
+/* side panel */
+.panel {
+    background: #0a0a0a;
+    border: 1px solid #1a1a1a;
+    padding: 20px;
+    height: fit-content;
+}
+
+.panel h2 {
+    font-family: "Inter", sans-serif;
+    font-size: 1rem;
+    color: #c40000;
+    margin-bottom: 15px;
+    letter-spacing: 2px;
+}
+
+.log {
+    font-family: "VCR", monospace;
+    font-size: 0.8rem;
+    color: #777;
+    line-height: 1.8;
+}
+
+.glitch {
+    animation: glitch 2s infinite;
+}
+
+@keyframes glitch {
+    0% { text-shadow: 1px 0 red; }
+    50% { text-shadow: -1px 0 #ff4444; }
+    100% { text-shadow: 1px 0 red; }
+}
+
+.footer {
+    position: fixed;
+    bottom: 20px;
+    right: 30px;
+    font-family: "Montserrat", sans-serif;
+    font-size: 0.8rem;
+    color: #444;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="scanlines"></div>
+
+<div class="topbar">
+    <div class="logo">SCP ARCHIVE</div>
+    <div class="status glitch">STATUS: STABLE // CLEARANCE: OMEGA</div>
+</div>
+
+<div class="container">
+
+    <div class="grid">
+
+        <div class="card" onclick="openPage('operation.html')">
+            <div class="card-title">OPERATION SUNFALL</div>
+            <div class="card-desc">Strategic deterrence protocol and classified weapons initiative.</div>
+        </div>
+
+        <div class="card" onclick="openPage('intel.html')">
+            <div class="card-title">INTELLIGENCE REPORTS</div>
+            <div class="card-desc">Field data, anomaly logs, and containment breaches.</div>
+        </div>
+
+        <div class="card" onclick="openPage('subjects.html')">
+            <div class="card-title">SUBJECT FILES</div>
+            <div class="card-desc">Key individuals under observation and behavioral tracking.</div>
+        </div>
+
+        <div class="card" onclick="openPage('timeline.html')">
+            <div class="card-title">PROJECT TIMELINE</div>
+            <div class="card-desc">Development history of federative restructuring plan.</div>
+        </div>
+
+        <div class="card" onclick="openPage('breach.html')">
+            <div class="card-title">SECURITY BREACH LOG</div>
+            <div class="card-desc">Unauthorized access attempts and anomaly detection events.</div>
+        </div>
+
+        <div class="card" onclick="openPage('terminal.html')">
+            <div class="card-title">SYSTEM TERMINAL</div>
+            <div class="card-desc">Direct command interface for internal operations.</div>
+        </div>
+
+    </div>
+
+    <div class="panel">
+        <h2>SYSTEM STATUS</h2>
+        <div class="log">
+            CONNECTION: SECURE<br>
+            SERVERS: ONLINE<br>
+            ANOMALY INDEX: 0.73<br>
+            WEAPONS PROGRAM: ACTIVE<br><br>
+
+            LAST UPDATE:<br>
+            2026.05.15 // 03:42 UTC<br><br>
+
+            NOTICE:<br>
+            UNAUTHORIZED THOUGHT DETECTED IN NETWORK
+        </div>
+    </div>
+
+</div>
+
+<div class="footer">
+Peace Through Inevitability
+</div>
+
+<script>
+function openPage(page) {
+    window.location.href = page;
+}
+</script>
+
+</body>
+</html>
