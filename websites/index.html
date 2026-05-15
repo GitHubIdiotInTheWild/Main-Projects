@@ -8,6 +8,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700&family=Montserrat:wght@400;500&family=Open+Sans:wght@400;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 
     <style>
+        
+        @keyframes fadeNotice {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
         @font-face {
             font-family: "VCR";
             src: url("VCR_OSD_MONO.ttf");
@@ -79,6 +91,11 @@
             background: rgba(196,0,0,0.03);
             padding: 2rem;
             max-width: 800px;
+
+            opacity: 0;
+            transform: translateY(12px);
+            animation: fadeNotice 1.2s ease forwards;
+            animation-delay: 1s;
         }
 
         .warning-title {
@@ -96,11 +113,46 @@
 
         .motto {
             font-family: "VCR", monospace;
-            color: #ff4040;
             margin-top: 1rem;
             font-size: 1rem;
             letter-spacing: 3px;
+            color: transparent;
         }
+
+        .motto span {
+            opacity: 1;
+            transition: opacity 0.6s ease;
+        }
+
+        .motto span.active {
+            animation: glowIn 0.9s ease forwards;
+        }
+
+        .motto span.solid {
+            color: #ff4040;
+            text-shadow: none;
+        }
+
+@keyframes glowIn {
+    0% {
+        opacity: 0;
+        color: transparent;
+        text-shadow: 0 0 20px #ff4040;
+        filter: blur(2px);
+    }
+    60% {
+        opacity: 1;
+        color: #ff4040;
+        text-shadow: 0 0 25px #ff4040;
+        filter: blur(0px);
+    }
+    100% {
+        opacity: 1;
+        color: #ff4040;
+        text-shadow: none;
+        filter: blur(0px);
+    }
+}
 
         .login-box {
             margin-top: 3rem;
@@ -175,7 +227,11 @@
             Strategic Deterrence Initiative. Unauthorized access is punishable under
             Oversight Directive 12.
         </div>
-        <div class="motto">Secure. Contain. Retaliate.</div>
+        <div class="motto">
+    <span id="secure">Secure.</span>
+    <span id="contain">Contain.</span>
+    <span id="retaliate">Retaliate.</span>
+        </div>
     </div>
 
     <div class="login-box">
@@ -222,6 +278,70 @@ function login() {
         }
     }, 100);
 }
+
+window.addEventListener("load", () => {
+    const secure = document.getElementById("secure");
+    const contain = document.getElementById("contain");
+    const retaliate = document.getElementById("retaliate");
+
+    function glowThenSolid(el) {
+        el.classList.add("active");
+
+        setTimeout(() => {
+            el.classList.remove("active");
+            el.classList.add("solid");
+        }, 900);
+    }
+
+    setTimeout(() => {
+        // phase 1 sequential
+        glowThenSolid(secure);
+
+        setTimeout(() => {
+            glowThenSolid(contain);
+        }, 1000);
+
+        setTimeout(() => {
+            glowThenSolid(retaliate);
+        }, 2000);
+
+        // phase 2 disappear all
+        setTimeout(() => {
+            secure.classList.remove("solid");
+            contain.classList.remove("solid");
+            retaliate.classList.remove("solid");
+
+            secure.style.opacity = "0";
+            contain.style.opacity = "0";
+            retaliate.style.opacity = "0";
+
+            // phase 3 comeback together
+            setTimeout(() => {
+                secure.style.opacity = "1";
+                contain.style.opacity = "1";
+                retaliate.style.opacity = "1";
+
+                secure.classList.add("active");
+                contain.classList.add("active");
+                retaliate.classList.add("active");
+
+                setTimeout(() => {
+                    secure.classList.remove("active");
+                    contain.classList.remove("active");
+                    retaliate.classList.remove("active");
+
+                    secure.classList.add("solid");
+                    contain.classList.add("solid");
+                    retaliate.classList.add("solid");
+                }, 900);
+
+            }, 800);
+
+        }, 3500);
+
+    }, 2000);
+});
+
 </script>
 
 </body>
