@@ -27,7 +27,6 @@ body {
     overflow-x: hidden;
 }
 
-/* scanlines */
 .scanlines {
     position: fixed;
     inset: 0;
@@ -40,7 +39,6 @@ body {
     opacity: 0.4;
 }
 
-/* top bar */
 .topbar {
     display: flex;
     justify-content: space-between;
@@ -60,7 +58,6 @@ body {
     color: #777;
 }
 
-/* layout */
 .container {
     display: grid;
     grid-template-columns: 1fr 300px;
@@ -96,27 +93,19 @@ body {
     }
 }
 
+.card:nth-child(1),
+.card:nth-child(2) { animation-delay: 0.2s; }
+
+.card:nth-child(3),
+.card:nth-child(4) { animation-delay: 0.5s; }
+
+.card:nth-child(5),
+.card:nth-child(6) { animation-delay: 0.8s; }
+
 .card:hover {
     border-color: #c40000;
     transform: translateY(-3px);
     box-shadow: 0 0 20px rgba(196,0,0,0.2);
-}
-
-.card::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(90deg, transparent, rgba(255,0,0,0.05), transparent);
-    transform: translateX(-100%);
-}
-
-.card:hover::after {
-    animation: scan 1s linear;
-}
-
-@keyframes scan {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
 }
 
 .card-title {
@@ -150,7 +139,6 @@ body {
     letter-spacing: 2px;
 }
 
-/* system log */
 .log {
     font-family: "VCR", monospace;
     font-size: 1rem;
@@ -182,7 +170,6 @@ body {
     color: #444;
 }
 
-/* glitch */
 .glitch {
     animation: glitch 2s infinite;
 }
@@ -191,22 +178,6 @@ body {
     0% { text-shadow: 1px 0 red; }
     50% { text-shadow: -1px 0 #ff4444; }
     100% { text-shadow: 1px 0 red; }
-}
-
-/* card stagger 2 by 2 */
-.card:nth-child(1),
-.card:nth-child(2) {
-    animation-delay: 0.2s;
-}
-
-.card:nth-child(3),
-.card:nth-child(4) {
-    animation-delay: 0.5s;
-}
-
-.card:nth-child(5),
-.card:nth-child(6) {
-    animation-delay: 0.8s;
 }
 
 </style>
@@ -225,32 +196,32 @@ body {
 
     <div class="grid">
 
-        <div class="card" onclick="openPage('operation.html')">
+        <div class="card">
             <div class="card-title">OPERATION SUNFALL</div>
             <div class="card-desc">Strategic deterrence protocol and classified weapons initiative.</div>
         </div>
 
-        <div class="card" onclick="openPage('intel.html')">
+        <div class="card">
             <div class="card-title">INTELLIGENCE REPORTS</div>
             <div class="card-desc">Field data, anomaly logs, and containment breaches.</div>
         </div>
 
-        <div class="card" onclick="openPage('subjects.html')">
+        <div class="card">
             <div class="card-title">SUBJECT FILES</div>
             <div class="card-desc">Key individuals under observation and behavioral tracking.</div>
         </div>
 
-        <div class="card" onclick="openPage('timeline.html')">
+        <div class="card">
             <div class="card-title">PROJECT TIMELINE</div>
             <div class="card-desc">Development history of federative restructuring plan.</div>
         </div>
 
-        <div class="card" onclick="openPage('breach.html')">
+        <div class="card">
             <div class="card-title">SECURITY BREACH LOG</div>
             <div class="card-desc">Unauthorized access attempts and anomaly detection events.</div>
         </div>
 
-        <div class="card" onclick="openPage('terminal.html')">
+        <div class="card">
             <div class="card-title">SYSTEM TERMINAL</div>
             <div class="card-desc">Direct command interface for internal operations.</div>
         </div>
@@ -266,8 +237,7 @@ body {
             <span class="line">ANOMALY INDEX: 0.73</span><br>
             <span class="line">WEAPONS PROGRAM: ACTIVE</span><br><br>
 
-            <span class="line">LAST UPDATE:</span><br>
-            <span class="line">2026.05.15 // 03:42 UTC</span><br><br>
+            <span class="line">LAST UPDATE: <span id="utc-time"></span> UTC</span><br><br>
 
             <span class="line">NOTICE:</span><br>
             <span class="line">UNAUTHORIZED THOUGHT DETECTED IN NETWORK</span>
@@ -281,11 +251,24 @@ Peace Through Inevitability
 </div>
 
 <script>
+
 function openPage(page) {
     window.location.href = page;
 }
 
-/* stagger system log */
+function updateUTC() {
+    const now = new Date();
+
+    const hh = String(now.getUTCHours()).padStart(2, '0');
+    const mm = String(now.getUTCMinutes()).padStart(2, '0');
+    const ss = String(now.getUTCSeconds()).padStart(2, '0');
+
+    document.getElementById("utc-time").textContent = `${hh}:${mm}:${ss}`;
+}
+
+updateUTC();
+setInterval(updateUTC, 1000);
+
 window.addEventListener("load", () => {
     const lines = document.querySelectorAll(".log .line");
 
@@ -293,6 +276,7 @@ window.addEventListener("load", () => {
         line.style.animationDelay = (i * 0.3) + "s";
     });
 });
+
 </script>
 
 </body>
