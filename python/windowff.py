@@ -184,6 +184,8 @@ irritated_lines = [
 def is_sentient(text):
     if text == "NAN":
         return True
+    if text == "Error. Please try again.":
+        return True
     if text == HELP_TEXT:
         return True
     if text in roasts or text in roasts_1000:
@@ -734,6 +736,12 @@ def log_nan():
 
 # ---------------- log system ----------------
 
+def log_result(text, color):
+    if random.random() < 0.02:
+        log("Error. Please try again.", COLOR_EXPR)
+    else:
+        log(text, color)
+
 def log(text, color="#00ffff"):
     log_queue.append((text, color))
     run_log_queue()
@@ -803,7 +811,7 @@ def process():
         param_names = [p.strip() for p in param_str.split(",") if p.strip()]
         functions[func_name] = (param_names, func_body)
         nan_streak = 0
-        log(f"{func_name}({param_str}) defined", COLOR_DEF)
+        log_result(f"{func_name}({param_str}) defined", COLOR_DEF)
         return
 
     # ---------------- function call ----------------
@@ -840,7 +848,7 @@ def process():
         ans = result
         nan_streak = 0
         add_history(f"{func_name}({arg_string})", str(result))
-        log(f"{func_name}({display_expr(arg_string)}) = {result}", COLOR_EXPR)
+        log_result(f"{func_name}({display_expr(arg_string)}) = {result}", COLOR_EXPR)
         return
 
     # ---------------- variable assignment ----------------
@@ -864,7 +872,7 @@ def process():
             variables[name] = evaluated
             ans = evaluated
             nan_streak = 0
-            log(f"{name} = {evaluated}", COLOR_DEF)
+            log_result(f"{name} = {evaluated}", COLOR_DEF)
             return
 
         except:
@@ -888,20 +896,20 @@ def process():
         add_history(str(num), f"{num}!")
 
         if num >= 1000:
-            log(random.choice(roasts_1000), COLOR_FACT)
+            log_result(random.choice(roasts_1000), COLOR_FACT)
             return
 
         if num > 100:
             roll = random.random()
             if roll < 0.05:
-                log(f"ok this might break your pc: {fact}", COLOR_FACT)
+                log_result(f"ok this might break your pc: {fact}", COLOR_FACT)
             elif roll < 0.25:
-                log(f"Factorial digit count of {num}: {len(str(fact))}", COLOR_FACT)
+                log_result(f"Factorial digit count of {num}: {len(str(fact))}", COLOR_FACT)
             else:
-                log(random.choice(roasts), COLOR_FACT)
+                log_result(random.choice(roasts), COLOR_FACT)
             return
 
-        log(f"Factorial of {num} = {fact}", COLOR_FACT)
+        log_result(f"Factorial of {num} = {fact}", COLOR_FACT)
         return
 
     # ---------------- normal expression ----------------
@@ -912,7 +920,7 @@ def process():
         ans = result
         nan_streak = 0
         add_history(raw, str(result))
-        log(f"{raw} = {result}", COLOR_EXPR)
+        log_result(f"{raw} = {result}", COLOR_EXPR)
         return
 
     # ---------------- factorial fallback ----------------
@@ -934,24 +942,24 @@ def process():
     add_history(str(num), f"{num}!")
 
     if num >= 1000:
-        log(random.choice(roasts_1000), COLOR_FACT)
+        log_result(random.choice(roasts_1000), COLOR_FACT)
         return
 
     if num > 100:
         roll = random.random()
         if roll < 0.05:
-            log(f"ok this might break your pc: {fact}", COLOR_FACT)
+            log_result(f"ok this might break your pc: {fact}", COLOR_FACT)
         elif roll < 0.25:
-            log(f"Factorial digit count of {num}: {len(str(fact))}", COLOR_FACT)
+            log_result(f"Factorial digit count of {num}: {len(str(fact))}", COLOR_FACT)
         else:
-            log(random.choice(roasts), COLOR_FACT)
+            log_result(random.choice(roasts), COLOR_FACT)
         return
 
     if is_debug:
         debug_uses += 1
-        log(f"D Factorial {num} = {fact}", COLOR_FACT)
+        log_result(f"D Factorial {num} = {fact}", COLOR_FACT)
     else:
-        log(f"Factorial of {num} = {fact}", COLOR_FACT)
+        log_result(f"Factorial of {num} = {fact}", COLOR_FACT)
 
 window.mainloop()
 ## script end :D
