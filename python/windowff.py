@@ -751,11 +751,49 @@ def log_nan():
 
 # ---------------- log system ----------------
 
-def log_result(text, color):
+def think_delay_ms(value):
+    try:
+        v = abs(float(value))
+    except OverflowError:
+        return 7000
+    except:
+        return 0
+    if v < 50000:
+        return 0
+    t = min((v - 50000) / (1000000 - 50000), 1.0)
+    return int(2000 + t * 5000)
+
+def log_with_think(text, color, delay_ms):
+    global log_running
+    log_running = True
+    dot_interval = 400
+    ticks = max(1, delay_ms // dot_interval)
+    dot_states = [".", "..", "..."]
+    tick_count = [0]
+
+    def dot_tick():
+        global log_running
+        output.config(text=dot_states[tick_count[0] % 3], fg=COLOR_EXPR)
+        tick_count[0] += 1
+        if tick_count[0] < ticks:
+            window.after(dot_interval, dot_tick)
+        else:
+            log_running = False
+            log(text, color)
+
+    output.config(text=".", fg=COLOR_EXPR)
+    window.after(dot_interval, dot_tick)
+
+def log_result(text, color, value=None):
     if random.random() < 0.02:
         log("Error. Please try again.", COLOR_EXPR)
-    else:
-        log(text, color)
+        return
+    if value is not None:
+        delay = think_delay_ms(value)
+        if delay > 0:
+            log_with_think(text, color, delay)
+            return
+    log(text, color)
 
 def log(text, color="#00ffff"):
     log_queue.append((text, color))
@@ -863,7 +901,7 @@ def process():
         ans = result
         nan_streak = 0
         add_history(f"{func_name}({arg_string})", str(result))
-        log_result(f"{func_name}({display_expr(arg_string)}) = {result}", COLOR_EXPR)
+        log_result(f"{func_name}({display_expr(arg_string)}) = {result}", COLOR_EXPR, value=result)
         return
 
     # ---------------- variable assignment ----------------
@@ -887,7 +925,7 @@ def process():
             variables[name] = evaluated
             ans = evaluated
             nan_streak = 0
-            log_result(f"{name} = {evaluated}", COLOR_DEF)
+            log_result(f"{name} = {evaluated}", COLOR_DEF, value=evaluated)
             return
 
         except:
@@ -911,20 +949,20 @@ def process():
         add_history(str(num), f"{num}!")
 
         if num >= 1000:
-            log_result(random.choice(roasts_1000), COLOR_FACT)
+            log_result(random.choice(roasts_1000), COLOR_FACT, value=fact)
             return
 
         if num > 100:
             roll = random.random()
             if roll < 0.05:
-                log_result(f"ok this might break your pc: {fact}", COLOR_FACT)
+                log_result(f"ok this might break your pc: {fact}", COLOR_FACT, value=fact)
             elif roll < 0.25:
-                log_result(f"Factorial digit count of {num}: {len(str(fact))}", COLOR_FACT)
+                log_result(f"Factorial digit count of {num}: {len(str(fact))}", COLOR_FACT, value=fact)
             else:
-                log_result(random.choice(roasts), COLOR_FACT)
+                log_result(random.choice(roasts), COLOR_FACT, value=fact)
             return
 
-        log_result(f"Factorial of {num} = {fact}", COLOR_FACT)
+        log_result(f"Factorial of {num} = {fact}", COLOR_FACT, value=fact)
         return
 
     # ---------------- normal expression ----------------
@@ -935,7 +973,7 @@ def process():
         ans = result
         nan_streak = 0
         add_history(raw, str(result))
-        log_result(f"{raw} = {result}", COLOR_EXPR)
+        log_result(f"{raw} = {result}", COLOR_EXPR, value=result)
         return
 
     # ---------------- factorial fallback ----------------
@@ -957,24 +995,24 @@ def process():
     add_history(str(num), f"{num}!")
 
     if num >= 1000:
-        log_result(random.choice(roasts_1000), COLOR_FACT)
+        log_result(random.choice(roasts_1000), COLOR_FACT, value=fact)
         return
 
     if num > 100:
         roll = random.random()
         if roll < 0.05:
-            log_result(f"ok this might break your pc: {fact}", COLOR_FACT)
+            log_result(f"ok this might break your pc: {fact}", COLOR_FACT, value=fact)
         elif roll < 0.25:
-            log_result(f"Factorial digit count of {num}: {len(str(fact))}", COLOR_FACT)
+            log_result(f"Factorial digit count of {num}: {len(str(fact))}", COLOR_FACT, value=fact)
         else:
-            log_result(random.choice(roasts), COLOR_FACT)
+            log_result(random.choice(roasts), COLOR_FACT, value=fact)
         return
 
     if is_debug:
         debug_uses += 1
-        log_result(f"D Factorial {num} = {fact}", COLOR_FACT)
+        log_result(f"D Factorial {num} = {fact}", COLOR_FACT, value=fact)
     else:
-        log_result(f"Factorial of {num} = {fact}", COLOR_FACT)
+        log_result(f"Factorial of {num} = {fact}", COLOR_FACT, value=fact)
 
 window.mainloop()
 ## v1.2 release py
