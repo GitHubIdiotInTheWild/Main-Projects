@@ -764,7 +764,6 @@ def process():
     if raw:
         input_history.append(raw)
         history_index = -1
-        nan_streak = 0
 
     is_debug = False
     is_silent = False
@@ -787,6 +786,7 @@ def process():
         func_body = func_def.group(3).strip()
         param_names = [p.strip() for p in param_str.split(",") if p.strip()]
         functions[func_name] = (param_names, func_body)
+        nan_streak = 0
         log(f"{func_name}({param_str}) defined", COLOR_DEF)
         return
 
@@ -822,6 +822,7 @@ def process():
             return
 
         ans = result
+        nan_streak = 0
         add_history(f"{func_name}({arg_string})", str(result))
         log(f"{func_name}({display_expr(arg_string)}) = {result}", COLOR_EXPR)
         return
@@ -846,6 +847,7 @@ def process():
 
             variables[name] = evaluated
             ans = evaluated
+            nan_streak = 0
             log(f"{name} = {evaluated}", COLOR_DEF)
             return
 
@@ -866,6 +868,7 @@ def process():
         num = int(raw)
         fact = factorial(num)
         ans = fact
+        nan_streak = 0
         add_history(str(num), f"{num}!")
 
         if num >= 1000:
@@ -891,6 +894,7 @@ def process():
 
     if result is not None:
         ans = result
+        nan_streak = 0
         add_history(raw, str(result))
         log(f"{raw} = {result}", COLOR_EXPR)
         return
@@ -910,6 +914,7 @@ def process():
 
     fact = factorial(num)
     ans = fact
+    nan_streak = 0
     add_history(str(num), f"{num}!")
 
     if num >= 1000:
@@ -933,4 +938,4 @@ def process():
         log(f"Factorial of {num} = {fact}", COLOR_FACT)
 
 window.mainloop()
-## script end :
+## script end :D
