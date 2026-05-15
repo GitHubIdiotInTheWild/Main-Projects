@@ -149,6 +149,15 @@ log_queue = []
 log_running = False
 result_history = []
 
+# ---------------- music tracks ----------------
+
+tracks = [
+    {"name": "take care",  "file": "background.mp3"},
+    {"name": "hip shop",   "file": "background2.mp3"},
+]
+current_track = 0
+music_active = False
+
 # ---------------- colors ----------------
 
 BASE_COLOR = "#00ffff"
@@ -207,13 +216,14 @@ roasts_1000 = [
 
 window = tk.Tk()
 window.title("Sentient Mathematics")
-window.geometry("1000x520")
+window.geometry("1000x560")
 window.configure(bg="black")
 
-FONT        = ("VCR OSD Mono", 16)
-FONT_SMALL  = ("VCR OSD Mono", 13)
-FONT_MEDIUM = ("VCR OSD Mono", 12)
+FONT          = ("VCR OSD Mono", 16)
+FONT_SMALL    = ("VCR OSD Mono", 13)
+FONT_MEDIUM   = ("VCR OSD Mono", 12)
 FONT_LUKEWARM = ("VCR OSD Mono", 15)
+FONT_MUSIC    = ("VCR OSD Mono", 13)
 
 # ---------------- lerp ----------------
 
@@ -226,7 +236,6 @@ def lerp_color(c1, c2, t):
     return f"#{r:02x}{g:02x}{b:02x}"
 
 # ---------------- CRT border canvas ----------------
-# created last so it stays on top via lift()
 
 def draw_border():
     border_canvas.delete("border")
@@ -300,6 +309,91 @@ def add_history(entry_str, result_str):
         result_history.pop(0)
     history_text.config(text="\n".join(result_history))
 
+# ---------------- music selector (bottom center) ----------------
+
+music_frame = tk.Frame(window, bg="black")
+
+music_header = tk.Label(music_frame, text="// music", font=FONT_SMALL, bg="black", fg="#004444")
+music_header.pack(pady=(0, 4))
+
+music_row = tk.Frame(music_frame, bg="black")
+music_row.pack()
+
+btn_prev = tk.Button(music_row, text="<", font=FONT_MUSIC, bg="black", fg="#00ffff",
+                     bd=0, activebackground="black", activeforeground="#00ffff",
+                     command=lambda: change_track(-1))
+btn_prev.pack(side="left", padx=8)
+
+music_name_label = tk.Label(music_row, text=tracks[0]["name"], font=FONT_MUSIC,
+                             bg="black", fg="#00ffff", width=14)
+music_name_label.pack(side="left")
+
+btn_next = tk.Button(music_row, text=">", font=FONT_MUSIC, bg="black", fg="#00ffff",
+                     bd=0, activebackground="black", activeforeground="#00ffff",
+                     command=lambda: change_track(1))
+btn_next.pack(side="left", padx=8)
+
+# arrow flash animation
+arrow_anim_id = None
+
+def flash_arrow(btn, steps=6, step=0):
+    global arrow_anim_id
+    colors = ["#00ffff", "#004444", "#00ffff", "#004444", "#00ffff", "#004444"]
+    if step < steps:
+        btn.config(fg=colors[step])
+        arrow_anim_id = window.after(60, lambda: flash_arrow(btn, steps, step + 1))
+    else:
+        btn.config(fg="#00ffff")
+
+def change_track(direction):
+    global current_track, music_active
+    current_track = (current_track + direction) % len(tracks)
+
+    # animate the arrow that was pressed
+    flash_arrow(btn_prev if direction == -1 else btn_next)
+
+    # slide name out and in
+    slide_track_name(direction)
+
+    # switch music if it's playing
+    if music_active:
+        fade_out_and_switch()
+
+def slide_track_name(direction, step=0, steps=8):
+    offset = int((1 - step / steps) * 20 * direction)
+    alpha = step / steps
+    c = lerp_color("#000000", "#00ffff", alpha)
+    music_name_label.config(text=tracks[current_track]["name"], fg=c)
+    if step < steps:
+        window.after(20, lambda: slide_track_name(direction, step + 1, steps))
+    else:
+        music_name_label.config(fg="#00ffff")
+
+def fade_out_and_switch(step=0, steps=20):
+    vol = 1.0 - (step / steps)
+    try:
+        pygame.mixer.music.set_volume(max(vol, 0))
+    except:
+        pass
+    if step < steps:
+        window.after(40, lambda: fade_out_and_switch(step + 1, steps))
+    else:
+        try:
+            pygame.mixer.music.load(resource_path(tracks[current_track]["file"]))
+            pygame.mixer.music.play(-1)
+            fade_in_switched_music()
+        except Exception as e:
+            print(f"[music] failed to switch: {e}")
+
+def fade_in_switched_music(step=0, steps=20):
+    vol = step / steps
+    try:
+        pygame.mixer.music.set_volume(vol)
+    except:
+        pass
+    if step < steps:
+        window.after(40, lambda: fade_in_switched_music(step + 1, steps))
+
 # ---------------- main container ----------------
 
 container = tk.Frame(window, bg="black")
@@ -310,6 +404,7 @@ label.pack(pady=10)
 entry = tk.Entry(container, font=FONT, bg="white", fg="black", insertbackground="black", width=30)
 entry.pack(pady=10)
 entry.bind("<Return>", lambda event: process())
+
 def history_up(event):
     global history_index
     if not input_history:
@@ -409,12 +504,15 @@ def restart_boot():
 # ---------------- show all UI elements ----------------
 
 def show_ui(cx, ui_y):
+    global music_active
     container.place(x=cx, y=ui_y, anchor="n")
     panel_frame.place(relx=1.0, rely=0.5, anchor="e", x=-18, y=0)
     history_frame.place(relx=0.0, rely=0.5, anchor="w", x=18, y=0)
     version_label.place(relx=1.0, rely=1.0, anchor="se", x=-10, y=-10)
     clock_label.place(relx=1.0, rely=0.0, anchor="ne", x=-10, y=10)
     credit_label.place(relx=0.0, rely=1.0, anchor="sw", x=10, y=-10)
+    music_frame.place(relx=0.5, rely=1.0, anchor="s", y=-28)
+    music_active = True
 
     # lift everything above logo_canvas
     container.lift()
@@ -423,6 +521,7 @@ def show_ui(cx, ui_y):
     version_label.lift()
     clock_label.lift()
     credit_label.lift()
+    music_frame.lift()
 
     # border canvas always on very top
     border_canvas.lift()
@@ -452,16 +551,16 @@ def show_logo():
     global logo_canvas
 
     w = window.winfo_width() or 1000
-    h = window.winfo_height() or 520
+    h = window.winfo_height() or 560
     cx     = w // 2
     base_y = h // 2
 
     logo_canvas = tk.Canvas(window, bg="black", highlightthickness=0)
     logo_canvas.place(x=0, y=0, relwidth=1, relheight=1)
-    
+
     # draw border directly on logo canvas so it stays visible
     w = window.winfo_width() or 1000
-    h = window.winfo_height() or 520
+    h = window.winfo_height() or 560
     pad = 6
     logo_canvas.create_rectangle(pad, pad, w - pad, h - pad,
                                  outline="#004444", width=2)
@@ -508,7 +607,7 @@ def show_logo():
     except:
         pass
 
-    music_path = resource_path("background.mp3")
+    music_path = resource_path(tracks[current_track]["file"])
     music_loaded = False
     try:
         pygame.mixer.music.load(music_path)
