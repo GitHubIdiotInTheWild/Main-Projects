@@ -229,6 +229,7 @@ COLOR_FACT = "#ff6b6b"
 debug_uses = 0
 log_queue = []
 log_running = False
+bob_paused = False
 result_history = []
 
 # ---------------- music tracks ----------------
@@ -720,12 +721,13 @@ def show_logo():
     bob_state = [0.0]
 
     def bob_forever():
-        try:
-            place_at(rest_cy + math.sin(bob_state[0]) * 5)
-            bob_state[0] += 0.08
-        except Exception as e:
-            print(f"[bob] error: {e}")
-            return
+        if not bob_paused:
+            try:
+                place_at(rest_cy + math.sin(bob_state[0]) * 5)
+                bob_state[0] += 0.08
+            except Exception as e:
+                print(f"[bob] error: {e}")
+                return
         window.after(40, bob_forever)
 
     def finish_logo():
@@ -780,20 +782,22 @@ def think_delay_ms(value):
     return int(2000 + t * 5000)
 
 def log_with_think(text, color, delay_ms):
-    global log_running
+    global log_running, bob_paused
     log_running = True
+    bob_paused = True
     dot_interval = 400
     ticks = max(1, delay_ms // dot_interval)
     dot_states = [".", "..", "..."]
     tick_count = [0]
 
     def dot_tick():
-        global log_running
+        global log_running, bob_paused
         output.config(text=dot_states[tick_count[0] % 3], fg=COLOR_EXPR)
         tick_count[0] += 1
         if tick_count[0] < ticks:
             window.after(dot_interval, dot_tick)
         else:
+            bob_paused = False
             log_running = False
             log(text, color)
 
