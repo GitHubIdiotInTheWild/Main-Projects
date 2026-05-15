@@ -318,6 +318,10 @@ body.jade-mode input#cmd {
 
 body.jade-mode input#cmd::placeholder { color: #2a0a40; }
 
+/* ── jade-only sidebar items ── */
+.jade-only { display: none; }
+body.jade-mode .jade-only { display: block; }
+
 </style>
 </head>
 
@@ -358,6 +362,16 @@ body.jade-mode input#cmd::placeholder { color: #2a0a40; }
             <div class="sidebar-cmd" onclick="runCmd('cat subjects.txt')">SUBJECTS</div>
             <div class="sidebar-cmd" onclick="runCmd('cat timeline.txt')">TIMELINE</div>
             <div class="sidebar-cmd" onclick="runCmd('cat breaches.txt')">BREACHES</div>
+        </div>
+
+        <hr class="sidebar-divider jade-only">
+
+        <div class="sidebar-section jade-only">
+            <div class="sidebar-label">O5 ACCESS</div>
+            <div class="sidebar-cmd" onclick="runCmd('cat o5-directives.txt')">O5-DIRECTIVES</div>
+            <div class="sidebar-cmd" onclick="runCmd('cat phase4.txt')">PHASE4</div>
+            <div class="sidebar-cmd" onclick="runCmd('cat suncore.exe')">SUNCORE.EXE</div>
+            <div class="sidebar-cmd" onclick="runCmd('forcerun suncore.exe')">▶ FORCERUN</div>
         </div>
 
         <hr class="sidebar-divider">
@@ -735,7 +749,12 @@ const COMMANDS = {
                 ["    Born: Cologne, Germany. Current residence: Cairo, Egypt.", "l-text"],
                 ["    Cohabitants: 2 individuals, identities withheld per O5 order.", "l-text"],
                 ["    Token origin: traced to O5-7. Issuance is DENIED by O5-7.", "l-bright"],
-                ["    True threat assessment: UNQUANTIFIABLE.", "l-bright"],
+                ["    Classification: NOT Foundation personnel. Not affiliated in any capacity.", "l-text"],
+                ["    No known superior. No known equal. Operates entirely outside Foundation jurisdiction.", "l-text"],
+                ["    Reported threat level (public file): 90%  [INTENTIONALLY SUPPRESSED BY O5 COUNCIL]", "l-bright"],
+                ["    True threat assessment: UNQUANTIFIABLE. Scale does not exist.", "l-bright"],
+                ["    Note (O5-7, sealed): She is the smartest and strongest entity we have ever recorded.", "l-white"],
+                ["    Note (O5-7, sealed): We do not contain her. We hope she does not notice us.", "l-white"],
                 ["", "l-dim"],
                 ["  SCP-OBS-003  BUSBISMAN", "l-bright"],
                 ["    Real name: UNKNOWN. All identity retrieval returns NULL.", "l-text"],
@@ -972,6 +991,55 @@ const COMMANDS = {
             ["  Viewing this file has been logged.", "l-bright"],
             ["", "l-dim"],
         ], 0, 45);
+    },
+
+    "forcerun suncore.exe": async function() {
+        if (!jadeMode) return printMany([
+            ["ACCESS DENIED", "l-bright"],
+            ["  forcerun requires O5-level clearance.", "l-dim"],
+            ["", "l-dim"],
+        ], 0, 40);
+        await printMany([
+            ["FORCERUN INITIATED — suncore.exe", "l-bright"],
+            ["  Authorization check...", "l-dim"],
+            ["  O5 supermajority key: NOT PRESENT", "l-text"],
+            ["  JADE token detected — override flag set", "l-bright"],
+            ["  Bypassing key requirement... DONE", "l-bright"],
+            "---",
+        ], 0, 80);
+        await printLine("  Initializing SUNCORE broadcast engine...", "l-text", 560);
+        await printLine("  Loading delivery node registry (7,570 targets)...", "l-text", 1200);
+        await printLine("  Establishing encrypted tunnel to O5-HUB...", "l-text", 1900);
+        await printLine("  O5-HUB: connection accepted", "l-text", 2600);
+        await printLine("  Authenticating payload signature...", "l-dim", 3100);
+        await printLine("  Signature: VALID  [JADE OVERRIDE]", "l-bright", 3700);
+        await printLine("  Loading memetic compliance layer...", "l-text", 4200);
+        await printLine("  Broadcasting to regional command nodes:", "l-text", 4900);
+        await printLine("    REGION-01 NORTH AMERICA ......... SIGNAL SENT", "l-text", 5500);
+        await printLine("    REGION-02 SOUTH AMERICA ......... SIGNAL SENT", "l-text", 5900);
+        await printLine("    REGION-03 EUROPE ................. SIGNAL SENT", "l-text", 6300);
+        await printLine("    REGION-04 AFRICA ................. SIGNAL SENT", "l-text", 6700);
+        await printLine("    REGION-05 MIDDLE EAST ............ SIGNAL SENT", "l-text", 7100);
+        await printLine("    REGION-06 CENTRAL ASIA ........... SIGNAL SENT", "l-text", 7500);
+        await printLine("    REGION-07 EAST ASIA .............. SIGNAL SENT", "l-text", 7900);
+        await printLine("    REGION-08 SOUTHEAST ASIA ......... SIGNAL SENT", "l-text", 8300);
+        await printLine("    REGION-09 OCEANIA ................ SIGNAL SENT", "l-text", 8700);
+        await printLine("    REGION-10 ARCTIC / CLASSIFIED .... SIGNAL SENT", "l-bright", 9200);
+        await printLine("  All 10 regions confirmed.", "l-text", 9900);
+        await printLine("  Delivery systems armed: 6,891 / 7,570", "l-text", 10500);
+        await printLine("  Anomalous delivery layer: ACTIVE", "l-bright", 11100);
+        await printLine("", "l-dim", 11200);
+        await printLine("  T+4 seconds reached. Abort window CLOSED.", "l-bright", 11800);
+        await printLine("", "l-dim", 11900);
+        await printLine("  SUNCORE EXECUTION CONFIRMED.", "l-bright", 12600);
+        await printLine("  PHASE IV HAS BEGUN.", "l-white", 13200);
+        await printLine("", "l-dim", 13300);
+        await printLine("  Foundation global governance directive transmitted.", "l-text", 14000);
+        await printLine("  Transition period: 72 hours commencing now.", "l-text", 14600);
+        await printLine("  PUBLIC DISCLOSURE EVENT: scheduled.", "l-text", 15200);
+        await printLine("", "l-dim", 15300);
+        await printLine("  Peace through inevitability.", "l-white", 16000);
+        await printLine("", "l-dim", 16100);
     },
 
     "ping": async function() {
