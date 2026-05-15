@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Subject Files</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700&family=Montserrat:wght@400;500&family=Open+Sans:wght@400;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+<style>
+
+@font-face {
+    font-family: "VCR";
+    src: url("VCR.ttf");
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #050505;
+    color: #e6e6e6;
+    font-family: "Open Sans", sans-serif;
+    overflow-x: hidden;
+}
+
+.scanlines {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+        transparent 0px,
+        rgba(255,255,255,0.02) 1px,
+        transparent 2px
+    );
+    opacity: 0.35;
+}
+
+.container {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 60px 30px;
+}
+
+.title {
+    font-family: "Share Tech Mono", monospace;
+    font-size: 2rem;
+    color: #c40000;
+    letter-spacing: 4px;
+    animation: pulse 2.5s infinite;
+}
+
+.subtitle {
+    font-family: "VCR", monospace;
+    color: #777;
+    margin-top: 10px;
+    font-size: 0.9rem;
+    animation: glitch 3s infinite;
+}
+
+.divider {
+    margin: 30px 0;
+    border: none;
+    border-top: 1px solid #1a1a1a;
+}
+
+.subject {
+    background: #080808;
+    border: 1px solid #1c1c1c;
+    margin-bottom: 30px;
+    opacity: 0;
+    transform: translateY(12px);
+    animation: fadeIn 0.7s ease forwards;
+}
+
+.subject:nth-child(1) { animation-delay: 0.1s; }
+.subject:nth-child(2) { animation-delay: 0.3s; }
+.subject:nth-child(3) { animation-delay: 0.5s; }
+.subject:nth-child(4) { animation-delay: 0.7s; }
+
+.subject:hover {
+    border-color: #3a0000;
+    box-shadow: 0 0 20px rgba(196,0,0,0.08);
+}
+
+.subject-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid #1a1a1a;
+    background: #0a0a0a;
+}
+
+.subject-id {
+    font-family: "VCR", monospace;
+    color: #c40000;
+    font-size: 0.85rem;
+    letter-spacing: 3px;
+}
+
+.subject-status {
+    font-family: "VCR", monospace;
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    border: 1px solid;
+}
+
+.status-active { color: #ff2b2b; border-color: #ff2b2b; animation: pulse 2s infinite; }
+.status-monitored { color: #ffaa00; border-color: #ffaa00; }
+.status-contained { color: #00aaff; border-color: #00aaff; }
+.status-unknown { color: #777; border-color: #777; }
+
+.subject-body {
+    padding: 20px;
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 20px;
+}
+
+.subject-meta {
+    font-family: "VCR", monospace;
+    font-size: 0.8rem;
+    color: #555;
+    line-height: 2.2;
+    border-right: 1px solid #141414;
+    padding-right: 20px;
+}
+
+.subject-meta span { color: #888; }
+
+.subject-name {
+    font-family: "Inter", sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #eaeaea;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+}
+
+.subject-desc {
+    font-family: "Montserrat", sans-serif;
+    font-size: 0.88rem;
+    color: #999;
+    line-height: 1.8;
+}
+
+.subject-tags {
+    margin-top: 14px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.tag {
+    font-family: "VCR", monospace;
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    border: 1px solid #222;
+    color: #555;
+    letter-spacing: 1px;
+}
+
+.redacted {
+    background: #111;
+    color: #111;
+    padding: 0 6px;
+    border-radius: 2px;
+    user-select: none;
+}
+
+.warning {
+    color: #ff2b2b;
+    font-family: "VCR", monospace;
+    font-size: 0.8rem;
+    animation: pulse 2s infinite;
+}
+
+.threat-row {
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.threat-label {
+    font-family: "VCR", monospace;
+    font-size: 0.7rem;
+    color: #555;
+    width: 80px;
+}
+
+.threat-bar-bg {
+    flex: 1;
+    height: 4px;
+    background: #111;
+}
+
+.threat-bar-fill {
+    height: 100%;
+    background: #c40000;
+    animation: barIn 1.2s ease forwards;
+    width: 0%;
+}
+
+@keyframes barIn { to { width: var(--threat); } }
+
+.nav {
+    margin-top: 50px;
+    display: flex;
+    justify-content: space-between;
+    font-family: "Montserrat", sans-serif;
+    font-size: 0.8rem;
+    color: #555;
+    opacity: 0;
+    animation: fadeIn 1s ease forwards;
+    animation-delay: 1.2s;
+}
+
+a { color: #c40000; text-decoration: none; }
+a:hover { text-shadow: 0 0 10px #c40000; }
+
+@keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+@keyframes pulse {
+    0%, 100% { text-shadow: 0 0 5px #c40000; }
+    50% { text-shadow: 0 0 20px #ff0000; }
+}
+@keyframes glitch {
+    0% { text-shadow: 1px 0 red; }
+    50% { text-shadow: -1px 0 #ff4444; }
+    100% { text-shadow: 1px 0 red; }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="scanlines"></div>
+
+<div class="container">
+
+    <div class="title">SUBJECT FILES</div>
+    <div class="subtitle">Behavioral Observation // Active Tracking // Clearance Ω</div>
+
+    <hr class="divider">
+
+    <!-- Subject 1: Guest 101 -->
+    <div class="subject">
+        <div class="subject-header">
+            <div class="subject-id">FILE // SCP-OBS-001</div>
+            <div class="subject-status status-unknown">STATUS: UNIDENTIFIED</div>
+        </div>
+        <div class="subject-body">
+            <div class="subject-meta">
+                DESIGNATION<br><span>Guest 101</span><br>
+                ORIGIN<br><span><span class="redacted">██████████</span></span><br>
+                THREAT LVL<br><span>INDETERMINATE</span><br>
+                CLEARANCE<br><span>NONE</span>
+            </div>
+            <div>
+                <div class="subject-name">GUEST 101</div>
+                <div class="subject-desc">
+                    Subject identity unconfirmed. Entered observation network through
+                    <span class="redacted">UNREGISTERED NODE</span> on
+                    <span class="redacted">██/██/████</span>. Shows no awareness of ongoing surveillance.
+                    Behavioral pattern analysis yields no conclusive affiliation.
+                    Anomalous: subject has been logged accessing restricted sectors without
+                    recorded authorization events. Method of entry <span class="redacted">UNKNOWN</span>.
+                </div>
+                <div class="threat-row">
+                    <div class="threat-label">THREAT</div>
+                    <div class="threat-bar-bg">
+                        <div class="threat-bar-fill" style="--threat: 38%;"></div>
+                    </div>
+                    <span style="font-family:VCR;font-size:0.7rem;color:#555;">38%</span>
+                </div>
+                <div class="subject-tags">
+                    <div class="tag">UNVERIFIED</div>
+                    <div class="tag">PASSIVE</div>
+                    <div class="tag">ANOMALOUS ENTRY</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subject 2: Jade Henry -->
+    <div class="subject">
+        <div class="subject-header">
+            <div class="subject-id">FILE // SCP-OBS-002</div>
+            <div class="subject-status status-active">STATUS: ACTIVE THREAT</div>
+        </div>
+        <div class="subject-body">
+            <div class="subject-meta">
+                DESIGNATION<br><span>Jade Henry</span><br>
+                ORIGIN<br><span><span class="redacted">REGION-4</span></span><br>
+                THREAT LVL<br><span>HIGH</span><br>
+                CLEARANCE<br><span>UNAUTHORIZED</span>
+            </div>
+            <div>
+                <div class="subject-name">JADE HENRY</div>
+                <div class="subject-desc">
+                    Subject demonstrated knowledge of Foundation internal codenames during
+                    an unsanctioned network access attempt on <span class="redacted">██/██/████</span>.
+                    Used authorization token "<span class="redacted">JADE</span>" which triggered an
+                    <span class="warning">ANOMALOUS AUTHORIZATION ALERT</span>.
+                    Token origin is unregistered — no personnel record matches issuance.
+                    Subject is considered a priority surveillance target. Current location:
+                    <span class="redacted">████████████████</span>.
+                </div>
+                <div class="threat-row">
+                    <div class="threat-label">THREAT</div>
+                    <div class="threat-bar-bg">
+                        <div class="threat-bar-fill" style="--threat: 81%;"></div>
+                    </div>
+                    <span style="font-family:VCR;font-size:0.7rem;color:#555;">81%</span>
+                </div>
+                <div class="subject-tags">
+                    <div class="tag">HIGH PRIORITY</div>
+                    <div class="tag">ANOMALOUS TOKEN</div>
+                    <div class="tag">ACTIVE MONITORING</div>
+                    <div class="tag">DO NOT ENGAGE</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subject 3: Busbisman -->
+    <div class="subject">
+        <div class="subject-header">
+            <div class="subject-id">FILE // SCP-OBS-003</div>
+            <div class="subject-status status-monitored">STATUS: MONITORED</div>
+        </div>
+        <div class="subject-body">
+            <div class="subject-meta">
+                DESIGNATION<br><span>Busbisman</span><br>
+                ORIGIN<br><span><span class="redacted">SECTOR-9</span></span><br>
+                THREAT LVL<br><span>LOW</span><br>
+                CLEARANCE<br><span>NONE</span>
+            </div>
+            <div>
+                <div class="subject-name">BUSBISMAN</div>
+                <div class="subject-desc">
+                    Subject has submitted <span class="redacted">17</span> cafeteria reimbursement requests
+                    through unauthorized channels since <span class="redacted">██/██/████</span>.
+                    All requests denied. Behavioral profile suggests persistence without malicious intent.
+                    Subject appears unaware of the Foundation's true operational scope.
+                    Kept under passive surveillance pending further behavioral data.
+                    Notable: subject's name has appeared in internal system logs without
+                    explanation on <span class="redacted">3</span> separate occasions.
+                </div>
+                <div class="threat-row">
+                    <div class="threat-label">THREAT</div>
+                    <div class="threat-bar-bg">
+                        <div class="threat-bar-fill" style="--threat: 12%;"></div>
+                    </div>
+                    <span style="font-family:VCR;font-size:0.7rem;color:#555;">12%</span>
+                </div>
+                <div class="subject-tags">
+                    <div class="tag">LOW RISK</div>
+                    <div class="tag">PERSISTENT</div>
+                    <div class="tag">CAFETERIA INCIDENT</div>
+                    <div class="tag">PASSIVE WATCH</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subject 4: Redacted -->
+    <div class="subject">
+        <div class="subject-header">
+            <div class="subject-id">FILE // SCP-OBS-004</div>
+            <div class="subject-status status-contained">STATUS: CONTAINED</div>
+        </div>
+        <div class="subject-body">
+            <div class="subject-meta">
+                DESIGNATION<br><span><span class="redacted">████████</span></span><br>
+                ORIGIN<br><span><span class="redacted">UNKNOWN</span></span><br>
+                THREAT LVL<br><span>EXTREME</span><br>
+                CLEARANCE<br><span>N/A</span>
+            </div>
+            <div>
+                <div class="subject-name"><span class="redacted">████████████████████</span></div>
+                <div class="subject-desc">
+                    <span class="redacted">████████████████████████████████████████████████████████████████</span>.
+                    Subject was apprehended following <span class="redacted">INCIDENT-77</span>.
+                    All behavioral data classified above Omega clearance.
+                    Contact requires <span class="redacted">LEVEL-5 AUTHORIZATION</span> and full
+                    cognitive hazard suppression protocol. Do not attempt to access
+                    further documentation without proper clearance.<br><br>
+                    <span class="warning">⚠ FURTHER DATA LOCKED — CLEARANCE INSUFFICIENT</span>
+                </div>
+                <div class="threat-row">
+                    <div class="threat-label">THREAT</div>
+                    <div class="threat-bar-bg">
+                        <div class="threat-bar-fill" style="--threat: 97%; background: #ff0000;"></div>
+                    </div>
+                    <span style="font-family:VCR;font-size:0.7rem;color:#c40000;">97%</span>
+                </div>
+                <div class="subject-tags">
+                    <div class="tag">CLASSIFIED</div>
+                    <div class="tag">EXTREME THREAT</div>
+                    <div class="tag">CONTAINED</div>
+                    <div class="tag">COGNITOHAZARD</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="nav">
+        <a href="dashboard.html">← Return to Archive</a>
+        <span>END OF FILE // 4 SUBJECTS LISTED</span>
+    </div>
+
+</div>
+
+</body>
+</html>
