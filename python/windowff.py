@@ -572,15 +572,15 @@ def show_ui(cx, ui_y):
     music_frame.place(relx=0.5, rely=1.0, anchor="s", y=-28)
     music_active = True
 
-    container.lift()
-    panel_frame.lift()
-    history_frame.lift()
-    version_label.lift()
-    clock_label.lift()
-    credit_label.lift()
-    music_frame.lift()
+    container.tkraise()
+    panel_frame.tkraise()
+    history_frame.tkraise()
+    version_label.tkraise()
+    clock_label.tkraise()
+    credit_label.tkraise()
+    music_frame.tkraise()
 
-    border_canvas.lift()
+    border_canvas.tkraise()
     draw_border()
 
     label.config(fg="#000000")
