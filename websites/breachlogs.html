@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Security Breach Log</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700&family=Montserrat:wght@400;500&family=Open+Sans:wght@400;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+<style>
+
+@font-face {
+    font-family: "VCR";
+    src: url("VCR.ttf");
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #050505;
+    color: #e6e6e6;
+    font-family: "Open Sans", sans-serif;
+    overflow-x: hidden;
+}
+
+.scanlines {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+        transparent 0px,
+        rgba(255,255,255,0.02) 1px,
+        transparent 2px
+    );
+    opacity: 0.35;
+}
+
+.container {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 60px 30px;
+}
+
+.title {
+    font-family: "Share Tech Mono", monospace;
+    font-size: 2rem;
+    color: #c40000;
+    letter-spacing: 4px;
+    animation: pulse 2.5s infinite;
+}
+
+.subtitle {
+    font-family: "VCR", monospace;
+    color: #777;
+    margin-top: 10px;
+    font-size: 0.9rem;
+    animation: glitch 3s infinite;
+}
+
+.divider {
+    margin: 30px 0;
+    border: none;
+    border-top: 1px solid #1a1a1a;
+}
+
+/* stats */
+.stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 40px;
+    opacity: 0;
+    animation: fadeIn 0.6s ease forwards;
+    animation-delay: 0.05s;
+}
+
+.stat {
+    background: #080808;
+    border: 1px solid #1a1a1a;
+    padding: 16px;
+    text-align: center;
+}
+
+.stat-value {
+    font-family: "Share Tech Mono", monospace;
+    font-size: 1.4rem;
+    color: #c40000;
+    animation: pulse 2.5s infinite;
+}
+
+.stat-label {
+    font-family: "VCR", monospace;
+    font-size: 0.65rem;
+    color: #444;
+    margin-top: 6px;
+    letter-spacing: 1px;
+}
+
+/* breach card */
+.breach {
+    background: #080808;
+    border: 1px solid #1c1c1c;
+    margin-bottom: 24px;
+    opacity: 0;
+    transform: translateY(10px);
+    animation: fadeIn 0.6s ease forwards;
+}
+
+.breach:nth-child(1) { animation-delay: 0.15s; }
+.breach:nth-child(2) { animation-delay: 0.3s; }
+.breach:nth-child(3) { animation-delay: 0.45s; }
+.breach:nth-child(4) { animation-delay: 0.6s; }
+.breach:nth-child(5) { animation-delay: 0.75s; }
+.breach:nth-child(6) { animation-delay: 0.9s; }
+.breach:nth-child(7) { animation-delay: 1.05s; }
+
+.breach:hover {
+    border-color: #2a0000;
+    box-shadow: 0 0 16px rgba(196,0,0,0.07);
+}
+
+.breach-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 20px;
+    border-bottom: 1px solid #111;
+    background: #0a0a0a;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.breach-id {
+    font-family: "VCR", monospace;
+    color: #c40000;
+    font-size: 0.82rem;
+    letter-spacing: 2px;
+}
+
+.breach-meta {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.breach-date {
+    font-family: "VCR", monospace;
+    font-size: 0.75rem;
+    color: #444;
+    letter-spacing: 1px;
+}
+
+.breach-severity {
+    font-family: "VCR", monospace;
+    font-size: 0.7rem;
+    padding: 3px 10px;
+    border: 1px solid;
+}
+
+.sev-critical  { color: #ff0000; border-color: #ff0000; animation: pulse 1.5s infinite; }
+.sev-high      { color: #ff4400; border-color: #ff4400; }
+.sev-moderate  { color: #ffaa00; border-color: #ffaa00; }
+.sev-low       { color: #888; border-color: #444; }
+.sev-anomalous { color: #cc00ff; border-color: #cc00ff; animation: pulse 2s infinite; }
+
+.breach-status {
+    font-family: "VCR", monospace;
+    font-size: 0.7rem;
+    padding: 3px 10px;
+    border: 1px solid;
+}
+
+.st-open      { color: #ff2b2b; border-color: #ff2b2b; animation: pulse 2s infinite; }
+.st-closed    { color: #444; border-color: #333; }
+.st-ongoing   { color: #ffaa00; border-color: #ffaa00; }
+.st-archived  { color: #333; border-color: #222; }
+
+.breach-body {
+    padding: 18px 20px;
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 20px;
+}
+
+.breach-sidebar {
+    font-family: "VCR", monospace;
+    font-size: 0.78rem;
+    color: #555;
+    line-height: 2.2;
+    border-right: 1px solid #111;
+    padding-right: 16px;
+}
+
+.breach-sidebar span { color: #777; }
+
+.breach-title {
+    font-family: "Inter", sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #ddd;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+}
+
+.breach-desc {
+    font-family: "Montserrat", sans-serif;
+    font-size: 0.85rem;
+    color: #888;
+    line-height: 1.8;
+}
+
+.breach-tags {
+    margin-top: 12px;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.tag {
+    font-family: "VCR", monospace;
+    font-size: 0.68rem;
+    padding: 3px 8px;
+    border: 1px solid #1e1e1e;
+    color: #555;
+    letter-spacing: 1px;
+}
+
+.redacted {
+    background: #111;
+    color: #111;
+    padding: 0 5px;
+    border-radius: 2px;
+    user-select: none;
+}
+
+.warning {
+    color: #ff2b2b;
+    font-family: "VCR", monospace;
+    font-size: 0.78rem;
+    animation: pulse 2s infinite;
+}
+
+.note {
+    color: #555;
+    font-family: "VCR", monospace;
+    font-size: 0.75rem;
+    margin-top: 8px;
+    border-top: 1px solid #111;
+    padding-top: 8px;
+}
+
+/* nav */
+.nav {
+    margin-top: 50px;
+    display: flex;
+    justify-content: space-between;
+    font-family: "Montserrat", sans-serif;
+    font-size: 0.8rem;
+    color: #555;
+    opacity: 0;
+    animation: fadeIn 1s ease forwards;
+    animation-delay: 1.4s;
+}
+
+a { color: #c40000; text-decoration: none; }
+a:hover { text-shadow: 0 0 10px #c40000; }
+
+@keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+@keyframes pulse {
+    0%, 100% { text-shadow: 0 0 5px #c40000; }
+    50% { text-shadow: 0 0 20px #ff0000; }
+}
+@keyframes glitch {
+    0% { text-shadow: 1px 0 red; }
+    50% { text-shadow: -1px 0 #ff4444; }
+    100% { text-shadow: 1px 0 red; }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="scanlines"></div>
+
+<div class="container">
+
+    <div class="title">SECURITY BREACH LOG</div>
+    <div class="subtitle">Unauthorized Access Attempts // Anomaly Detection Events // Clearance Ω</div>
+
+    <hr class="divider">
+
+    <!-- Stats -->
+    <div class="stats">
+        <div class="stat">
+            <div class="stat-value">7</div>
+            <div class="stat-label">LOGGED<br>INCIDENTS</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value">2</div>
+            <div class="stat-label">OPEN<br>INVESTIGATIONS</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value">312</div>
+            <div class="stat-label">PERSONNEL<br>CASUALTIES TOTAL</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value"><span class="redacted">████</span></div>
+            <div class="stat-label">CLASSIFIED<br>INCIDENTS OMITTED</div>
+        </div>
+    </div>
+
+    <!-- Breach log entries -->
+    <div class="breach">
+        <div class="breach-header">
+            <div class="breach-id">BREACH // LOG-001</div>
+            <div class="breach-meta">
+                <div class="breach-date">2015 // <span class="redacted">██/██</span></div>
+                <div class="breach-severity sev-critical">SEVERITY: CRITICAL</div>
+                <div class="breach-status st-archived">ARCHIVED</div>
+            </div>
+        </div>
+        <div class="breach-body">
+            <div class="breach-sidebar">
+                SUBJECT<br><span>Murad</span><br>
+                LOCATION<br><span>Main Foundation<br>HQ</span><br>
+                CASUALTIES<br><span>288 guards</span><br>
+                MONITORED<br><span>NO</span>
+            </div>
+            <div>
+                <div class="breach-title">MURAD INCIDENT — MAIN FOUNDATION MASS BREACH</div>
+                <div class="breach-desc">
+                    Subject designated "Murad" breached the perimeter of the Main Foundation
+                    headquarters on <span class="redacted">██/██/2015</span> through means currently
+                    classified as <span class="redacted">UNKNOWN</span>. Subject neutralized
+                    288 security personnel across <span class="redacted">██</span> floors before
+                    reaching the inner compound. Approximately 50% of the facility's secure
+                    sectors were breached before subject voluntarily withdrew.
+                    No data confirmed stolen. No demands made. Motive: <span class="redacted">UNKNOWN</span>.<br><br>
+                    Subject has not been seen or tracked since withdrawal. No surveillance
+                    footprint recovered. File archived in <span class="redacted">2015</span> due to
+                    inability to locate or identify subject beyond alias.
+                    <div class="note">// NOTE: Subject not added to active monitoring list due to
+                    incident predating current surveillance framework. Re-evaluation
+                    has been proposed and <span class="redacted">██████</span> times rejected by O5 Council.</div>
+                </div>
+                <div class="breach-tags">
+                    <div class="tag">ARCHIVED</div>
+                    <div class="tag">MASS CASUALTY</div>
+                    <div class="tag">UNRESOLVED</div>
+                    <div class="tag">NOT MONITORED</div>
+                    <div class="tag">VOLUNTARY WITHDRAWAL</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="breach">
+        <div class="breach-header">
+            <div class="breach-id">BREACH // LOG-002</div>
+            <div class="breach-meta">
+                <div class="breach-date"><span class="redacted">██/██/████</span></div>
+                <div class="breach-severity sev-anomalous">SEVERITY: ANOMALOUS</div>
+                <div class="breach-status st-open">INVESTIGATION OPEN</div>
+            </div>
+        </div>
+        <div class="breach-body">
+            <div class="breach-sidebar">
+                SUBJECT<br><span>Jade Henry</span><br>
+                LOCATION<br><span>Network /<br>Remote</span><br>
+                CASUALTIES<br><span>None</span><br>
+                MONITORED<br><span>YES — ACTIVE</span>
+            </div>
+            <div>
+                <div class="breach-title">JADE HENRY — ANOMALOUS NETWORK AUTHORIZATION EVENT</div>
+                <div class="breach-desc">
+                    Subject attempted remote access to Foundation internal network using
+                    authorization token "<span class="redacted">JADE</span>." Token triggered
+                    <span class="warning">ANOMALOUS AUTHORIZATION ALERT</span> — system flagged
+                    token as simultaneously valid and unregistered, a state considered
+                    computationally impossible under current architecture.
+                    Access was logged before systems could terminate the session.
+                    Sectors viewed by subject: <span class="redacted">UNKNOWN</span>.<br><br>
+                    Token origin remains untraced. No Foundation personnel record matches
+                    issuance. Subject is currently under active high-priority surveillance.
+                    True capability assessment: <span class="warning">APPROXIMATELY EXTREME</span>.
+                </div>
+                <div class="breach-tags">
+                    <div class="tag">ANOMALOUS TOKEN</div>
+                    <div class="tag">OPEN</div>
+                    <div class="tag">HIGH PRIORITY</div>
+                    <div class="tag">DO NOT ENGAGE</div>
+                    <div class="tag">NETWORK BREACH</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="breach">
+        <div class="breach-header">
+            <div class="breach-id">BREACH // LOG-003</div>
+            <div class="breach-meta">
+                <div class="breach-date"><span class="redacted">██/██/████</span></div>
+                <div class="breach-severity sev-high">SEVERITY: HIGH</div>
+                <div class="breach-status st-open">INVESTIGATION OPEN</div>
+            </div>
+        </div>
+        <div class="breach-body">
+            <div class="breach-sidebar">
+                SUBJECT<br><span>Busbisman</span><br>
+                LOCATION<br><span>Sector 01<br>Moscow Oblast</span><br>
+                CASUALTIES<br><span>12 guards</span><br>
+                MONITORED<br><span>YES — HIGH</span>
+            </div>
+            <div>
+                <div class="breach-title">BUSBISMAN — SECTOR 01 PHYSICAL BREACH, O5 TERMINAL ACCESS</div>
+                <div class="breach-desc">
+                    Subject designated "Busbisman" gained access to Sector 01 of the Main
+                    Foundation facility, Moscow Oblast, using an unknown
+                    <span class="redacted">[REDACTED]</span>. 12 security personnel were
+                    neutralized on approach. Subject accessed the O5 Terminal for
+                    <span class="redacted">██</span> minutes before withdrawing without
+                    further incident. Data accessed at terminal: <span class="redacted">UNKNOWN</span>.<br><br>
+                    Engagement analysis strongly suggests deliberate capability suppression —
+                    subject appeared to avoid triggering higher threat reassessment.
+                    Real name unknown. True threat potential: <span class="warning">UNCONFIRMED — MAY VASTLY EXCEED CURRENT RATING</span>.
+                    <div class="note">// NOTE: Subject's previous logged activity includes 17 denied cafeteria reimbursement requests. Analysts remain baffled.</div>
+                </div>
+                <div class="breach-tags">
+                    <div class="tag">SECTOR 01</div>
+                    <div class="tag">O5 TERMINAL</div>
+                    <div class="tag">THREAT CONCEALMENT</div>
+                    <div class="tag">OPEN</div>
+                    <div class="tag">IDENTITY UNKNOWN</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="breach">
+        <div class="breach-header">
+            <div class="breach-id">BREACH // LOG-004</div>
+            <div class="breach-meta">
+                <div class="breach-date"><span class="redacted">██/██/████</span></div>
+                <div class="breach-severity sev-low">SEVERITY: LOW</div>
+                <div class="breach-status st-closed">CLOSED</div>
+            </div>
+        </div>
+        <div class="breach-body">
+            <div class="breach-sidebar">
+                SUBJECT<br><span>Charcoal</span><br>
+                LOCATION<br><span>Facility<br>Entrance B</span><br>
+                CASUALTIES<br><span>1 door</span><br>
+                MONITORED<br><span>NO</span>
+            </div>
+            <div>
+                <div class="breach-title">CHARCOAL — FORCED ENTRY, ENTRANCE B. ACCOMPANIED BY UNIDENTIFIED CANINE.</div>
+                <div class="breach-desc">
+                    Subject designated "Charcoal" approached Entrance B of
+                    <span class="redacted">████████████</span> facility and proceeded to physically
+                    destroy the reinforced entry door using means described by witnesses as
+                    "<span class="redacted">just kicked it</span>." Subject was accompanied by an
+                    unidentified dog of <span class="redacted">unknown breed</span> throughout the incident.
+                    The dog did not participate in the breach but was present and described
+                    as "just sitting there" by responding personnel.<br><br>
+                    Subject did not attempt to access any restricted areas. Upon being
+                    approached by security, subject offered no resistance and was
+                    escorted from the premises directly to their home address without
+                    further incident. Motive: <span class="redacted">UNKNOWN</span>.
+                    Door replacement cost: <span class="redacted">████</span> credits.
+                    <div class="note">// NOTE: The dog was also escorted out. It was well behaved.</div>
+                </div>
+                <div class="breach-tags">
+                    <div class="tag">CLOSED</div>
+                    <div class="tag">FORCED ENTRY</div>
+                    <div class="tag">CANINE INVOLVED</div>
+                    <div class="tag">NON-HOSTILE</div>
+                    <div class="tag">ESCORTED OUT</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="breach">
+        <div class="breach-header">
+            <div class="breach-id">BREACH // LOG-005</div>
+            <div class="breach-meta">
+                <div class="breach-date"><span class="redacted">██/██/████</span></div>
+                <div class="breach-severity sev-anomalous">SEVERITY: ANOMALOUS</div>
+                <div class="breach-status st-closed">CLOSED</div>
+            </div>
+        </div>
+        <div class="breach-body">
+            <div class="breach-sidebar">
+                SUBJECT<br><span>Guest 101</span><br>
+                LOCATION<br><span>Multiple<br>Sectors</span><br>
+                CASUALTIES<br><span>None</span><br>
+                MONITORED<br><span>YES</span>
+            </div>
+            <div>
+                <div class="breach-title">GUEST 101 — UNAUTHORIZED SECTOR ACCESS, NO ENTRY EVENT DETECTED</div>
+                <div class="breach-desc">
+                    Subject designated "Guest 101" was detected inside
+                    <span class="redacted">██</span> restricted sectors with zero corresponding
+                    entry events in any access log. No doors opened. No credentials used.
+                    No breach detected at any perimeter point. Subject simply appeared
+                    inside restricted areas on <span class="redacted">██</span> separate occasions
+                    across <span class="redacted">██/██/████</span> and <span class="redacted">██/██/████</span>.<br><br>
+                    Subject showed no awareness of surveillance and did not interact with
+                    any systems or personnel. Detection was only possible due to
+                    passive thermal imaging on Sublevel <span class="redacted">██</span>.
+                    Identity remains entirely unconfirmed. Method of entry:
+                    <span class="warning">COMPLETELY UNKNOWN</span>.
+                </div>
+                <div class="breach-tags">
+                    <div class="tag">ANOMALOUS ENTRY</div>
+                    <div class="tag">UNIDENTIFIED</div>
+                    <div class="tag">NO ENTRY EVENT</div>
+                    <div class="tag">PASSIVE DETECTION</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="breach">
+        <div class="breach-header">
+            <div class="breach-id">BREACH // LOG-006</div>
+            <div class="breach-meta">
+                <div class="breach-date"><span class="redacted">██/██/████</span></div>
+                <div class="breach-severity sev-moderate">SEVERITY: MODERATE</div>
+                <div class="breach-status st-closed">CLOSED</div>
+            </div>
+        </div>
+        <div class="breach-body">
+            <div class="breach-sidebar">
+                SUBJECT<br><span><span class="redacted">████████</span></span><br>
+                LOCATION<br><span>Server<br>Farm C</span><br>
+                CASUALTIES<br><span>None</span><br>
+                MONITORED<br><span>NO</span>
+            </div>
+            <div>
+                <div class="breach-title">UNIDENTIFIED — SERVER FARM C INTRUSION</div>
+                <div class="breach-desc">
+                    An unidentified individual accessed Server Farm C through a ventilation
+                    shaft not present on any facility blueprint. Subject copied
+                    <span class="redacted">██</span> files before triggering a passive alarm and
+                    withdrawing through the same non-existent shaft.
+                    Files copied: <span class="redacted">CLASSIFIED</span>.
+                    Subject identity: <span class="redacted">UNKNOWN</span>.
+                    Ventilation shaft: <span class="redacted">NO LONGER PRESENT UPON INSPECTION</span>.
+                    Case closed due to lack of leads.
+                    <div class="note">// NOTE: Architects confirmed the shaft has never existed. Investigation into the architects is pending.</div>
+                </div>
+                <div class="breach-tags">
+                    <div class="tag">UNRESOLVED</div>
+                    <div class="tag">DATA THEFT</div>
+                    <div class="tag">ANOMALOUS GEOMETRY</div>
+                    <div class="tag">CLOSED — NO LEADS</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="breach">
+        <div class="breach-header">
+            <div class="breach-id">BREACH // LOG-007</div>
+            <div class="breach-meta">
+                <div class="breach-date"><span class="redacted">██/██/████</span></div>
+                <div class="breach-severity sev-critical">SEVERITY: CRITICAL</div>
+                <div class="breach-status st-archived">ARCHIVED</div>
+            </div>
+        </div>
+        <div class="breach-body">
+            <div class="breach-sidebar">
+                SUBJECT<br><span><span class="redacted">████████</span></span><br>
+                LOCATION<br><span><span class="redacted">████████</span></span><br>
+                CASUALTIES<br><span><span class="redacted">████</span></span><br>
+                MONITORED<br><span>N/A</span>
+            </div>
+            <div>
+                <div class="breach-title"><span class="redacted">████████████████████████████████████████</span></div>
+                <div class="breach-desc">
+                    <span class="redacted">████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████</span><br><br>
+                    <span class="warning">⚠ THIS FILE HAS BEEN SEALED BY ORDER OF THE O5 COUNCIL</span><br>
+                    <span class="warning">⚠ FURTHER ACCESS REQUIRES LEVEL-5 AUTHORIZATION</span>
+                </div>
+                <div class="breach-tags">
+                    <div class="tag">SEALED</div>
+                    <div class="tag">O5 ORDER</div>
+                    <div class="tag">LEVEL-5 REQUIRED</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="nav">
+        <a href="dashboard.html">← Return to Archive</a>
+        <span>END OF FILE // 7 INCIDENTS LOGGED</span>
+    </div>
+
+</div>
+
+</body>
+</html>
