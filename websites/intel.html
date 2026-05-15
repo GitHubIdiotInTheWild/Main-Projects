@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Intelligence Reports</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700&family=Montserrat:wght@400;500&family=Open+Sans:wght@400;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+<style>
+
+@font-face {
+    font-family: "VCR";
+    src: url("VCR.ttf");
+}
+
+@font-face {
+    font-family: "STM";
+    src: url("STM.ttf");
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #050505;
+    color: #e6e6e6;
+    font-family: "Open Sans", sans-serif;
+}
+
+/* scanlines */
+.scanlines {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+        transparent 0px,
+        rgba(255,255,255,0.02) 1px,
+        transparent 2px
+    );
+    opacity: 0.35;
+}
+
+/* container */
+.container {
+    max-width: 950px;
+    margin: 0 auto;
+    padding: 60px 30px;
+}
+
+/* header */
+.title {
+    font-family: "STM", monospace;
+    font-size: 2rem;
+    color: #c40000;
+    letter-spacing: 4px;
+    animation: pulse 2.5s infinite;
+}
+
+.subtitle {
+    font-family: "VCR", monospace;
+    color: #777;
+    margin-top: 10px;
+    animation: glitch 3s infinite;
+}
+
+/* report cards */
+.report {
+    margin-top: 40px;
+    padding: 20px;
+    background: #0a0a0a;
+    border: 1px solid #1a1a1a;
+
+    opacity: 0;
+    transform: translateY(10px);
+    animation: fadeIn 0.7s ease forwards;
+}
+
+.report:nth-child(3) { animation-delay: 0.2s; }
+.report:nth-child(4) { animation-delay: 0.4s; }
+.report:nth-child(5) { animation-delay: 0.6s; }
+
+.report h2 {
+    font-family: "STM", monospace;
+    color: #c40000;
+    font-size: 1rem;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+}
+
+.report p {
+    font-family: "Montserrat", sans-serif;
+    color: #aaa;
+    line-height: 1.8;
+}
+
+/* redacted */
+.redacted {
+    background: #111;
+    color: #111;
+    padding: 0 6px;
+}
+
+/* warning tag */
+.warning {
+    font-family: "VCR", monospace;
+    color: #ff2b2b;
+    animation: pulse 2s infinite;
+}
+
+/* footer nav */
+.nav {
+    margin-top: 50px;
+    display: flex;
+    justify-content: space-between;
+    font-family: "Montserrat", sans-serif;
+    font-size: 0.8rem;
+    color: #555;
+    opacity: 0;
+    animation: fadeIn 1s ease forwards;
+    animation-delay: 1s;
+}
+
+a {
+    color: #c40000;
+    text-decoration: none;
+}
+
+a:hover {
+    text-shadow: 0 0 10px #c40000;
+}
+
+/* animations */
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% { text-shadow: 0 0 5px #c40000; }
+    50% { text-shadow: 0 0 20px #ff0000; }
+}
+
+@keyframes glitch {
+    0% { text-shadow: 1px 0 red; }
+    50% { text-shadow: -1px 0 #ff4444; }
+    100% { text-shadow: 1px 0 red; }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="scanlines"></div>
+
+<div class="container">
+
+    <div class="title">INTELLIGENCE REPORTS</div>
+    <div class="subtitle">Field Data // Surveillance Logs // Clearance Ω</div>
+
+    <div class="report">
+        <h2>REPORT // 01</h2>
+        <p>
+            Surveillance node detected anomalous behavioral clustering in sector <span class="redacted">██-17</span>.
+            Subjects exhibit synchronized decision patterns without direct communication.
+        </p>
+    </div>
+
+    <div class="report">
+        <h2>REPORT // 02</h2>
+        <p>
+            Field agents report intermittent signal interference matching unknown encryption pattern.
+            Source origin traced to <span class="warning">UNREGISTERED BROADCAST NODE</span>.
+        </p>
+    </div>
+
+    <div class="report">
+        <h2>REPORT // 03</h2>
+        <p>
+            Asset recovery attempt failed. Subject entered non-cooperative state and referenced
+            "<span class="redacted">THE SUN WILL FALL TWICE</span>" before termination of feed.
+        </p>
+    </div>
+
+    <div class="report">
+        <h2>REPORT // 04</h2>
+        <p>
+            Data suggests recursive observation loop may be active. Analysts report feeling
+            "watched by system itself" during review.
+        </p>
+    </div>
+
+    <div class="nav">
+        <a href="dashboard.html">← Return to Archive</a>
+        <span>END OF FILE</span>
+    </div>
+
+</div>
+
+</body>
+</html>
