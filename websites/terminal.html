@@ -238,7 +238,7 @@ input#cmd::placeholder { color: #2a0000; }
     <div class="topbar-right">
         UTC <span id="utc-time">--:--:--</span>
         &nbsp;|&nbsp;
-        NODE <span>ALPHA-7</span>
+        NODE <span id="node-val">ALPHA-7</span>
         &nbsp;|&nbsp;
         MEM <span id="mem-val">--</span>%
     </div>
@@ -433,7 +433,7 @@ const COMMANDS = {
             return printMany([
                 ["SYSTEM STATUS REPORT  [FULL — ALL REDACTIONS LIFTED]", "l-bright"],
                 "---",
-                ["  NODE          : ALPHA-7", "l-text"],
+                ["  NODE          : BASE-0106_401_0982", "l-text"],
                 ["  UPTIME        : 28,124 days, 17 hours", "l-text"],
                 ["  CONNECTION    : ENCRYPTED — AES-4096 / ANOMALOUS LAYER ACTIVE", "l-text"],
                 ["  CLEARANCE     : ???", "l-bright"],
@@ -547,6 +547,7 @@ const COMMANDS = {
             jadeMode = true;
             updatePromptLabel();
             document.querySelector(".topbar-mid").textContent = "CLEARANCE: ??? // SESSION ANOMALOUS";
+            document.getElementById("node-val").textContent = "BASE-0106_401_0982";
         }, 120 * 9 + 200);
     },
 
@@ -784,7 +785,7 @@ const COMMANDS = {
     "ping": async function() {
         await printLine("  Pinging network nodes...", "l-dim", 0);
         const nodes = jadeMode ? [
-            ["  ALPHA-7  ............... 4ms    OK",                     "l-text"],
+            ["  BASE-0106_401_0982 .... 4ms    OK",                     "l-text"],
             ["  BETA-3   ............... 11ms   OK",                     "l-text"],
             ["  GAMMA-9  ............... 312ms  DEGRADED",               "l-text"],
             ["  DELTA-1  ............... 8ms    OK",                     "l-text"],
