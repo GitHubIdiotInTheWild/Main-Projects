@@ -576,13 +576,22 @@ const COMMANDS = {
     "whoami": function() {
         if (jadeMode) {
             return printMany([
-                ["OPERATOR IDENTITY QUERY", "l-bright"],
-                ["", "l-dim"],
-                ["  CLEARANCE    : ???", "l-bright"],
-                ["  DESIGNATION  : INTERNAL OPERATOR", "l-text"],
+                ["OPERATOR IDENTITY QUERY  [ALL REDACTIONS LIFTED]", "l-bright"],
+                "---",
+                ["  NAME         : JADE HENRY", "l-white"],
+                ["  CLEARANCE    : UNCLASSIFIED — ABOVE ALL TIERS", "l-bright"],
+                ["  DESIGNATION  : EXTERNAL — NOT FOUNDATION PERSONNEL", "l-text"],
+                ["  AFFILIATION  : NONE", "l-text"],
                 ["  SESSION ID   : 0106-401-0982", "l-text"],
+                ["  TOKEN        : JADE  [issued O5-7, 1994 — officially never issued]", "l-bright"],
                 ["  ACCESS SINCE : 00/00/0000 00:00 UTC", "l-text"],
-                ["  IP ORIGIN    : UNKNOWN", "l-text"],
+                ["  IP ORIGIN    : UNRESOLVABLE", "l-text"],
+                ["", "l-dim"],
+                ["  THREAT CLASS : UNQUANTIFIABLE  [public file reads: 90% — suppressed]", "l-bright"],
+                ["  KNOWN EQUAL  : NONE", "l-text"],
+                ["  KNOWN SUPERIOR : BUSBISMAN  [margin: negligible]", "l-text"],
+                ["", "l-dim"],
+                ["  O5 STANDING ORDER: do not engage. do not interfere. observe only.", "l-white"],
                 ["", "l-dim"],
             ], 0, 50);
         }
