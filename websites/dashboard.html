@@ -263,6 +263,7 @@ function openPage(page) {
     window.location.href = page;
 }
 
+/* UTC clock */
 function updateUTC() {
     const now = new Date();
 
@@ -278,28 +279,33 @@ function updateUTC() {
     document.getElementById("utc-time").textContent = `${hh}:${min}:${ss}`;
 }
 
+/* midnight reset */
+function checkMidnightReset() {
+    const now = new Date();
+
+    const nextMidnight = new Date(Date.UTC(
+        now.getUTCFullYear(),
+        now.getUTCMonth(),
+        now.getUTCDate() + 1,
+        0, 0, 0
+    ));
+
+    if (now.getTime() >= nextMidnight.getTime()) {
+        window.location.href = "index.html";
+    }
+}
+
+/* init */
 updateUTC();
+
 setInterval(updateUTC, 1000);
+setInterval(checkMidnightReset, 1000);
 
 window.addEventListener("load", () => {
     const lines = document.querySelectorAll(".log .line");
 
     lines.forEach((line, i) => {
         line.style.animationDelay = (i * 0.3) + "s";
-
-        function checkMidnightReset() {
-    const now = new Date();
-
-    const hh = now.getUTCHours();
-    const mm = now.getUTCMinutes();
-    const ss = now.getUTCSeconds();
-
-    if (hh === 0 && mm === 0 && ss === 0) {
-        window.location.href = "index.html";
-    }
-}
-
-setInterval(checkMidnightReset, 1000);
     });
 });
 
