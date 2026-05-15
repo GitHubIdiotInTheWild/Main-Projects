@@ -201,12 +201,12 @@ body {
 
     <div class="grid">
 
-        <div class="card">
+        <div class="card" onclick="openPage('operation.html')">
             <div class="card-title">OPERATION SUNFALL</div>
             <div class="card-desc">Strategic deterrence protocol and classified weapons initiative.</div>
         </div>
 
-        <div class="card">
+        <div class="card" onclick="openPage('intel.html')">
             <div class="card-title">INTELLIGENCE REPORTS</div>
             <div class="card-desc">Field data, anomaly logs, and containment breaches.</div>
         </div>
@@ -226,7 +226,7 @@ body {
             <div class="card-desc">Unauthorized access attempts and anomaly detection events.</div>
         </div>
 
-        <div class="card">
+        <div class="card" onclick="openPage('terminal.html')">
             <div class="card-title">SYSTEM TERMINAL</div>
             <div class="card-desc">Direct command interface for internal operations.</div>
         </div>
@@ -297,7 +297,6 @@ function checkMidnightReset() {
 
 /* init */
 updateUTC();
-
 setInterval(updateUTC, 1000);
 setInterval(checkMidnightReset, 1000);
 
