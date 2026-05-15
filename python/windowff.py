@@ -977,4 +977,4 @@ def process():
         log_result(f"Factorial of {num} = {fact}", COLOR_FACT)
 
 window.mainloop()
-## script end :D
+## v1.2 release py
