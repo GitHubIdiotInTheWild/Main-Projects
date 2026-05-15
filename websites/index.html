@@ -137,20 +137,23 @@
     0% {
         opacity: 0;
         color: transparent;
-        text-shadow: 0 0 20px #ff4040;
+        text-shadow: 0 0 10px #ff4040;
         filter: blur(2px);
+        transform: scale(1.02);
     }
-    60% {
+    50% {
         opacity: 1;
-        color: #ff4040;
-        text-shadow: 0 0 25px #ff4040;
+        text-shadow:
+            0 0 10px #ff4040,
+            0 0 25px #ff4040,
+            0 0 50px #ff0000;
         filter: blur(0px);
     }
     100% {
         opacity: 1;
         color: #ff4040;
         text-shadow: none;
-        filter: blur(0px);
+        transform: scale(1);
     }
 }
 
