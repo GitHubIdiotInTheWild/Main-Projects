@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>System Terminal</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Montserrat:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+
+@font-face {
+    font-family: "VCR";
+    src: url("VCR.ttf");
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #030303;
+    color: #cc0000;
+    font-family: "Share Tech Mono", monospace;
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.scanlines {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+        transparent 0px,
+        rgba(255,255,255,0.018) 1px,
+        transparent 2px
+    );
+    opacity: 0.4;
+    z-index: 100;
+}
+
+/* topbar */
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 30px;
+    border-bottom: 1px solid #1a0000;
+    flex-shrink: 0;
+}
+
+.logo {
+    color: #c40000;
+    font-size: 1.1rem;
+    letter-spacing: 5px;
+}
+
+.topbar-mid {
+    font-size: 0.72rem;
+    color: #3a0000;
+    letter-spacing: 2px;
+}
+
+.topbar-right {
+    display: flex;
+    gap: 18px;
+    font-size: 0.72rem;
+    color: #3a0000;
+    letter-spacing: 1px;
+}
+
+.topbar-right span {
+    color: #660000;
+}
+
+/* layout */
+.main {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* sidebar */
+.sidebar {
+    border-right: 1px solid #110000;
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.sidebar::-webkit-scrollbar { width: 3px; }
+.sidebar::-webkit-scrollbar-track { background: #050505; }
+.sidebar::-webkit-scrollbar-thumb { background: #1a0000; }
+
+.sidebar-label {
+    font-size: 0.62rem;
+    color: #330000;
+    letter-spacing: 3px;
+    padding: 0 16px;
+    margin-bottom: 8px;
+}
+
+.sidebar-cmd {
+    padding: 7px 16px;
+    font-size: 0.76rem;
+    color: #550000;
+    cursor: pointer;
+    transition: 0.15s;
+    letter-spacing: 1px;
+    border-left: 2px solid transparent;
+}
+
+.sidebar-cmd:hover {
+    color: #cc0000;
+    background: rgba(196,0,0,0.05);
+    border-left-color: #c40000;
+}
+
+.sidebar-section {
+    margin-bottom: 22px;
+}
+
+.sidebar-divider {
+    border: none;
+    border-top: 1px solid #110000;
+    margin: 4px 0 16px;
+}
+
+/* terminal pane */
+.terminal-pane {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* output */
+.output {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 28px;
+    scroll-behavior: smooth;
+}
+
+.output::-webkit-scrollbar { width: 4px; }
+.output::-webkit-scrollbar-track { background: #050505; }
+.output::-webkit-scrollbar-thumb { background: #2a0000; }
+
+/* line types */
+.line {
+    font-size: 0.82rem;
+    line-height: 1.75;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.l-prompt  { color: #c40000; }
+.l-text    { color: #884444; }
+.l-dim     { color: #3a1010; }
+.l-bright  { color: #ff2b2b; animation: pulse 2s infinite; }
+.l-white   { color: #aaaaaa; }
+.l-success { color: #007744; }
+.l-sep     { border-top: 1px solid #1a0000; margin: 8px 0; }
+
+@keyframes pulse {
+    0%, 100% { text-shadow: 0 0 5px #c40000; }
+    50%       { text-shadow: 0 0 14px #ff0000; }
+}
+
+@keyframes fadein {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+/* blinking cursor */
+@keyframes blink {
+    0%, 49% { opacity: 1; }
+    50%, 100% { opacity: 0; }
+}
+
+.cursor {
+    display: inline-block;
+    width: 9px;
+    height: 15px;
+    background: #c40000;
+    vertical-align: middle;
+    margin-left: 2px;
+    animation: blink 1s infinite;
+}
+
+/* input bar */
+.input-bar {
+    border-top: 1px solid #1a0000;
+    padding: 14px 28px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+    background: #030303;
+}
+
+.input-prompt {
+    color: #c40000;
+    font-size: 0.84rem;
+    white-space: nowrap;
+    letter-spacing: 1px;
+}
+
+input#cmd {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #cc0000;
+    font-family: "Share Tech Mono", monospace;
+    font-size: 0.84rem;
+    caret-color: #c40000;
+    letter-spacing: 1px;
+}
+
+input#cmd::placeholder { color: #2a0000; }
+
+</style>
+</head>
+
+<body>
+
+<div class="scanlines"></div>
+
+<div class="topbar">
+    <div class="logo">SCP // TERMINAL</div>
+    <div class="topbar-mid">CLEARANCE: OMEGA // SESSION ACTIVE</div>
+    <div class="topbar-right">
+        UTC <span id="utc-time">--:--:--</span>
+        &nbsp;|&nbsp;
+        NODE <span>ALPHA-7</span>
+        &nbsp;|&nbsp;
+        MEM <span id="mem-val">--</span>%
+    </div>
+</div>
+
+<div class="main">
+
+    <div class="sidebar">
+
+        <div class="sidebar-section">
+            <div class="sidebar-label">QUICK COMMANDS</div>
+            <div class="sidebar-cmd" onclick="runCmd('help')">HELP</div>
+            <div class="sidebar-cmd" onclick="runCmd('status')">STATUS</div>
+            <div class="sidebar-cmd" onclick="runCmd('whoami')">WHOAMI</div>
+            <div class="sidebar-cmd" onclick="runCmd('ls')">LS</div>
+        </div>
+
+        <hr class="sidebar-divider">
+
+        <div class="sidebar-section">
+            <div class="sidebar-label">ARCHIVE ACCESS</div>
+            <div class="sidebar-cmd" onclick="runCmd('cat operation.txt')">OPERATION</div>
+            <div class="sidebar-cmd" onclick="runCmd('cat intel.txt')">INTEL</div>
+            <div class="sidebar-cmd" onclick="runCmd('cat subjects.txt')">SUBJECTS</div>
+            <div class="sidebar-cmd" onclick="runCmd('cat timeline.txt')">TIMELINE</div>
+            <div class="sidebar-cmd" onclick="runCmd('cat breaches.txt')">BREACHES</div>
+        </div>
+
+        <hr class="sidebar-divider">
+
+        <div class="sidebar-section">
+            <div class="sidebar-label">SYSTEM</div>
+            <div class="sidebar-cmd" onclick="runCmd('ping')">PING</div>
+            <div class="sidebar-cmd" onclick="runCmd('anomaly scan')">ANOMALY SCAN</div>
+            <div class="sidebar-cmd" onclick="runCmd('clear')">CLEAR</div>
+        </div>
+
+        <hr class="sidebar-divider">
+
+        <div class="sidebar-section">
+            <div class="sidebar-label">NAVIGATION</div>
+            <div class="sidebar-cmd" onclick="window.location.href='dashboard.html'">&#8592; DASHBOARD</div>
+        </div>
+
+    </div>
+
+    <div class="terminal-pane">
+        <div class="output" id="output"></div>
+        <div class="input-bar">
+            <div class="input-prompt">OMEGA@SCP-TERMINAL:~$</div>
+            <input type="text" id="cmd" placeholder="enter command..." autocomplete="off" spellcheck="false" />
+            <div class="cursor"></div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+
+const output = document.getElementById("output");
+const cmdInput = document.getElementById("cmd");
+
+/* UTC clock */
+function updateUTC() {
+    const n = new Date();
+    const p = v => String(v).padStart(2, "0");
+    document.getElementById("utc-time").textContent =
+        p(n.getUTCHours()) + ":" + p(n.getUTCMinutes()) + ":" + p(n.getUTCSeconds());
+    document.getElementById("mem-val").textContent = 62 + Math.floor(Math.random() * 6);
+}
+updateUTC();
+setInterval(updateUTC, 1000);
+
+/* midnight reset */
+setInterval(function() {
+    const n = new Date();
+    const next = new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate() + 1));
+    if (n >= next) window.location.href = "index.html";
+}, 1000);
+
+/* command history */
+const hist = [];
+let histIdx = -1;
+
+cmdInput.addEventListener("keydown", function(e) {
+    if (e.key === "Enter") {
+        const v = cmdInput.value.trim();
+        if (v) { hist.unshift(v); histIdx = -1; }
+        runCmd(v);
+        cmdInput.value = "";
+    }
+    if (e.key === "ArrowUp") {
+        e.preventDefault();
+        if (histIdx < hist.length - 1) histIdx++;
+        cmdInput.value = hist[histIdx] || "";
+    }
+    if (e.key === "ArrowDown") {
+        e.preventDefault();
+        histIdx = histIdx > 0 ? histIdx - 1 : -1;
+        cmdInput.value = histIdx >= 0 ? hist[histIdx] : "";
+    }
+});
+
+/* print helpers */
+function printLine(text, cls, delay) {
+    cls = cls || "l-text";
+    delay = delay || 0;
+    return new Promise(function(resolve) {
+        setTimeout(function() {
+            const d = document.createElement("div");
+            d.className = "line " + cls;
+            d.style.animation = "fadein 0.08s ease forwards";
+            d.textContent = text;
+            output.appendChild(d);
+            output.scrollTop = output.scrollHeight;
+            resolve();
+        }, delay);
+    });
+}
+
+function printSep(delay) {
+    delay = delay || 0;
+    return new Promise(function(resolve) {
+        setTimeout(function() {
+            const d = document.createElement("div");
+            d.className = "line l-sep";
+            output.appendChild(d);
+            output.scrollTop = output.scrollHeight;
+            resolve();
+        }, delay);
+    });
+}
+
+async function printMany(lines, base, step) {
+    base = base || 0;
+    step = step || 50;
+    for (let i = 0; i < lines.length; i++) {
+        const t = base + i * step;
+        if (lines[i] === "---") { await printSep(t); continue; }
+        if (Array.isArray(lines[i])) {
+            await printLine(lines[i][0], lines[i][1], t);
+        } else {
+            await printLine(lines[i], "l-text", t);
+        }
+    }
+}
+
+function echoCmd(raw) {
+    const d = document.createElement("div");
+    d.className = "line l-prompt";
+    d.style.animation = "fadein 0.08s ease forwards";
+    d.textContent = "OMEGA@SCP-TERMINAL:~$ " + raw;
+    output.appendChild(d);
+    output.scrollTop = output.scrollHeight;
+}
+
+/* commands */
+const COMMANDS = {
+
+    "help": function() {
+        return printMany([
+            ["AVAILABLE COMMANDS:", "l-bright"],
+            "---",
+            ["  help              — display this message", "l-text"],
+            ["  status            — system status report", "l-text"],
+            ["  whoami            — current operator identity", "l-text"],
+            ["  ls                — list accessible archive files", "l-text"],
+            ["  cat <file>        — read archive file", "l-text"],
+            ["  ping              — test network nodes", "l-text"],
+            ["  anomaly scan      — run anomaly detection sweep", "l-text"],
+            ["  clear             — clear terminal output", "l-text"],
+            "---",
+            ["  FILES: operation.txt  intel.txt  subjects.txt  timeline.txt  breaches.txt", "l-dim"],
+            ["  Additional files exist above Omega clearance.", "l-dim"],
+            ["", "l-dim"],
+        ], 0, 40);
+    },
+
+    "status": function() {
+        return printMany([
+            ["SYSTEM STATUS REPORT", "l-bright"],
+            "---",
+            ["  NODE          : ALPHA-7", "l-text"],
+            ["  UPTIME        : \u2588\u2588\u2588\u2588 days, \u2588\u2588 hours", "l-text"],
+            ["  CONNECTION    : ENCRYPTED \u2014 AES-\u2588\u2588\u2588\u2588", "l-text"],
+            ["  CLEARANCE     : OMEGA", "l-text"],
+            ["  ANOMALY INDEX : 0.73", "l-text"],
+            ["  WEAPONS PROG  : ACTIVE", "l-bright"],
+            ["  SUBJECTS MON  : 3  (+ \u2588\u2588 classified)", "l-text"],
+            ["  OPEN INVEST   : 2", "l-text"],
+            "---",
+            ["  STATUS: ALL SYSTEMS NOMINAL", "l-success"],
+            ["  WARNING: UNAUTHORIZED THOUGHT DETECTED IN NETWORK", "l-bright"],
+            ["", "l-dim"],
+        ], 0, 50);
+    },
+
+    "whoami": function() {
+        return printMany([
+            ["OPERATOR IDENTITY QUERY", "l-bright"],
+            ["", "l-dim"],
+            ["  CLEARANCE    : OMEGA", "l-text"],
+            ["  DESIGNATION  : INTERNAL OPERATOR", "l-text"],
+            ["  SESSION ID   : \u2588\u2588\u2588\u2588-\u2588\u2588\u2588\u2588-\u2588\u2588\u2588\u2588", "l-text"],
+            ["  ACCESS SINCE : \u2588\u2588/\u2588\u2588/\u2588\u2588\u2588\u2588 \u2588\u2588:\u2588\u2588 UTC", "l-text"],
+            ["  IP ORIGIN    : \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588", "l-text"],
+            ["", "l-dim"],
+            ["  All session activity is logged and monitored.", "l-dim"],
+            ["", "l-dim"],
+        ], 0, 50);
+    },
+
+    "ls": function() {
+        return printMany([
+            ["ACCESSIBLE FILES \u2014 OMEGA CLEARANCE:", "l-bright"],
+            ["", "l-dim"],
+            ["  operation.txt       [CLASSIFIED]  [READ-ONLY]", "l-text"],
+            ["  intel.txt           [CLASSIFIED]  [READ-ONLY]", "l-text"],
+            ["  subjects.txt        [CLASSIFIED]  [READ-ONLY]", "l-text"],
+            ["  timeline.txt        [CLASSIFIED]  [READ-ONLY]", "l-text"],
+            ["  breaches.txt        [CLASSIFIED]  [READ-ONLY]", "l-text"],
+            ["", "l-dim"],
+            ["  \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588.txt    [LOCKED \u2014 ABOVE OMEGA]", "l-dim"],
+            ["  \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588.txt    [LOCKED \u2014 ABOVE OMEGA]", "l-dim"],
+            ["  \u2588\u2588\u2588\u2588\u2588\u2588.exe          [LOCKED \u2014 O5 ONLY]", "l-dim"],
+            ["", "l-dim"],
+            ["  5 readable  |  3 locked  |  \u2588\u2588 withheld", "l-dim"],
+            ["", "l-dim"],
+        ], 0, 45);
+    },
+
+    "cat operation.txt": function() {
+        return printMany([
+            ["FILE: operation.txt", "l-bright"],
+            "---",
+            ["  OPERATION SUNFALL \u2014 STRATEGIC DETERRENCE INITIATIVE", "l-white"],
+            ["  Phase I:    Data infiltration and behavioral mapping    [COMPLETE]", "l-text"],
+            ["  Phase II:   Infrastructure influence / node acquisition [COMPLETE]", "l-text"],
+            ["  Phase III:  Controlled destabilization REGION-7         [ACTIVE]",  "l-bright"],
+            ["  Phase IV:   Final compliance enforcement                 [PENDING]", "l-dim"],
+            ["", "l-dim"],
+            ["  Direct attribution: PROHIBITED", "l-dim"],
+            ["  Field agents operate under deniable identities.", "l-dim"],
+            ["  Memory persistence restricted to Level-\u03a9 clearance only.", "l-dim"],
+            ["", "l-dim"],
+            ["  \u2192 Full document: operation.html", "l-dim"],
+            ["", "l-dim"],
+        ], 0, 50);
+    },
+
+    "cat intel.txt": function() {
+        return printMany([
+            ["FILE: intel.txt \u2014 INTELLIGENCE REPORTS SUMMARY", "l-bright"],
+            "---",
+            ["  RPT-01  Anomalous behavioral clustering \u2014 sector \u2588\u2588-17", "l-text"],
+            ["  RPT-02  Unknown encryption \u2014 UNREGISTERED BROADCAST NODE", "l-text"],
+            ["  RPT-03  Feed terminated. Phrase logged before cut: \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588", "l-text"],
+            ["  RPT-04  Recursive observation loop possibly active.", "l-text"],
+            ["", "l-dim"],
+            ["  NOTE: Analysts report feeling watched by system itself.", "l-bright"],
+            ["", "l-dim"],
+            ["  \u2192 Full document: intel.html", "l-dim"],
+            ["", "l-dim"],
+        ], 0, 55);
+    },
+
+    "cat subjects.txt": function() {
+        return printMany([
+            ["FILE: subjects.txt \u2014 SUBJECT FILES SUMMARY", "l-bright"],
+            "---",
+            ["  SCP-OBS-001  GUEST 101       THREAT: 38%   UNIDENTIFIED", "l-text"],
+            ["  SCP-OBS-002  JADE HENRY      THREAT: 90%   ACTIVE THREAT  \u26a0", "l-bright"],
+            ["  SCP-OBS-003  BUSBISMAN       THREAT: 36%   MONITORED", "l-text"],
+            ["  SCP-OBS-004  \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588    THREAT: 97%   CONTAINED", "l-dim"],
+            ["", "l-dim"],
+            ["  \u26a0 DO NOT ENGAGE SCP-OBS-002 WITHOUT AUTHORIZATION", "l-bright"],
+            ["  True threat potential of SCP-OBS-003 may vastly exceed current rating.", "l-dim"],
+            ["", "l-dim"],
+            ["  \u2192 Full document: subfiles.html", "l-dim"],
+            ["", "l-dim"],
+        ], 0, 50);
+    },
+
+    "cat timeline.txt": function() {
+        return printMany([
+            ["FILE: timeline.txt \u2014 OPERATION TIMELINE SUMMARY", "l-bright"],
+            "---",
+            ["  OVERALL PROGRESS: 61%", "l-white"],
+            ["", "l-dim"],
+            ["  [DONE]  Foundation inception \u2014 SUNFALL authorized", "l-dim"],
+            ["  [DONE]  Phase I \u2014 Global surveillance network deployed", "l-dim"],
+            ["  [DONE]  Phase II \u2014 Nuclear weapons program initiated", "l-dim"],
+            ["  [DONE]  Warhead milestone: 2,000 units", "l-dim"],
+            ["  [DONE]  Phase III \u2014 Federative restructuring drafted", "l-dim"],
+            ["  [DONE]  Warhead milestone: 5,000 units", "l-dim"],
+            ["  [DONE]  BUSBISMAN breach \u2014 Sector 01, O5 terminal accessed", "l-dim"],
+            ["  [NOW ]  Final warhead push to 7,570 units", "l-bright"],
+            ["  [NOW ]  Territorial consolidation ongoing", "l-bright"],
+            ["  [NOW ]  Global protection mandate rollout", "l-bright"],
+            ["  [PEND]  Phase IV \u2014 \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588", "l-dim"],
+            ["  [LOCK]  \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588", "l-dim"],
+            ["", "l-dim"],
+            ["  \u2192 Full document: projtimeline.html", "l-dim"],
+            ["", "l-dim"],
+        ], 0, 45);
+    },
+
+    "cat breaches.txt": function() {
+        return printMany([
+            ["FILE: breaches.txt \u2014 SECURITY BREACH LOG SUMMARY", "l-bright"],
+            "---",
+            ["  7 incidents logged  |  2 open  |  312 total casualties", "l-white"],
+            ["", "l-dim"],
+            ["  LOG-001  MURAD        2015  CRITICAL   ARCHIVED \u2014 288 guards neutralized", "l-text"],
+            ["  LOG-002  JADE HENRY   \u2588\u2588\u2588\u2588  ANOMALOUS  OPEN     \u2014 network auth breach", "l-bright"],
+            ["  LOG-003  BUSBISMAN    \u2588\u2588\u2588\u2588  HIGH       OPEN     \u2014 Sector 01, O5 terminal", "l-text"],
+            ["  LOG-004  CHARCOAL     \u2588\u2588\u2588\u2588  LOW        CLOSED   \u2014 kicked door. dog present.", "l-dim"],
+            ["  LOG-005  GUEST 101    \u2588\u2588\u2588\u2588  ANOMALOUS  CLOSED   \u2014 no entry event detected", "l-text"],
+            ["  LOG-006  UNKNOWN      \u2588\u2588\u2588\u2588  MODERATE   CLOSED   \u2014 non-existent shaft", "l-dim"],
+            ["  LOG-007  \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588     \u2588\u2588\u2588\u2588  CRITICAL   ARCHIVED \u2014 SEALED BY O5 COUNCIL", "l-dim"],
+            ["", "l-dim"],
+            ["  \u2192 Full document: breachlogs.html", "l-dim"],
+            ["", "l-dim"],
+        ], 0, 45);
+    },
+
+    "ping": async function() {
+        await printLine("  Pinging network nodes...", "l-dim", 0);
+        const nodes = [
+            ["  ALPHA-7 ............... 4ms    OK",                     "l-text"],
+            ["  BETA-3  ............... 11ms   OK",                     "l-text"],
+            ["  GAMMA-9 ............... \u2588\u2588\u2588ms  \u2588\u2588\u2588\u2588",               "l-dim"],
+            ["  DELTA-1 ............... 8ms    OK",                     "l-text"],
+            ["  O5-HUB  ............... \u2588\u2588\u2588\u2588   ACCESS DENIED",       "l-bright"],
+        ];
+        for (let i = 0; i < nodes.length; i++) {
+            await printLine(nodes[i][0], nodes[i][1], 150 + i * 220);
+        }
+        await printLine("", "l-dim", 1400);
+        await printLine("  4 / 5 nodes responsive. 1 access denied.", "l-text", 1450);
+        await printLine("", "l-dim", 1500);
+    },
+
+    "anomaly scan": async function() {
+        const steps = [
+            ["  Initiating sweep...",                                    "l-dim"],
+            ["  Scanning behavioral clusters...",                        "l-dim"],
+            ["  Checking memory persistence anomalies...",               "l-dim"],
+            ["  Reviewing recursive observation flags...",               "l-dim"],
+            ["  Cross-referencing known subject signatures...",          "l-dim"],
+            "---",
+            ["  ANOMALY INDEX: 0.73",                                    "l-text"],
+            ["  2 FLAGGED SIGNATURES DETECTED:",                         "l-bright"],
+            ["    \u2014 Unknown observation pattern in sublevel \u2588\u2588",          "l-text"],
+            ["    \u2014 Unauthorized thought detected in primary network",   "l-bright"],
+            "---",
+            ["  Scan complete. Recommend escalation to O5 review.",      "l-dim"],
+            ["", "l-dim"],
+        ];
+        await printMany(steps, 0, 280);
+    },
+
+    "clear": async function() {
+        output.innerHTML = "";
+        await printLine("  Terminal cleared.", "l-dim", 0);
+    },
+
+    "": async function() {}
+};
+
+async function runCmd(raw) {
+    const cmd = (raw || "").trim().toLowerCase();
+    if (cmd !== "") echoCmd(raw.trim());
+
+    if (COMMANDS[cmd]) {
+        await COMMANDS[cmd]();
+    } else if (cmd !== "") {
+        await printLine("  Command not recognized: \"" + raw.trim() + "\"", "l-text", 0);
+        await printLine("  Type HELP for available commands.", "l-dim", 80);
+        await printLine("", "l-dim", 120);
+    }
+}
+
+/* boot sequence */
+(async function() {
+    await printMany([
+        ["SCP FOUNDATION \u2014 INTERNAL COMMAND INTERFACE", "l-bright"],
+        ["STRATEGIC WEAPONS INITIATIVE // OMEGA-LEVEL ACCESS", "l-text"],
+        "---",
+        ["  Session authenticated. Welcome, Operator.", "l-text"],
+        ["  Type HELP to list available commands.", "l-dim"],
+        ["", "l-dim"],
+    ], 300, 120);
+})();
+
+</script>
+
+</body>
+</html>
