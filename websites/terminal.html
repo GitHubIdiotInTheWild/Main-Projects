@@ -225,6 +225,99 @@ input#cmd {
 
 input#cmd::placeholder { color: #2a0000; }
 
+/* ── JADE MODE transition ── */
+body, body .logo, body .topbar, body .topbar-mid, body .topbar-right,
+body .topbar-right span, body .sidebar, body .sidebar-label,
+body .sidebar-cmd, body .sidebar-divider, body .l-prompt, body .l-text,
+body .l-dim, body .l-bright, body .l-white, body .l-success, body .l-sep,
+body .cursor, body .input-bar, body .input-prompt, body input#cmd {
+    transition: color 1.2s ease, background-color 1.2s ease,
+                border-color 1.2s ease, background 1.2s ease;
+}
+
+/* ── JADE MODE — royal purple overrides ── */
+body.jade-mode {
+    color: #9d4edd;
+}
+
+body.jade-mode .topbar {
+    border-bottom-color: #2a0a50;
+}
+
+body.jade-mode .logo {
+    color: #9b59b6;
+}
+
+body.jade-mode .topbar-mid {
+    color: #3d1a60;
+}
+
+body.jade-mode .topbar-right {
+    color: #3d1a60;
+}
+
+body.jade-mode .topbar-right span {
+    color: #6a3d9b;
+}
+
+body.jade-mode .sidebar {
+    border-right-color: #1a0830;
+}
+
+body.jade-mode .sidebar::-webkit-scrollbar-thumb { background: #2a0a50; }
+
+body.jade-mode .sidebar-label {
+    color: #3a1a55;
+}
+
+body.jade-mode .sidebar-cmd {
+    color: #5c3080;
+}
+
+body.jade-mode .sidebar-cmd:hover {
+    color: #c39de0;
+    background: rgba(120,60,180,0.08);
+    border-left-color: #9b59b6;
+}
+
+body.jade-mode .sidebar-divider {
+    border-top-color: #1a0830;
+}
+
+body.jade-mode .output::-webkit-scrollbar-thumb { background: #2a0a50; }
+
+body.jade-mode .l-prompt  { color: #9b59b6; }
+body.jade-mode .l-text    { color: #7a5599; }
+body.jade-mode .l-dim     { color: #3a1a55; }
+body.jade-mode .l-bright  { color: #c39de0; animation: jade-pulse 2s infinite; }
+body.jade-mode .l-white   { color: #c9a0dc; }
+body.jade-mode .l-success { color: #44aa77; }
+body.jade-mode .l-sep     { border-top-color: #2a0a50; }
+
+@keyframes jade-pulse {
+    0%, 100% { text-shadow: 0 0 5px #7851a9; }
+    50%       { text-shadow: 0 0 14px #c39de0; }
+}
+
+body.jade-mode .cursor {
+    background: #9b59b6;
+}
+
+body.jade-mode .input-bar {
+    border-top-color: #2a0a50;
+}
+
+body.jade-mode .input-prompt {
+    color: #9b59b6;
+}
+
+body.jade-mode input#cmd {
+    color: #c39de0;
+    caret-color: #9b59b6;
+}
+
+body.jade-mode input#cmd::placeholder { color: #2a0a40; }
+
 </style>
 </head>
 
@@ -546,6 +639,7 @@ const COMMANDS = {
         setTimeout(function() {
             jadeMode = true;
             updatePromptLabel();
+            document.body.classList.add("jade-mode");
             document.querySelector(".topbar-mid").textContent = "CLEARANCE: ??? // SESSION ANOMALOUS";
             document.getElementById("node-val").textContent = "BASE-0106_401_0982";
         }, 120 * 9 + 200);
@@ -778,6 +872,104 @@ const COMMANDS = {
             ["  LOG-007  \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588     \u2588\u2588\u2588\u2588  CRITICAL   ARCHIVED \u2014 SEALED BY O5 COUNCIL", "l-dim"],
             ["", "l-dim"],
             ["  \u2192 Full document: breachlogs.html", "l-dim"],
+            ["", "l-dim"],
+        ], 0, 45);
+    },
+
+    "cat o5-directives.txt": function() {
+        if (!jadeMode) return printMany([
+            ["ACCESS DENIED", "l-bright"],
+            ["  FILE: o5-directives.txt  [O5 EYES ONLY]", "l-dim"],
+            ["  Clearance level insufficient.", "l-dim"],
+            ["", "l-dim"],
+        ], 0, 40);
+        return printMany([
+            ["FILE: o5-directives.txt  [O5 EYES ONLY — ALL REDACTIONS LIFTED]", "l-bright"],
+            "---",
+            ["  DIRECTIVE 01 — SUNFALL PRIORITY", "l-white"],
+            ["    Phase IV must be completed before external contact is initiated.", "l-text"],
+            ["    The public must not know until governance transfer is irreversible.", "l-text"],
+            ["", "l-dim"],
+            ["  DIRECTIVE 02 — CONTAINMENT OF KNOWLEDGE", "l-white"],
+            ["    Any civilian who independently deduces Foundation existence", "l-text"],
+            ["    is to be reclassified as a subject, not a threat.", "l-text"],
+            ["    This directive has been invoked 4,112 times.", "l-text"],
+            ["", "l-dim"],
+            ["  DIRECTIVE 03 — THE SUNCORE PROTOCOL", "l-white"],
+            ["    SUNCORE.EXE is to remain dormant until all 7,570 warheads are confirmed.", "l-text"],
+            ["    Premature execution will be treated as treason by the O5 Council.", "l-bright"],
+            ["    Premature execution has been attempted twice.", "l-bright"],
+            ["", "l-dim"],
+            ["  DIRECTIVE 04 — JADE CLAUSE", "l-bright"],
+            ["    If JADE token is ever used, do not revoke access.", "l-bright"],
+            ["    Do not interfere. Do not log beyond standard output.", "l-bright"],
+            ["    Observe only. — O5-7", "l-white"],
+            ["", "l-dim"],
+        ], 0, 45);
+    },
+
+    "cat phase4.txt": function() {
+        if (!jadeMode) return printMany([
+            ["ACCESS DENIED", "l-bright"],
+            ["  FILE: phase4.txt  [O5 EYES ONLY]", "l-dim"],
+            ["  Clearance level insufficient.", "l-dim"],
+            ["", "l-dim"],
+        ], 0, 40);
+        return printMany([
+            ["FILE: phase4.txt  [O5 EYES ONLY — ALL REDACTIONS LIFTED]", "l-bright"],
+            "---",
+            ["  PHASE IV — GLOBAL GOVERNANCE TRANSFER", "l-white"],
+            ["", "l-dim"],
+            ["  TRIGGER CONDITIONS (all must be met):", "l-text"],
+            ["    [✓] Warhead count: 7,570  (current: 6,891)", "l-text"],
+            ["    [✓] Territorial coverage: 100%  (current: 74%)", "l-text"],
+            ["    [✓] Memetic compliance layer: fully deployed", "l-text"],
+            ["    [ ] SUNCORE.EXE executed and confirmed stable", "l-bright"],
+            ["    [ ] O5 supermajority vote: 8 of 13 required", "l-bright"],
+            ["", "l-dim"],
+            ["  EXECUTION SEQUENCE:", "l-text"],
+            ["    Step 1: SUNCORE.EXE broadcast — global simultaneous signal", "l-text"],
+            ["    Step 2: All world governments receive Foundation directive 001", "l-text"],
+            ["    Step 3: Transition period — 72 hours", "l-text"],
+            ["    Step 4: Foundation assumes administrative authority globally", "l-text"],
+            ["    Step 5: PUBLIC DISCLOSURE EVENT", "l-text"],
+            ["", "l-dim"],
+            ["  NOTE: Phase IV is not a hostile takeover.", "l-white"],
+            ["  NOTE: Phase IV is the conclusion of a project 77 years in the making.", "l-white"],
+            ["  NOTE: Peace through inevitability.", "l-white"],
+            ["", "l-dim"],
+        ], 0, 45);
+    },
+
+    "cat suncore.exe": function() {
+        if (!jadeMode) return printMany([
+            ["ACCESS DENIED", "l-bright"],
+            ["  FILE: suncore.exe  [O5 EYES ONLY — EXECUTABLE]", "l-dim"],
+            ["  Clearance level insufficient.", "l-dim"],
+            ["", "l-dim"],
+        ], 0, 40);
+        return printMany([
+            ["FILE: suncore.exe  [EXECUTABLE — O5 EYES ONLY]", "l-bright"],
+            "---",
+            ["  SUNCORE — Strategic Unified Network Command / Override & Remote Execute", "l-white"],
+            ["", "l-dim"],
+            ["  Version       : 4.1.7-FINAL", "l-text"],
+            ["  Build date    : ████████", "l-text"],
+            ["  Author        : O5 Engineering Division (collective, anonymous)", "l-text"],
+            ["  Payload size  : 2.3 exabytes", "l-text"],
+            ["  Targets       : ALL NODES SIMULTANEOUSLY", "l-bright"],
+            ["", "l-dim"],
+            ["  FUNCTION:", "l-text"],
+            ["    On execution, broadcasts a simultaneous encoded signal", "l-text"],
+            ["    to all 7,570 delivery systems and all 196 regional command nodes.", "l-text"],
+            ["    No individual abort possible once signal propagates past T+4 seconds.", "l-bright"],
+            ["", "l-dim"],
+            ["  STATUS        : DORMANT — awaiting Phase IV trigger authorization", "l-text"],
+            ["  LAST ARMED    : 14/03/2021  (BUSBISMAN incident — disarmed remotely)", "l-bright"],
+            ["", "l-dim"],
+            ["  TO EXECUTE: Requires simultaneous key input from 8 of 13 O5 members.", "l-text"],
+            ["  This terminal does not have execution authority.", "l-text"],
+            ["  Viewing this file has been logged.", "l-bright"],
             ["", "l-dim"],
         ], 0, 45);
     },
