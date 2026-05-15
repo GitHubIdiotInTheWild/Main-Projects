@@ -1,15 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SCP Strategic Weapons Initiative</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCP Strategic Weapons Initiative</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700&family=Montserrat:wght@400;500&family=Open+Sans:wght@400;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700&family=Montserrat:wght@400;500&family=Open+Sans:wght@400;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 
-    <style>
-        
-        @keyframes fadeNotice {
+<style>
+
+@font-face {
+    font-family: "VCR";
+    src: url("VCR_OSD_MONO.ttf");
+}
+
+/* fade in box */
+@keyframes fadeNotice {
     from {
         opacity: 0;
         transform: translateY(12px);
@@ -20,119 +26,7 @@
     }
 }
 
-        @font-face {
-            font-family: "VCR";
-            src: url("VCR_OSD_MONO.ttf");
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background: #040404;
-            color: #e3e3e3;
-            overflow: hidden;
-            font-family: "Open Sans", sans-serif;
-        }
-
-        .scanlines {
-            position: fixed;
-            inset: 0;
-            pointer-events: none;
-            background: repeating-linear-gradient(
-                transparent 0px,
-                rgba(255,255,255,0.015) 1px,
-                transparent 2px
-            );
-            opacity: 0.3;
-        }
-
-        .container {
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 2rem;
-        }
-
-        .logo {
-            font-family: "Share Tech Mono", monospace;
-            font-size: 5rem;
-            letter-spacing: 18px;
-            color: #c40000;
-            text-shadow: 0 0 18px rgba(196,0,0,0.5);
-        }
-
-        .title {
-            font-family: "Inter", sans-serif;
-            font-size: 1.2rem;
-            font-weight: 700;
-            margin-top: 1rem;
-            letter-spacing: 5px;
-            text-transform: uppercase;
-        }
-
-        .subtitle {
-            font-family: "Montserrat", sans-serif;
-            margin-top: 0.7rem;
-            color: #888;
-            font-size: 0.95rem;
-            letter-spacing: 2px;
-        }
-
-        .warning-box {
-            margin-top: 3rem;
-            border: 1px solid rgba(196,0,0,0.4);
-            background: rgba(196,0,0,0.03);
-            padding: 2rem;
-            max-width: 800px;
-
-            opacity: 0;
-            transform: translateY(12px);
-            animation: fadeNotice 1.2s ease forwards;
-            animation-delay: 1s;
-        }
-
-        .warning-title {
-            font-family: "Inter", sans-serif;
-            color: #c40000;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            text-transform: uppercase;
-        }
-
-        .warning-text {
-            line-height: 1.8;
-            color: #c8c8c8;
-        }
-
-        .motto {
-            font-family: "VCR", monospace;
-            margin-top: 1rem;
-            font-size: 1rem;
-            letter-spacing: 3px;
-            color: transparent;
-        }
-
-        .motto span {
-            opacity: 0;
-            text-shadow: 0 0 0 transparent;
-        }
-
-        .motto span.active {
-            animation: glowIn 0.9s ease forwards;
-        }
-
-        .motto span.solid {
-            color: #ff4040;
-            text-shadow: none;
-        }
-
+/* motto glow */
 @keyframes glowIn {
     0% {
         opacity: 0;
@@ -157,62 +51,192 @@
     }
 }
 
-        .login-box {
-            margin-top: 3rem;
-        }
+/* pulse after reset */
+@keyframes pulseGlow {
+    0%, 100% {
+        text-shadow:
+            0 0 10px #ff4040,
+            0 0 25px #ff0000;
+    }
+    50% {
+        text-shadow:
+            0 0 20px #ff4040,
+            0 0 60px #ff0000,
+            0 0 90px #ff0000;
+    }
+}
 
-        input {
-            width: 340px;
-            padding: 1rem;
-            background: #0a0a0a;
-            border: 1px solid #333;
-            color: white;
-            font-family: "Share Tech Mono", monospace;
-            text-align: center;
-            outline: none;
-        }
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-        button {
-            margin-top: 1rem;
-            padding: 1rem 2rem;
-            border: 1px solid #c40000;
-            background: transparent;
-            color: #c40000;
-            cursor: pointer;
-            font-family: "Inter", sans-serif;
-            text-transform: uppercase;
-            transition: 0.3s;
-        }
+body {
+    background: #040404;
+    color: #e3e3e3;
+    overflow: hidden;
+    font-family: "Open Sans", sans-serif;
+}
 
-        button:hover {
-            background: #c40000;
-            color: black;
-        }
+.scanlines {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+        transparent 0px,
+        rgba(255,255,255,0.015) 1px,
+        transparent 2px
+    );
+    opacity: 0.3;
+}
 
-        .status {
-            margin-top: 2rem;
-            font-family: "VCR", monospace;
-            color: #888;
-            min-height: 50px;
-            opacity: 0;
-            transition: opacity 0.8s ease-in;
-        }
+.container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 2rem;
+}
+
+.logo {
+    font-family: "Share Tech Mono", monospace;
+    font-size: 5rem;
+    letter-spacing: 18px;
+    color: #c40000;
+    text-shadow: 0 0 18px rgba(196,0,0,0.5);
+}
+
+.title {
+    font-family: "Inter", sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-top: 1rem;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+}
+
+.subtitle {
+    font-family: "Montserrat", sans-serif;
+    margin-top: 0.7rem;
+    color: #888;
+    font-size: 0.95rem;
+    letter-spacing: 2px;
+}
+
+/* warning box */
+.warning-box {
+    margin-top: 3rem;
+    border: 1px solid rgba(196,0,0,0.4);
+    background: rgba(196,0,0,0.03);
+    padding: 2rem;
+    max-width: 800px;
+
+    opacity: 0;
+    transform: translateY(12px);
+    animation: fadeNotice 1.2s ease forwards;
+    animation-delay: 1s;
+}
+
+.warning-title {
+    font-family: "Inter", sans-serif;
+    color: #c40000;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+}
+
+.warning-text {
+    line-height: 1.8;
+    color: #c8c8c8;
+}
+
+/* motto system */
+.motto {
+    font-family: "VCR", monospace;
+    margin-top: 1rem;
+    font-size: 1rem;
+    letter-spacing: 3px;
+    color: transparent;
+}
+
+.motto span {
+    opacity: 1;
+    transition: opacity 0.6s ease;
+}
+
+.motto span.active {
+    animation: glowIn 0.9s ease forwards;
+}
+
+.motto span.solid {
+    color: #ff4040;
+    animation: pulseGlow 2.5s infinite ease-in-out;
+}
+
+/* login */
+.login-box {
+    margin-top: 3rem;
+}
+
+input {
+    width: 340px;
+    padding: 1rem;
+    background: #0a0a0a;
+    border: 1px solid #333;
+    color: white;
+    font-family: "Share Tech Mono", monospace;
+    text-align: center;
+    outline: none;
+}
+
+button {
+    margin-top: 1rem;
+    padding: 1rem 2rem;
+    border: 1px solid #c40000;
+    background: transparent;
+    color: #c40000;
+    cursor: pointer;
+    font-family: "Inter", sans-serif;
+    text-transform: uppercase;
+    transition: 0.3s;
+}
+
+button:hover {
+    background: #c40000;
+    color: black;
+}
+
+/* status */
+.status {
+    margin-top: 2rem;
+    font-family: "VCR", monospace;
+    color: #888;
+    min-height: 50px;
+    opacity: 0;
+    transition: opacity 0.8s ease-in;
+}
 
 .status.show {
     opacity: 1;
 }
 
-        .footer {
-        position: absolute;
-            bottom: 25px;
-            right: 45px;
-            font-family: "Montserrat", sans-serif;
-            font-size: 0.8rem;
-            color: #555;
-            letter-spacing: 2px;
-        }
-    </style>
+/* footer */
+.footer {
+    position: absolute;
+    bottom: 25px;
+    right: 45px;
+    font-family: "Montserrat", sans-serif;
+    font-size: 0.8rem;
+    color: #555;
+    letter-spacing: 2px;
+}
+
+</style>
 </head>
+
 <body>
 
 <div class="scanlines"></div>
@@ -226,14 +250,13 @@
     <div class="warning-box">
         <div class="warning-title">Restricted Access Notice</div>
         <div class="warning-text">
-            This archive contains classified documentation pertaining to the Foundation's
-            Strategic Deterrence Initiative. Unauthorized access is punishable under
-            Oversight Directive 12.
+            This archive contains classified documentation pertaining to the Foundation's Strategic Deterrence Initiative. Unauthorized access is punishable under Oversight Directive 12.
         </div>
+
         <div class="motto">
-    <span id="secure">Secure.</span>
-    <span id="contain">Contain.</span>
-    <span id="retaliate">Retaliate.</span>
+            <span id="secure">Secure.</span>
+            <span id="contain">Contain.</span>
+            <span id="retaliate">Retaliate.</span>
         </div>
     </div>
 
@@ -252,6 +275,7 @@ Peace Through Inevitability
 </div>
 
 <script>
+
 function login() {
     const code = document.getElementById("code").value.toLowerCase();
     const status = document.getElementById("status");
@@ -259,6 +283,7 @@ function login() {
     status.classList.remove("show");
 
     setTimeout(() => {
+
         if (code === "omega") {
             status.innerHTML = "ACCESS GRANTED<br>Redirecting to Archive...";
             status.classList.add("show");
@@ -279,15 +304,18 @@ function login() {
             status.innerHTML = "ACCESS DENIED";
             status.classList.add("show");
         }
+
     }, 100);
 }
 
+/* motto animation */
 window.addEventListener("load", () => {
+
     const secure = document.getElementById("secure");
     const contain = document.getElementById("contain");
     const retaliate = document.getElementById("retaliate");
 
-    function glowThenSolid(el) {
+    function glow(el) {
         el.classList.add("active");
 
         setTimeout(() => {
@@ -297,46 +325,30 @@ window.addEventListener("load", () => {
     }
 
     setTimeout(() => {
-        // phase 1 sequential
-        glowThenSolid(secure);
+
+        glow(secure);
+
+        setTimeout(() => glow(contain), 1000);
+        setTimeout(() => glow(retaliate), 2000);
 
         setTimeout(() => {
-            glowThenSolid(contain);
-        }, 1000);
 
-        setTimeout(() => {
-            glowThenSolid(retaliate);
-        }, 2000);
+            [secure, contain, retaliate].forEach(el => {
+                el.classList.remove("solid");
+                el.style.opacity = "0";
+            });
 
-        // phase 2 disappear all
-        setTimeout(() => {
-            secure.classList.remove("solid");
-            contain.classList.remove("solid");
-            retaliate.classList.remove("solid");
-
-            secure.style.opacity = "0";
-            contain.style.opacity = "0";
-            retaliate.style.opacity = "0";
-
-            // phase 3 comeback together
             setTimeout(() => {
-                secure.style.opacity = "1";
-                contain.style.opacity = "1";
-                retaliate.style.opacity = "1";
 
-                secure.classList.add("active");
-                contain.classList.add("active");
-                retaliate.classList.add("active");
+                [secure, contain, retaliate].forEach(el => {
+                    el.style.opacity = "1";
+                    el.classList.add("active");
 
-                setTimeout(() => {
-                    secure.classList.remove("active");
-                    contain.classList.remove("active");
-                    retaliate.classList.remove("active");
-
-                    secure.classList.add("solid");
-                    contain.classList.add("solid");
-                    retaliate.classList.add("solid");
-                }, 900);
+                    setTimeout(() => {
+                        el.classList.remove("active");
+                        el.classList.add("solid");
+                    }, 900);
+                });
 
             }, 800);
 
