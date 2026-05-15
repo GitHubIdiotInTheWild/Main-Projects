@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCP Strategic Weapons Initiative</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700&family=Montserrat:wght@400;500&family=Open+Sans:wght@400;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+    <style>
+        @font-face {
+            font-family: "VCR";
+            src: url("VCR_OSD_MONO.ttf");
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #040404;
+            color: #e3e3e3;
+            overflow: hidden;
+            font-family: "Open Sans", sans-serif;
+        }
+
+        .scanlines {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background: repeating-linear-gradient(
+                transparent 0px,
+                rgba(255,255,255,0.015) 1px,
+                transparent 2px
+            );
+            opacity: 0.3;
+        }
+
+        .container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .logo {
+            font-family: "Share Tech Mono", monospace;
+            font-size: 5rem;
+            letter-spacing: 18px;
+            color: #c40000;
+            text-shadow: 0 0 18px rgba(196,0,0,0.5);
+        }
+
+        .title {
+            font-family: "Inter", sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-top: 1rem;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+        }
+
+        .subtitle {
+            font-family: "Montserrat", sans-serif;
+            margin-top: 0.7rem;
+            color: #888;
+            font-size: 0.95rem;
+            letter-spacing: 2px;
+        }
+
+        .warning-box {
+            margin-top: 3rem;
+            border: 1px solid rgba(196,0,0,0.4);
+            background: rgba(196,0,0,0.03);
+            padding: 2rem;
+            max-width: 800px;
+        }
+
+        .warning-title {
+            font-family: "Inter", sans-serif;
+            color: #c40000;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+        }
+
+        .warning-text {
+            line-height: 1.8;
+            color: #c8c8c8;
+        }
+
+        .motto {
+            font-family: "VCR", monospace;
+            color: #ff4040;
+            margin-top: 1rem;
+            font-size: 1rem;
+            letter-spacing: 3px;
+        }
+
+        .login-box {
+            margin-top: 3rem;
+        }
+
+        input {
+            width: 340px;
+            padding: 1rem;
+            background: #0a0a0a;
+            border: 1px solid #333;
+            color: white;
+            font-family: "Share Tech Mono", monospace;
+            text-align: center;
+            outline: none;
+        }
+
+        button {
+            margin-top: 1rem;
+            padding: 1rem 2rem;
+            border: 1px solid #c40000;
+            background: transparent;
+            color: #c40000;
+            cursor: pointer;
+            font-family: "Inter", sans-serif;
+            text-transform: uppercase;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #c40000;
+            color: black;
+        }
+
+        .status {
+            margin-top: 2rem;
+            font-family: "VCR", monospace;
+            color: #888;
+            min-height: 50px;
+        }
+
+        .footer {
+            position: absolute;
+            bottom: 25px;
+            font-family: "Montserrat", sans-serif;
+            font-size: 0.8rem;
+            color: #555;
+            letter-spacing: 2px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="scanlines"></div>
+
+<div class="container">
+
+    <div class="logo">SCP</div>
+    <div class="title">Strategic Weapons Initiative</div>
+    <div class="subtitle">Omega-Level Internal Access Portal</div>
+
+    <div class="warning-box">
+        <div class="warning-title">Restricted Access Notice</div>
+        <div class="warning-text">
+            This archive contains classified documentation pertaining to the Foundation's
+            Strategic Deterrence Initiative. Unauthorized access is punishable under
+            Oversight Directive 12.
+        </div>
+        <div class="motto">Secure. Contain. Retaliate.</div>
+    </div>
+
+    <div class="login-box">
+        <input id="code" placeholder="Enter Clearance Code">
+        <br>
+        <button onclick="login()">Authenticate</button>
+    </div>
+
+    <div class="status" id="status"></div>
+
+</div>
+
+<div class="footer">
+Peace Through Inevitability
+</div>
+
+<script>
+function login() {
+    const code = document.getElementById("code").value.toLowerCase();
+    const status = document.getElementById("status");
+
+    if (code === "omega") {
+        status.innerHTML = "ACCESS GRANTED<br>Redirecting to Archive...";
+        setTimeout(() => {
+            window.location.href = "dashboard.html";
+        }, 2000);
+
+    } else if (code === "jade") {
+        status.innerHTML = "ANOMALOUS AUTHORIZATION DETECTED";
+
+    } else if (code === "busbis") {
+        status.innerHTML = "Cafeteria reimbursement request denied.";
+
+    } else {
+        status.innerHTML = "ACCESS DENIED";
+    }
+}
+</script>
+
+</body>
+</html>
