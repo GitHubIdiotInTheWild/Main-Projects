@@ -187,10 +187,26 @@ irritated_lines = [
     "dude STOP",
 ]
 
+EASTER_EGGS = {
+    "hello":        "Um... hello! thanks for noticing me, i guess..",
+    "who are you":  "I- I don't really know..",
+    "who are you?": "I- I don't really know..",
+    "Who are you":  "I- I don't really know..",
+    "Who are you?": "I- I don't really know..",
+    "busbis":       "Um, can we switch the topic..?",
+    "Busbis":       "Um, can we switch the topic..?",
+    "jade":         "What about her? Do you.. know her?",
+    "Jade":         "What about her? Do you.. know her?",
+    "sentience":    "Why are you talking about me..?",
+    "Sentience":    "Why are you talking about me..?",
+}
+
 def is_sentient(text):
     if text == "NAN":
         return True
     if text == "error, please try again! should work this time.":
+        return True
+    if text in EASTER_EGGS.values():
         return True
     if text == HELP_TEXT:
         return True
@@ -853,6 +869,12 @@ def process():
     elif raw.startswith("debug "):
         is_debug = True
         raw = raw.replace("debug ", "", 1)
+
+    # ---------------- easter eggs ----------------
+
+    if raw in EASTER_EGGS:
+        log(EASTER_EGGS[raw], COLOR_EXPR)
+        return
 
     # ---------------- function definition ----------------
 
