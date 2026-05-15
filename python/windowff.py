@@ -704,9 +704,16 @@ def show_logo():
         else:
             window.after(600, finish_logo)
 
-    def bob_forever(phase=0.0):
-        place_at(rest_cy + math.sin(phase) * 5)
-        window.after(40, lambda: bob_forever(phase + 0.08))
+    bob_state = [0.0]
+
+    def bob_forever():
+        try:
+            place_at(rest_cy + math.sin(bob_state[0]) * 5)
+            bob_state[0] += 0.08
+        except Exception as e:
+            print(f"[bob] error: {e}")
+            return
+        window.after(40, bob_forever)
 
     def finish_logo():
         ui_y = y2(rest_cy) + 50
