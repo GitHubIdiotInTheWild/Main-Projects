@@ -580,7 +580,7 @@ def show_ui(cx, ui_y):
     credit_label.tkraise()
     music_frame.tkraise()
 
-    border_canvas.tkraise()
+    border_canvas.tk.call('raise', border_canvas._w)
     draw_border()
 
     label.config(fg="#000000")
