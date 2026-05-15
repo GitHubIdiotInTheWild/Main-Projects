@@ -2,6 +2,13 @@
     "Lua.diagnostics.globals": [
         "task",
         "variable3",
-        "variable4"
-    ]
+        "variable4",
+        "variable5",
+        "variable6",
+        "variable7",
+        "variable8",
+        "variable9",
+        "variable10"
+    ],
+    "codeQL.githubDatabase.download": "never"
 }
