@@ -197,21 +197,30 @@ function login() {
     const code = document.getElementById("code").value.toLowerCase();
     const status = document.getElementById("status");
 
-    if (code === "omega") {
-        status.innerHTML = "ACCESS GRANTED<br>Redirecting to Archive...";
-        setTimeout(() => {
-            window.location.href = "dashboard.html";
-        }, 2000);
+    status.classList.remove("show");
 
-    } else if (code === "jade") {
-        status.innerHTML = "ANOMALOUS AUTHORIZATION DETECTED";
+    setTimeout(() => {
+        if (code === "omega") {
+            status.innerHTML = "ACCESS GRANTED<br>Redirecting to Archive...";
+            status.classList.add("show");
 
-    } else if (code === "busbis") {
-        status.innerHTML = "Cafeteria reimbursement request denied.";
+            setTimeout(() => {
+                window.location.href = "dashboard.html";
+            }, 2000);
 
-    } else {
-        status.innerHTML = "ACCESS DENIED";
-    }
+        } else if (code === "jade") {
+            status.innerHTML = "ANOMALOUS AUTHORIZATION DETECTED";
+            status.classList.add("show");
+
+        } else if (code === "busbis") {
+            status.innerHTML = "Cafeteria reimbursement request denied.";
+            status.classList.add("show");
+
+        } else {
+            status.innerHTML = "ACCESS DENIED";
+            status.classList.add("show");
+        }
+    }, 100);
 }
 </script>
 
