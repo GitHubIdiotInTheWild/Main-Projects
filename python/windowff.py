@@ -302,6 +302,19 @@ window.title("Sentient Mathematics")
 window.geometry("1000x560")
 window.configure(bg="black")
 
+def _on_tk_error(exc_type, exc_val, exc_tb):
+    global log_running, bob_paused
+    log_running = False
+    bob_paused = False
+    if exc_type is ValueError and "Exceeds the limit" in str(exc_val):
+        log("that number is too large to display.", COLOR_FACT)
+    else:
+        import traceback
+        traceback.print_exception(exc_type, exc_val, exc_tb)
+        log("something went wrong.", COLOR_FACT)
+
+window.report_callback_exception = _on_tk_error
+
 FONT          = ("VCR OSD Mono", 16)
 FONT_SMALL    = ("VCR OSD Mono", 13)
 FONT_MEDIUM   = ("VCR OSD Mono", 12)
