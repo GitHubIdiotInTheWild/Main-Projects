@@ -226,7 +226,7 @@ def lerp_color(c1, c2, t):
 # ---------------- CRT border canvas ----------------
 # created last so it stays on top via lift()
 
-border_canvas = tk.Canvas(window, bg="", highlightthickness=0)
+border_canvas = tk.Canvas(window, bg="black", highlightthickness=0)
 border_canvas.place(x=0, y=0, relwidth=1, relheight=1)
 
 def draw_border():
