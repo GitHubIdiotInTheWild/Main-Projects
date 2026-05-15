@@ -288,7 +288,7 @@ input#cmd::placeholder { color: #2a0000; }
     <div class="terminal-pane">
         <div class="output" id="output"></div>
         <div class="input-bar">
-            <div class="input-prompt">OMEGA@SCP-TERMINAL:~$</div>
+            <div class="input-prompt" id="input-prompt">OMEGA@SCP-TERMINAL:~$</div>
             <input type="text" id="cmd" placeholder="enter command..." autocomplete="off" spellcheck="false" />
             <div class="cursor"></div>
         </div>
@@ -318,6 +318,13 @@ setInterval(function() {
     const next = new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate() + 1));
     if (n >= next) window.location.href = "index.html";
 }, 1000);
+
+/* account state */
+let jadeMode = false;
+
+function getPrompt() {
+    return jadeMode ? "???@SCP-TERMINAL:~$" : "OMEGA@SCP-TERMINAL:~$";
+}
 
 /* command history */
 const hist = [];
@@ -390,9 +397,13 @@ function echoCmd(raw) {
     const d = document.createElement("div");
     d.className = "line l-prompt";
     d.style.animation = "fadein 0.08s ease forwards";
-    d.textContent = "OMEGA@SCP-TERMINAL:~$ " + raw;
+    d.textContent = getPrompt() + " " + raw;
     output.appendChild(d);
     output.scrollTop = output.scrollHeight;
+}
+
+function updatePromptLabel() {
+    document.getElementById("input-prompt").textContent = getPrompt();
 }
 
 /* commands */
@@ -418,6 +429,25 @@ const COMMANDS = {
     },
 
     "status": function() {
+        if (jadeMode) {
+            return printMany([
+                ["SYSTEM STATUS REPORT  [FULL — ALL REDACTIONS LIFTED]", "l-bright"],
+                "---",
+                ["  NODE          : ALPHA-7", "l-text"],
+                ["  UPTIME        : 28,124 days, 17 hours", "l-text"],
+                ["  CONNECTION    : ENCRYPTED — AES-4096 / ANOMALOUS LAYER ACTIVE", "l-text"],
+                ["  CLEARANCE     : ???", "l-bright"],
+                ["  ANOMALY INDEX : 0.73  (target: 0.00 — never achieved)", "l-text"],
+                ["  WEAPONS PROG  : ACTIVE — 6,891 / 7,570 units confirmed", "l-bright"],
+                ["  SUBJECTS MON  : 3 visible + 47 classified + 1 unlocatable", "l-text"],
+                ["  OPEN INVEST   : 2  (+ 11 above Omega clearance)", "l-text"],
+                "---",
+                ["  STATUS: ALL SYSTEMS NOMINAL", "l-success"],
+                ["  WARNING: UNAUTHORIZED THOUGHT DETECTED IN NETWORK", "l-bright"],
+                ["  NOTE: The thought has been identified. It is yours.", "l-bright"],
+                ["", "l-dim"],
+            ], 0, 50);
+        }
         return printMany([
             ["SYSTEM STATUS REPORT", "l-bright"],
             "---",
@@ -437,6 +467,18 @@ const COMMANDS = {
     },
 
     "whoami": function() {
+        if (jadeMode) {
+            return printMany([
+                ["OPERATOR IDENTITY QUERY", "l-bright"],
+                ["", "l-dim"],
+                ["  CLEARANCE    : ???", "l-bright"],
+                ["  DESIGNATION  : INTERNAL OPERATOR", "l-text"],
+                ["  SESSION ID   : 0106-401-0982", "l-text"],
+                ["  ACCESS SINCE : 00/00/0000 00:00 UTC", "l-text"],
+                ["  IP ORIGIN    : UNKNOWN", "l-text"],
+                ["", "l-dim"],
+            ], 0, 50);
+        }
         return printMany([
             ["OPERATOR IDENTITY QUERY", "l-bright"],
             ["", "l-dim"],
@@ -452,6 +494,24 @@ const COMMANDS = {
     },
 
     "ls": function() {
+        if (jadeMode) {
+            return printMany([
+                ["ACCESSIBLE FILES \u2014 ??? CLEARANCE (ALL FILES VISIBLE):", "l-bright"],
+                ["", "l-dim"],
+                ["  operation.txt       [CLASSIFIED]  [READ-ONLY]", "l-text"],
+                ["  intel.txt           [CLASSIFIED]  [READ-ONLY]", "l-text"],
+                ["  subjects.txt        [CLASSIFIED]  [READ-ONLY]", "l-text"],
+                ["  timeline.txt        [CLASSIFIED]  [READ-ONLY]", "l-text"],
+                ["  breaches.txt        [CLASSIFIED]  [READ-ONLY]", "l-text"],
+                ["", "l-dim"],
+                ["  o5-directives.txt   [O5 EYES ONLY] [READ-ONLY]", "l-text"],
+                ["  phase4.txt          [O5 EYES ONLY] [READ-ONLY]", "l-text"],
+                ["  suncore.exe         [O5 EYES ONLY] [EXECUTABLE]", "l-text"],
+                ["", "l-dim"],
+                ["  13 readable  |  0 locked  |  0 withheld", "l-text"],
+                ["", "l-dim"],
+            ], 0, 45);
+        }
         return printMany([
             ["ACCESSIBLE FILES \u2014 OMEGA CLEARANCE:", "l-bright"],
             ["", "l-dim"],
@@ -470,14 +530,53 @@ const COMMANDS = {
         ], 0, 45);
     },
 
+    "login output jade": async function() {
+        await printMany([
+            ["", "l-dim"],
+            ["  Verifying anomalous token...", "l-dim"],
+            ["  Token state: VALID // UNREGISTERED", "l-bright"],
+            ["  Clearance override: ACTIVE", "l-bright"],
+            ["  All redactions lifted.", "l-text"],
+            ["  All files unlocked.", "l-text"],
+            "---",
+            ["  ANOMALOUS AUTHORIZATION ACCEPTED", "l-bright"],
+            ["  Welcome back. We have been expecting you.", "l-white"],
+            ["", "l-dim"],
+        ], 0, 120);
+        setTimeout(function() {
+            jadeMode = true;
+            updatePromptLabel();
+            document.querySelector(".topbar-mid").textContent = "CLEARANCE: ??? // SESSION ANOMALOUS";
+        }, 120 * 9 + 200);
+    },
+
     "cat operation.txt": function() {
+        if (jadeMode) {
+            return printMany([
+                ["FILE: operation.txt  [FULL — ALL REDACTIONS LIFTED]", "l-bright"],
+                "---",
+                ["  OPERATION SUNFALL \u2014 STRATEGIC DETERRENCE INITIATIVE", "l-white"],
+                ["  Phase I:    Data infiltration and behavioral mapping    [COMPLETE]", "l-text"],
+                ["  Phase II:   Infrastructure influence / node acquisition [COMPLETE]", "l-text"],
+                ["  Phase III:  Controlled destabilization of EASTERN EUROPE [ACTIVE]", "l-bright"],
+                ["  Phase IV:   Global governance transfer to Foundation     [PENDING]", "l-text"],
+                ["", "l-dim"],
+                ["  Redacted integration protocol: MEMETIC COMPLIANCE LAYER", "l-text"],
+                ["  Direct attribution: PROHIBITED BY O5 DECREE 44-A", "l-text"],
+                ["  Field agents operate under deniable identities.", "l-text"],
+                ["  Memory persistence: Level-\u03a9 and ??? clearance only.", "l-text"],
+                ["", "l-dim"],
+                ["  \u2192 Full document: operation.html", "l-dim"],
+                ["", "l-dim"],
+            ], 0, 50);
+        }
         return printMany([
             ["FILE: operation.txt", "l-bright"],
             "---",
             ["  OPERATION SUNFALL \u2014 STRATEGIC DETERRENCE INITIATIVE", "l-white"],
             ["  Phase I:    Data infiltration and behavioral mapping    [COMPLETE]", "l-text"],
             ["  Phase II:   Infrastructure influence / node acquisition [COMPLETE]", "l-text"],
-            ["  Phase III:  Controlled destabilization REGION-7         [ACTIVE]",  "l-bright"],
+            ["  Phase III:  Controlled destabilization REGION-7         [ACTIVE]", "l-bright"],
             ["  Phase IV:   Final compliance enforcement                 [PENDING]", "l-dim"],
             ["", "l-dim"],
             ["  Direct attribution: PROHIBITED", "l-dim"],
@@ -490,6 +589,28 @@ const COMMANDS = {
     },
 
     "cat intel.txt": function() {
+        if (jadeMode) {
+            return printMany([
+                ["FILE: intel.txt  [FULL — ALL REDACTIONS LIFTED]", "l-bright"],
+                "---",
+                ["  RPT-01  Anomalous behavioral clustering \u2014 sector 12-17", "l-text"],
+                ["          Subjects in grid 12-17 exhibit synchronized decisions", "l-text"],
+                ["          without direct communication. Source: unknown.", "l-text"],
+                ["  RPT-02  Unknown encryption \u2014 UNREGISTERED BROADCAST NODE", "l-text"],
+                ["          Signal origin traced to coordinates 59.9N 30.3E.", "l-text"],
+                ["          Node has since vanished from all scans.", "l-text"],
+                ["  RPT-03  Asset feed terminated. Full phrase before cut:", "l-text"],
+                ["          \"THE SUN WILL FALL TWICE AND THE THIRD TIME NO ONE WILL LOOK UP\"", "l-bright"],
+                ["  RPT-04  Recursive observation loop confirmed active.", "l-text"],
+                ["          System logs show the terminal reading its own logs.", "l-bright"],
+                ["", "l-dim"],
+                ["  NOTE: Analysts report feeling watched by system itself.", "l-bright"],
+                ["  O5 NOTE: This is not a malfunction. Do not investigate further.", "l-text"],
+                ["", "l-dim"],
+                ["  \u2192 Full document: intel.html", "l-dim"],
+                ["", "l-dim"],
+            ], 0, 50);
+        }
         return printMany([
             ["FILE: intel.txt \u2014 INTELLIGENCE REPORTS SUMMARY", "l-bright"],
             "---",
@@ -506,6 +627,37 @@ const COMMANDS = {
     },
 
     "cat subjects.txt": function() {
+        if (jadeMode) {
+            return printMany([
+                ["FILE: subjects.txt  [FULL — ALL REDACTIONS LIFTED]", "l-bright"],
+                "---",
+                ["  SCP-OBS-001  GUEST 101", "l-text"],
+                ["    Origin: unknown. Entered via unregistered node 14/03/2024.", "l-text"],
+                ["    Has accessed sectors 3, 7, and 11 with zero authorization events.", "l-text"],
+                ["    Current theory: subject exists partially outside observable space.", "l-bright"],
+                ["", "l-dim"],
+                ["  SCP-OBS-002  JADE HENRY", "l-bright"],
+                ["    Born: Cologne, Germany. Current residence: Cairo, Egypt.", "l-text"],
+                ["    Cohabitants: 2 individuals, identities withheld per O5 order.", "l-text"],
+                ["    Token origin: traced to O5-7. Issuance is DENIED by O5-7.", "l-bright"],
+                ["    True threat assessment: UNQUANTIFIABLE.", "l-bright"],
+                ["", "l-dim"],
+                ["  SCP-OBS-003  BUSBISMAN", "l-bright"],
+                ["    Real name: UNKNOWN. All identity retrieval returns NULL.", "l-text"],
+                ["    Sector 01 breach: accessed O5 terminal for 4 minutes.", "l-text"],
+                ["    Data accessed: O5 council attendance list + Phase IV trigger codes.", "l-bright"],
+                ["    Current threat rating (true): EXTREME. Rating suppressed intentionally.", "l-bright"],
+                ["", "l-dim"],
+                ["  SCP-OBS-004  DR. ELIAS VORN", "l-white"],
+                ["    Former O5-3. Apprehended following INCIDENT-77.", "l-text"],
+                ["    Developed anomalous self-replication ability post-exposure to SCP-2399.", "l-text"],
+                ["    17 confirmed copies currently in containment. Primary: deceased.", "l-bright"],
+                ["    Behavioral data: all copies claim to be the original.", "l-text"],
+                ["", "l-dim"],
+                ["  \u2192 Full document: subfiles.html", "l-dim"],
+                ["", "l-dim"],
+            ], 0, 45);
+        }
         return printMany([
             ["FILE: subjects.txt \u2014 SUBJECT FILES SUMMARY", "l-bright"],
             "---",
@@ -523,6 +675,29 @@ const COMMANDS = {
     },
 
     "cat timeline.txt": function() {
+        if (jadeMode) {
+            return printMany([
+                ["FILE: timeline.txt  [FULL — ALL REDACTIONS LIFTED]", "l-bright"],
+                "---",
+                ["  OVERALL PROGRESS: 61%", "l-white"],
+                ["", "l-dim"],
+                ["  [DONE]  1947  Foundation inception \u2014 SUNFALL authorized by O5 Council", "l-text"],
+                ["  [DONE]  1971  Phase I \u2014 Global surveillance network deployed (6,200 nodes)", "l-text"],
+                ["  [DONE]  1983  Phase II \u2014 Nuclear weapons program initiated under SUNCORE", "l-text"],
+                ["  [DONE]  1994  Warhead milestone: 2,000 units. Stored in Siberia / Atacama / Greenland", "l-text"],
+                ["  [DONE]  2003  Phase III \u2014 Federative restructuring of Russia and Eastern Europe drafted", "l-text"],
+                ["  [DONE]  2017  Warhead milestone: 5,000 units. Anomalous delivery system operational.", "l-text"],
+                ["  [DONE]  2021  BUSBISMAN breach. Phase IV trigger codes accessed. Status: CRITICAL.", "l-bright"],
+                ["  [NOW ]  2024  Final warhead push to 7,570 units", "l-bright"],
+                ["  [NOW ]  2024  Territorial consolidation: 74% complete", "l-bright"],
+                ["  [NOW ]  2024  Global protection mandate: 196 nations covered", "l-bright"],
+                ["  [PEND]  ????  Phase IV \u2014 Transfer of global governance to Foundation administration", "l-text"],
+                ["  [PEND]  ????  PUBLIC DISCLOSURE EVENT \u2014 first contact with civilian population", "l-bright"],
+                ["", "l-dim"],
+                ["  \u2192 Full document: projtimeline.html", "l-dim"],
+                ["", "l-dim"],
+            ], 0, 45);
+        }
         return printMany([
             ["FILE: timeline.txt \u2014 OPERATION TIMELINE SUMMARY", "l-bright"],
             "---",
@@ -547,6 +722,47 @@ const COMMANDS = {
     },
 
     "cat breaches.txt": function() {
+        if (jadeMode) {
+            return printMany([
+                ["FILE: breaches.txt  [FULL — ALL REDACTIONS LIFTED]", "l-bright"],
+                "---",
+                ["  7 incidents logged  |  2 open  |  312 total casualties", "l-white"],
+                ["", "l-dim"],
+                ["  LOG-001  MURAD  2015  CRITICAL  ARCHIVED", "l-text"],
+                ["    Full name: Murad Aliyev. Former MTF-Alpha operative. Rogue.", "l-text"],
+                ["    288 guards neutralized. Withdrew after reaching O5 council chamber door.", "l-text"],
+                ["    Did not enter. Reason: unknown. Has not been seen since.", "l-text"],
+                ["", "l-dim"],
+                ["  LOG-002  JADE HENRY  ANOMALOUS  OPEN", "l-bright"],
+                ["    Token used: JADE. Issued by O5-7 in 1994. Officially never issued.", "l-text"],
+                ["    Sectors accessed during session: ALL SECTORS.", "l-bright"],
+                ["    Session duration: 0 seconds logged. All access was instantaneous.", "l-bright"],
+                ["", "l-dim"],
+                ["  LOG-003  BUSBISMAN  HIGH  OPEN", "l-text"],
+                ["    O5 terminal access: 4 minutes. Files accessed: Phase IV trigger codes,", "l-text"],
+                ["    O5 council seating chart, and one (1) cafeteria floor plan.", "l-text"],
+                ["    Analysts believe the cafeteria floor plan was the primary objective.", "l-bright"],
+                ["", "l-dim"],
+                ["  LOG-004  CHARCOAL  LOW  CLOSED", "l-dim"],
+                ["    Kicked a door. Dog was present. Dog was well behaved.", "l-dim"],
+                ["", "l-dim"],
+                ["  LOG-005  GUEST 101  ANOMALOUS  CLOSED", "l-text"],
+                ["    No entry event on any occasion. Appeared inside restricted sectors.", "l-text"],
+                ["    Passive thermal imaging confirmed presence across 7 sectors simultaneously.", "l-bright"],
+                ["", "l-dim"],
+                ["  LOG-006  UNKNOWN  MODERATE  CLOSED", "l-text"],
+                ["    Shaft used: manifested temporarily. Shaft origin: SCP-2000 side effect.", "l-text"],
+                ["    Files taken: O5 salary records. Leaked to no one. Case closed.", "l-dim"],
+                ["", "l-dim"],
+                ["  LOG-007  O5-3 (VORN COPY 4)  CRITICAL  ARCHIVED", "l-text"],
+                ["    Copy 4 of Dr. Elias Vorn escaped containment and accessed main server room.", "l-text"],
+                ["    Attempted to delete all copies of itself from Foundation records.", "l-text"],
+                ["    Reason given before re-containment: \"I just want to be the only one.\"", "l-bright"],
+                ["", "l-dim"],
+                ["  \u2192 Full document: breachlogs.html", "l-dim"],
+                ["", "l-dim"],
+            ], 0, 40);
+        }
         return printMany([
             ["FILE: breaches.txt \u2014 SECURITY BREACH LOG SUMMARY", "l-bright"],
             "---",
@@ -567,35 +783,66 @@ const COMMANDS = {
 
     "ping": async function() {
         await printLine("  Pinging network nodes...", "l-dim", 0);
-        const nodes = [
-            ["  ALPHA-7 ............... 4ms    OK",                     "l-text"],
-            ["  BETA-3  ............... 11ms   OK",                     "l-text"],
-            ["  GAMMA-9 ............... \u2588\u2588\u2588ms  \u2588\u2588\u2588\u2588",               "l-dim"],
-            ["  DELTA-1 ............... 8ms    OK",                     "l-text"],
-            ["  O5-HUB  ............... \u2588\u2588\u2588\u2588   ACCESS DENIED",       "l-bright"],
+        const nodes = jadeMode ? [
+            ["  ALPHA-7  ............... 4ms    OK",                     "l-text"],
+            ["  BETA-3   ............... 11ms   OK",                     "l-text"],
+            ["  GAMMA-9  ............... 312ms  DEGRADED",               "l-text"],
+            ["  DELTA-1  ............... 8ms    OK",                     "l-text"],
+            ["  O5-HUB   ............... 2ms    OK",                     "l-text"],
+            ["  SUNCORE  ............... 1ms    OK  [ABOVE OMEGA]",      "l-bright"],
+            ["  NODE-00  ............... ???    UNKNOWN ORIGIN",         "l-bright"],
+        ] : [
+            ["  ALPHA-7 ............... 4ms    OK",                      "l-text"],
+            ["  BETA-3  ............... 11ms   OK",                      "l-text"],
+            ["  GAMMA-9 ............... \u2588\u2588\u2588ms  \u2588\u2588\u2588\u2588",                "l-dim"],
+            ["  DELTA-1 ............... 8ms    OK",                      "l-text"],
+            ["  O5-HUB  ............... \u2588\u2588\u2588\u2588   ACCESS DENIED",        "l-bright"],
         ];
         for (let i = 0; i < nodes.length; i++) {
             await printLine(nodes[i][0], nodes[i][1], 150 + i * 220);
         }
-        await printLine("", "l-dim", 1400);
-        await printLine("  4 / 5 nodes responsive. 1 access denied.", "l-text", 1450);
-        await printLine("", "l-dim", 1500);
+        const total = nodes.length;
+        await printLine("", "l-dim", 150 + total * 220);
+        const summary = jadeMode
+            ? "  6 / 7 nodes responsive. NODE-00 origin unresolvable."
+            : "  4 / 5 nodes responsive. 1 access denied.";
+        await printLine(summary, "l-text", 200 + total * 220);
+        await printLine("", "l-dim", 250 + total * 220);
     },
 
     "anomaly scan": async function() {
-        const steps = [
-            ["  Initiating sweep...",                                    "l-dim"],
-            ["  Scanning behavioral clusters...",                        "l-dim"],
-            ["  Checking memory persistence anomalies...",               "l-dim"],
-            ["  Reviewing recursive observation flags...",               "l-dim"],
-            ["  Cross-referencing known subject signatures...",          "l-dim"],
+        const steps = jadeMode ? [
+            ["  Initiating sweep...",                                            "l-dim"],
+            ["  Scanning behavioral clusters...",                                "l-dim"],
+            ["  Checking memory persistence anomalies...",                       "l-dim"],
+            ["  Reviewing recursive observation flags...",                       "l-dim"],
+            ["  Cross-referencing known subject signatures...",                  "l-dim"],
+            ["  Scanning above-Omega classification layers...",                  "l-dim"],
             "---",
-            ["  ANOMALY INDEX: 0.73",                                    "l-text"],
-            ["  2 FLAGGED SIGNATURES DETECTED:",                         "l-bright"],
-            ["    \u2014 Unknown observation pattern in sublevel \u2588\u2588",          "l-text"],
-            ["    \u2014 Unauthorized thought detected in primary network",   "l-bright"],
+            ["  ANOMALY INDEX: 0.73",                                            "l-text"],
+            ["  5 FLAGGED SIGNATURES DETECTED:",                                 "l-bright"],
+            ["    \u2014 Unknown observation pattern in sublevel 12",                  "l-text"],
+            ["    \u2014 Unauthorized thought detected in primary network",             "l-bright"],
+            ["    \u2014 SCP-OBS-001 detected in 3 locations simultaneously",           "l-bright"],
+            ["    \u2014 NODE-00 broadcasting on unregistered frequency",               "l-bright"],
+            ["    \u2014 This terminal has been read by an external observer",           "l-bright"],
             "---",
-            ["  Scan complete. Recommend escalation to O5 review.",      "l-dim"],
+            ["  Scan complete.",                                                  "l-dim"],
+            ["  The last anomaly cannot be resolved. It is structural.",          "l-bright"],
+            ["", "l-dim"],
+        ] : [
+            ["  Initiating sweep...",                                            "l-dim"],
+            ["  Scanning behavioral clusters...",                                "l-dim"],
+            ["  Checking memory persistence anomalies...",                       "l-dim"],
+            ["  Reviewing recursive observation flags...",                       "l-dim"],
+            ["  Cross-referencing known subject signatures...",                  "l-dim"],
+            "---",
+            ["  ANOMALY INDEX: 0.73",                                            "l-text"],
+            ["  2 FLAGGED SIGNATURES DETECTED:",                                 "l-bright"],
+            ["    \u2014 Unknown observation pattern in sublevel \u2588\u2588",                  "l-text"],
+            ["    \u2014 Unauthorized thought detected in primary network",             "l-bright"],
+            "---",
+            ["  Scan complete. Recommend escalation to O5 review.",              "l-dim"],
             ["", "l-dim"],
         ];
         await printMany(steps, 0, 280);
