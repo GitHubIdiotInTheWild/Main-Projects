@@ -85,30 +85,7 @@ body {
     overflow: hidden;
 
     opacity: 0;
-    transform: translateY(10px);
-    animation: cardIn 0.6s ease forwards;
-}
-
-@keyframes cardIn {
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.card:nth-child(1),
-.card:nth-child(2) { animation-delay: 0.2s; }
-
-.card:nth-child(3),
-.card:nth-child(4) { animation-delay: 0.5s; }
-
-.card:nth-child(5),
-.card:nth-child(6) { animation-delay: 0.8s; }
-
-.card:hover {
-    border-color: #c40000;
-    transform: translateY(-3px);
-    box-shadow: 0 0 20px rgba(196,0,0,0.2);
+    transform: translateY(15px);
 }
 
 /* text */
@@ -127,12 +104,18 @@ body {
     line-height: 1.5;
 }
 
+/* hover */
+.card:hover {
+    border-color: #c40000;
+    transform: translateY(-3px);
+    box-shadow: 0 0 20px rgba(196,0,0,0.2);
+}
+
 /* panel */
 .panel {
     background: #0a0a0a;
     border: 1px solid #1a1a1a;
     padding: 20px;
-    height: fit-content;
 }
 
 .panel h2 {
@@ -149,20 +132,6 @@ body {
     font-size: 1rem;
     color: #777;
     line-height: 2;
-}
-
-.log .line {
-    opacity: 0;
-    transform: translateY(6px);
-    display: inline-block;
-    animation: fadeLine 0.6s ease forwards;
-}
-
-@keyframes fadeLine {
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
 }
 
 /* footer */
@@ -211,17 +180,17 @@ body {
             <div class="card-desc">Field data, anomaly logs, and containment breaches.</div>
         </div>
 
-        <div class="card">
+        <div class="card" onclick="openPage('subjects.html')">
             <div class="card-title">SUBJECT FILES</div>
             <div class="card-desc">Key individuals under observation and behavioral tracking.</div>
         </div>
 
-        <div class="card">
+        <div class="card" onclick="openPage('timeline.html')">
             <div class="card-title">PROJECT TIMELINE</div>
             <div class="card-desc">Development history of federative restructuring plan.</div>
         </div>
 
-        <div class="card">
+        <div class="card" onclick="openPage('breach.html')">
             <div class="card-title">SECURITY BREACH LOG</div>
             <div class="card-desc">Unauthorized access attempts and anomaly detection events.</div>
         </div>
@@ -237,17 +206,15 @@ body {
         <h2>SYSTEM STATUS</h2>
 
         <div class="log">
-            <span class="line">CONNECTION: SECURE</span><br>
-            <span class="line">SERVERS: ONLINE</span><br>
-            <span class="line">ANOMALY INDEX: 0.73</span><br>
-            <span class="line">WEAPONS PROGRAM: ACTIVE</span><br><br>
+            CONNECTION: SECURE<br>
+            SERVERS: ONLINE<br>
+            ANOMALY INDEX: 0.73<br>
+            WEAPONS PROGRAM: ACTIVE<br><br>
 
-            <span class="line">
-                LAST UPDATE: <span id="utc-date"></span> // <span id="utc-time"></span> UTC
-            </span><br><br>
+            LAST UPDATE: <span id="utc-date"></span> // <span id="utc-time"></span> UTC<br><br>
 
-            <span class="line">NOTICE:</span><br>
-            <span class="line">UNAUTHORIZED THOUGHT DETECTED IN NETWORK</span>
+            NOTICE:<br>
+            UNAUTHORIZED THOUGHT DETECTED IN NETWORK
         </div>
     </div>
 
@@ -295,17 +262,26 @@ function checkMidnightReset() {
     }
 }
 
+/* fade-in system (FIXED) */
+function animateCards() {
+    const cards = document.querySelectorAll(".card");
+
+    cards.forEach((card, i) => {
+        setTimeout(() => {
+            card.style.transition = "all 0.6s ease";
+            card.style.opacity = "1";
+            card.style.transform = "translateY(0)";
+        }, i * 150);
+    });
+}
+
 /* init */
 updateUTC();
 setInterval(updateUTC, 1000);
 setInterval(checkMidnightReset, 1000);
 
 window.addEventListener("load", () => {
-    const lines = document.querySelectorAll(".log .line");
-
-    lines.forEach((line, i) => {
-        line.style.animationDelay = (i * 0.3) + "s";
-    });
+    animateCards();
 });
 
 </script>
