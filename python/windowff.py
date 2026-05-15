@@ -184,7 +184,7 @@ irritated_lines = [
 def is_sentient(text):
     if text == "NAN":
         return True
-    if text == "Error. Please try again.":
+    if text == "error, please try again! should work this time.":
         return True
     if text == HELP_TEXT:
         return True
