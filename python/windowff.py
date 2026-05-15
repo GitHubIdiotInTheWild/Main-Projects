@@ -212,6 +212,7 @@ window.configure(bg="black")
 FONT        = ("VCR OSD Mono", 16)
 FONT_SMALL  = ("VCR OSD Mono", 13)
 FONT_MEDIUM = ("VCR OSD Mono", 12)
+FONT_LUKEWARM = ("VCR OSD Mono", 15)
 
 # ---------------- lerp ----------------
 
@@ -249,7 +250,7 @@ version_label = tk.Label(window, text="v1.2", font=FONT_SMALL, bg="black", fg="#
 
 # ---------------- clock ----------------
 
-clock_label = tk.Label(window, text="", font=FONT_SMALL, bg="black", fg="#004444")
+clock_label = tk.Label(window, text="", font=FONT_LUKEWARM, bg="black", fg="#004444")
 
 def update_clock():
     now = datetime.datetime.now().strftime("%H:%M:%S")
