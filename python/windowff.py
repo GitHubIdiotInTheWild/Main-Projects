@@ -139,7 +139,8 @@ pygame.mixer.init()
 type_sound = pygame.mixer.Sound(resource_path("type.wav"))
 
 # ---------------- state ----------------
-
+input_history = []
+history_index = -1
 COLOR_DEF = "#ffd700"
 COLOR_EXPR = "#b388ff"
 COLOR_FACT = "#ff6b6b"
@@ -309,6 +310,26 @@ label.pack(pady=10)
 entry = tk.Entry(container, font=FONT, bg="white", fg="black", insertbackground="black", width=30)
 entry.pack(pady=10)
 entry.bind("<Return>", lambda event: process())
+def history_up(event):
+    global history_index
+    if not input_history:
+        return
+    history_index = min(history_index + 1, len(input_history) - 1)
+    entry.delete(0, tk.END)
+    entry.insert(0, input_history[-(history_index + 1)])
+
+def history_down(event):
+    global history_index
+    if history_index <= 0:
+        history_index = -1
+        entry.delete(0, tk.END)
+        return
+    history_index -= 1
+    entry.delete(0, tk.END)
+    entry.insert(0, input_history[-(history_index + 1)])
+
+entry.bind("<Up>", history_up)
+entry.bind("<Down>", history_down)
 
 output = tk.Label(container, text="", font=FONT, bg="black", fg="#bffcff", wraplength=400)
 output.pack(pady=20)
@@ -606,9 +627,12 @@ def run_log_queue():
 # ---------------- MAIN ----------------
 
 def process():
-    global debug_uses, ans
+    global debug_uses, ans, history_index
 
     raw = entry.get().strip()
+    if raw:
+        input_history.append(raw)
+        history_index = -1
 
     is_debug = False
     is_silent = False
