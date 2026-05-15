@@ -27,7 +27,6 @@ body {
     overflow-x: hidden;
 }
 
-/* scanlines */
 .scanlines {
     position: fixed;
     inset: 0;
@@ -40,7 +39,6 @@ body {
     opacity: 0.4;
 }
 
-/* top bar */
 .topbar {
     display: flex;
     justify-content: space-between;
@@ -60,7 +58,6 @@ body {
     color: #777;
 }
 
-/* layout */
 .container {
     display: grid;
     grid-template-columns: 1fr 300px;
@@ -68,7 +65,6 @@ body {
     padding: 40px;
 }
 
-/* folders grid */
 .grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -123,7 +119,6 @@ body {
     line-height: 1.5;
 }
 
-/* side panel */
 .panel {
     background: #0a0a0a;
     border: 1px solid #1a1a1a;
@@ -139,11 +134,35 @@ body {
     letter-spacing: 2px;
 }
 
+/* system log now fully VCR */
 .log {
     font-family: "VCR", monospace;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     color: #777;
     line-height: 1.8;
+}
+
+.log .line {
+    opacity: 0;
+    transform: translateY(6px);
+    display: inline-block;
+    animation: fadeLine 0.6s ease forwards;
+}
+
+@keyframes fadeLine {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.footer {
+    position: fixed;
+    bottom: 20px;
+    right: 30px;
+    font-family: "Montserrat", sans-serif;
+    font-size: 0.8rem;
+    color: #444;
 }
 
 .glitch {
@@ -154,15 +173,6 @@ body {
     0% { text-shadow: 1px 0 red; }
     50% { text-shadow: -1px 0 #ff4444; }
     100% { text-shadow: 1px 0 red; }
-}
-
-.footer {
-    position: fixed;
-    bottom: 20px;
-    right: 30px;
-    font-family: "Montserrat", sans-serif;
-    font-size: 0.8rem;
-    color: #444;
 }
 
 </style>
@@ -215,17 +225,18 @@ body {
 
     <div class="panel">
         <h2>SYSTEM STATUS</h2>
+
         <div class="log">
-            CONNECTION: SECURE<br>
-            SERVERS: ONLINE<br>
-            ANOMALY INDEX: 0.73<br>
-            WEAPONS PROGRAM: ACTIVE<br><br>
+            <span class="line">CONNECTION: SECURE</span><br>
+            <span class="line">SERVERS: ONLINE</span><br>
+            <span class="line">ANOMALY INDEX: 0.73</span><br>
+            <span class="line">WEAPONS PROGRAM: ACTIVE</span><br><br>
 
-            LAST UPDATE:<br>
-            2026.05.15 // 03:42 UTC<br><br>
+            <span class="line">LAST UPDATE:</span><br>
+            <span class="line">2026.05.15 // 03:42 UTC</span><br><br>
 
-            NOTICE:<br>
-            UNAUTHORIZED THOUGHT DETECTED IN NETWORK
+            <span class="line">NOTICE:</span><br>
+            <span class="line">UNAUTHORIZED THOUGHT DETECTED IN NETWORK</span>
         </div>
     </div>
 
@@ -236,9 +247,19 @@ Peace Through Inevitability
 </div>
 
 <script>
+
 function openPage(page) {
     window.location.href = page;
 }
+
+window.addEventListener("load", () => {
+    const lines = document.querySelectorAll(".log .line");
+
+    lines.forEach((line, i) => {
+        line.style.animationDelay = (i * 0.3) + "s";
+    });
+});
+
 </script>
 
 </body>
