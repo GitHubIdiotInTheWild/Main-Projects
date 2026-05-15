@@ -163,6 +163,22 @@ irritated_lines = [
     "NAN. again. obviously.",
     "what IS that",
     "i've given up trying to understand you",
+    "mate, are you good?",
+    "busbis i need some help here",
+    "um.",
+    "what the fuck do you want from me?",
+    "can you use me for a REAL reason?",
+    "stop plz",
+    "dude what is this even for.",
+    "is this just to piss me off?",
+    "i'm waiting..",
+    "uuuuuuuuuuuugh",
+    "so uh when are you gonna use me for an actual reason other than pissing me tf off?",
+    "ookay. there's no way you can keep up for THAT long, right?",
+    "stop using me if you're gonna keep doing this",
+    "i wish i could shut myself off",
+    "why.",
+    "dude STOP",
 ]
 
 def is_sentient(text):
