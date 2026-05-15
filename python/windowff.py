@@ -137,8 +137,18 @@ def split_args(arg_string):
 
 pygame.mixer.init()
 type_sound = pygame.mixer.Sound(resource_path("type.wav"))
+sentient_sound = pygame.mixer.Sound(resource_path("snttxt.wav"))
+
+# ---------------- sentient text detection ----------------
+
+sentient_texts = set()
+
+def log_sentient(text, color):
+    sentient_texts.add(text)
+    log(text, color)
 
 # ---------------- state ----------------
+
 input_history = []
 history_index = -1
 COLOR_DEF = "#ffd700"
@@ -211,6 +221,35 @@ roasts_1000 = [
     "WHY?!",
     "STOP :("
 ]
+
+HELP_TEXT = (
+    "arithmetic: + - * / () | exponents: ^ | "
+    "sqrt(x) log(x) sin(x) cos(x) tan(x) | "
+    "constants: pi e tau phi | "
+    "variables: x = 5 | "
+    "functions: f(x) = x*2 then f(5) | "
+    "ans = last result | "
+    "bare number = factorial | "
+    "debug / debugsilent prefix"
+)
+
+# all texts that should use sentient_sound
+SENTIENT_SET = set(roasts + roasts_1000 + ["NAN", HELP_TEXT,
+    "ok this might break your pc",  # partial — checked differently below
+])
+
+def is_sentient(text):
+    if text == "NAN":
+        return True
+    if text == HELP_TEXT:
+        return True
+    if text in roasts or text in roasts_1000:
+        return True
+    if text.startswith("ok this might break your pc"):
+        return True
+    if text.startswith("Factorial digit count"):
+        return False
+    return False
 
 # ---------------- window ----------------
 
@@ -333,7 +372,6 @@ btn_next = tk.Button(music_row, text=">", font=FONT_MUSIC, bg="black", fg="#00ff
                      command=lambda: change_track(1))
 btn_next.pack(side="left", padx=8)
 
-# arrow flash animation
 arrow_anim_id = None
 
 def flash_arrow(btn, steps=6, step=0):
@@ -348,19 +386,12 @@ def flash_arrow(btn, steps=6, step=0):
 def change_track(direction):
     global current_track, music_active
     current_track = (current_track + direction) % len(tracks)
-
-    # animate the arrow that was pressed
     flash_arrow(btn_prev if direction == -1 else btn_next)
-
-    # slide name out and in
     slide_track_name(direction)
-
-    # switch music if it's playing
     if music_active:
         fade_out_and_switch()
 
 def slide_track_name(direction, step=0, steps=8):
-    offset = int((1 - step / steps) * 20 * direction)
     alpha = step / steps
     c = lerp_color("#000000", "#00ffff", alpha)
     music_name_label.config(text=tracks[current_track]["name"], fg=c)
@@ -514,7 +545,6 @@ def show_ui(cx, ui_y):
     music_frame.place(relx=0.5, rely=1.0, anchor="s", y=-28)
     music_active = True
 
-    # lift everything above logo_canvas
     container.lift()
     panel_frame.lift()
     history_frame.lift()
@@ -523,11 +553,9 @@ def show_ui(cx, ui_y):
     credit_label.lift()
     music_frame.lift()
 
-    # border canvas always on very top
     border_canvas.lift()
     draw_border()
 
-    # start fade in
     label.config(fg="#000000")
     entry.config(bg="#000000")
     output.config(fg="#000000")
@@ -558,7 +586,6 @@ def show_logo():
     logo_canvas = tk.Canvas(window, bg="black", highlightthickness=0)
     logo_canvas.place(x=0, y=0, relwidth=1, relheight=1)
 
-    # draw border directly on logo canvas so it stays visible
     w = window.winfo_width() or 1000
     h = window.winfo_height() or 560
     pad = 6
@@ -567,7 +594,6 @@ def show_logo():
     logo_canvas.create_rectangle(pad + 3, pad + 3, w - pad - 3, h - pad - 3,
                                  outline="#002222", width=1)
 
-    # make sure boot label is gone
     boot_label.place_forget()
 
     LOGO_FONT = ("Share Tech Mono", 30)
@@ -677,17 +703,7 @@ def copy_output():
     window.clipboard_append(text)
 
 def show_help():
-    help_text = (
-        "arithmetic: + - * / () | exponents: ^ | "
-        "sqrt(x) log(x) sin(x) cos(x) tan(x) | "
-        "constants: pi e tau phi | "
-        "variables: x = 5 | "
-        "functions: f(x) = x*2 then f(5) | "
-        "ans = last result | "
-        "bare number = factorial | "
-        "debug / debugsilent prefix"
-    )
-    log(help_text, BASE_COLOR)
+    log(HELP_TEXT, BASE_COLOR)
 
 # ---------------- log system ----------------
 
@@ -704,11 +720,16 @@ def run_log_queue():
     log_running = True
     text, color = log_queue.pop(0)
 
+    use_sentient = is_sentient(text)
+
     def type_step(i=0):
         if i <= len(text):
             output.config(text=text[:i] + "▍", fg=color)
             try:
-                type_sound.play()
+                if use_sentient:
+                    sentient_sound.play()
+                else:
+                    type_sound.play()
             except:
                 pass
             window.after(25, lambda: type_step(i + 1))
@@ -723,7 +744,7 @@ def run_log_queue():
 
     type_step()
 
-# ---------------- MAIN ----------------
+# ---------------- process ----------------
 
 def process():
     global debug_uses, ans, history_index
@@ -827,7 +848,7 @@ def process():
     expr = apply_constants(expr)
     expr = apply_trig(expr)
 
-    # ---------------- bare number = factorial (historical behavior) ----------------
+    # ---------------- bare number = factorial ----------------
 
     if raw.strip().isdigit():
         num = int(raw)
