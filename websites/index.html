@@ -139,7 +139,13 @@
             font-family: "VCR", monospace;
             color: #888;
             min-height: 50px;
+            opacity: 0;
+            transition: opacity 0.8s ease-in;
         }
+
+.status.show {
+    opacity: 1;
+}
 
         .footer {
             position: absolute;
