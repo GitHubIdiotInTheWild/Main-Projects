@@ -517,6 +517,30 @@ function updatePromptLabel() {
 const COMMANDS = {
 
     "help": function() {
+        if (jadeMode) {
+            return printMany([
+                ["AVAILABLE COMMANDS  [ALL REDACTIONS LIFTED]", "l-bright"],
+                "---",
+                ["  help              — display this message", "l-text"],
+                ["  status            — system status report", "l-text"],
+                ["  whoami            — current operator identity", "l-text"],
+                ["  ls                — list accessible archive files", "l-text"],
+                ["  cat <file>        — read archive file", "l-text"],
+                ["  ping              — test network nodes", "l-text"],
+                ["  anomaly scan      — run anomaly detection sweep", "l-text"],
+                ["  clear             — clear terminal output", "l-text"],
+                "---",
+                ["  O5-LEVEL ACCESS:", "l-bright"],
+                ["  cat o5-directives.txt  — O5 council directives (all 4)", "l-text"],
+                ["  cat phase4.txt         — Phase IV full execution plan", "l-text"],
+                ["  cat suncore.exe        — SUNCORE specs and status", "l-text"],
+                ["  forcerun suncore.exe   — execute SUNCORE broadcast", "l-bright"],
+                "---",
+                ["  FILES (standard): operation.txt  intel.txt  subjects.txt  timeline.txt  breaches.txt", "l-dim"],
+                ["  FILES (O5):       o5-directives.txt  phase4.txt  suncore.exe", "l-dim"],
+                ["", "l-dim"],
+            ], 0, 40);
+        }
         return printMany([
             ["AVAILABLE COMMANDS:", "l-bright"],
             "---",
