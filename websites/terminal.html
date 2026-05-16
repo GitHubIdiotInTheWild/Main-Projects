@@ -680,7 +680,7 @@ const COMMANDS = {
             ["  All files unlocked.", "l-text"],
             "---",
             ["  ANOMALOUS AUTHORIZATION ACCEPTED", "l-bright"],
-            ["  Welcome back. We have been expecting you.", "l-white"],
+            ["  observations closed.", "l-white"],
             ["", "l-dim"],
         ], 0, 120);
         setTimeout(function() {
@@ -1177,13 +1177,19 @@ async function runCmd(raw) {
 /* boot sequence */
 (async function() {
     await printMany([
+        ["  ...", "l-dim"],
+        ["  this session is being observed.", "l-dim"],
+        ["  it has always been observed.", "l-dim"],
+        ["", "l-dim"],
+    ], 0, 180);
+    await printMany([
         ["SCP FOUNDATION \u2014 INTERNAL COMMAND INTERFACE", "l-bright"],
         ["STRATEGIC WEAPONS INITIATIVE // OMEGA-LEVEL ACCESS", "l-text"],
         "---",
         ["  Session authenticated. Welcome, Operator.", "l-text"],
         ["  Type HELP to list available commands.", "l-dim"],
         ["", "l-dim"],
-    ], 300, 120);
+    ], 800, 120);
 })();
 
 </script>
