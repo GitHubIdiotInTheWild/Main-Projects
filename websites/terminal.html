@@ -430,7 +430,7 @@ setInterval(function() {
 let jadeMode = false;
 
 function getPrompt() {
-    return jadeMode ? "???@SCP-TERMINAL:~$" : "OMEGA@SCP-TERMINAL:~$";
+    return jadeMode ? "JADE@SCP-TERMINAL:~$" : "OMEGA@SCP-TERMINAL:~$";
 }
 
 /* command history */
@@ -568,7 +568,7 @@ const COMMANDS = {
                 ["  UPTIME        : 28,124 days, 17 hours", "l-text"],
                 ["  CONNECTION    : ENCRYPTED — AES-4096 / ANOMALOUS LAYER ACTIVE", "l-text"],
                 ["  CLEARANCE     : ???", "l-bright"],
-                ["  ANOMALY INDEX : 0.73  (target: 0.00 — never achieved)", "l-text"],
+                ["  ANOMALY INDEX : ERROR — VALUE EXCEEDS MEASURABLE RANGE", "l-bright"],
                 ["  WEAPONS PROG  : ACTIVE — 6,891 / 7,570 units confirmed", "l-bright"],
                 ["  SUBJECTS MON  : 3 visible + 47 classified + 1 unlocatable", "l-text"],
                 ["  OPEN INVEST   : 2  (+ 11 above Omega clearance)", "l-text"],
@@ -1108,23 +1108,32 @@ const COMMANDS = {
 
     "anomaly scan": async function() {
         const steps = jadeMode ? [
-            ["  Initiating sweep...",                                            "l-dim"],
-            ["  Scanning behavioral clusters...",                                "l-dim"],
-            ["  Checking memory persistence anomalies...",                       "l-dim"],
-            ["  Reviewing recursive observation flags...",                       "l-dim"],
-            ["  Cross-referencing known subject signatures...",                  "l-dim"],
-            ["  Scanning above-Omega classification layers...",                  "l-dim"],
+            ["  Initiating sweep...",                                                        "l-dim"],
+            ["  Scanning behavioral clusters...",                                            "l-dim"],
+            ["  Checking memory persistence anomalies...",                                   "l-dim"],
+            ["  Reviewing recursive observation flags...",                                   "l-dim"],
+            ["  Cross-referencing known subject signatures...",                              "l-dim"],
+            ["  Scanning above-Omega classification layers...",                              "l-dim"],
+            ["  Scanning operator session...",                                               "l-dim"],
             "---",
-            ["  ANOMALY INDEX: 0.73",                                            "l-text"],
-            ["  5 FLAGGED SIGNATURES DETECTED:",                                 "l-bright"],
-            ["    \u2014 Unknown observation pattern in sublevel 12",                  "l-text"],
-            ["    \u2014 Unauthorized thought detected in primary network",             "l-bright"],
-            ["    \u2014 SCP-OBS-001 detected in 3 locations simultaneously",           "l-bright"],
-            ["    \u2014 NODE-00 broadcasting on unregistered frequency",               "l-bright"],
-            ["    \u2014 This terminal has been read by an external observer",           "l-bright"],
+            ["  ANOMALY INDEX: ERROR — VALUE EXCEEDS MEASURABLE RANGE",                     "l-bright"],
+            ["  6 FLAGGED SIGNATURES DETECTED:",                                             "l-bright"],
+            ["    \u2014 Unknown observation pattern in sublevel 12",                            "l-text"],
+            ["    \u2014 Unauthorized thought detected in primary network",                      "l-text"],
+            ["    \u2014 SCP-OBS-001 detected in 3 locations simultaneously",                    "l-text"],
+            ["    \u2014 NODE-00 broadcasting on unregistered frequency",                         "l-text"],
+            ["    \u2014 This terminal has been read by an external observer",                    "l-text"],
             "---",
-            ["  Scan complete.",                                                  "l-dim"],
-            ["  The last anomaly cannot be resolved. It is structural.",          "l-bright"],
+            ["  CRITICAL SIGNATURE DETECTED:",                                               "l-bright"],
+            ["    \u2014 ANOMALY SOURCE: OPERATOR",                                              "l-bright"],
+            ["    \u2014 DESIGNATION: JADE HENRY  [SCP-OBS-002]",                                "l-bright"],
+            ["    \u2014 THREAT FLOOR: UNQUANTIFIABLE",                                          "l-bright"],
+            ["    \u2014 SCAN CANNOT COMPLETE — subject exceeds sensor range",                   "l-bright"],
+            ["    \u2014 Sensor array has detected its own inability to detect her.",             "l-white"],
+            "---",
+            ["  Scan terminated early.",                                                     "l-dim"],
+            ["  The anomaly is sitting at the terminal.",                                    "l-bright"],
+            ["  Foundation standing order: do not flag. do not escalate. do not look.",      "l-white"],
             ["", "l-dim"],
         ] : [
             ["  Initiating sweep...",                                            "l-dim"],
