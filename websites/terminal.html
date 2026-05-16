@@ -1174,14 +1174,43 @@ async function runCmd(raw) {
     }
 }
 
+/* glitch helper */
+function glitchLine(el, glitchText, original) {
+    setTimeout(function() {
+        el.textContent = glitchText;
+        setTimeout(function() {
+            el.textContent = original;
+        }, 260);
+    }, 120);
+}
+
 /* boot sequence */
 (async function() {
+    const glitchVariants = [
+        "  this session is being observed by J\u0336A\u0330D\u0337E\u0334.",
+        "  jade henry — session open",
+        "  [JADE TOKEN DETECTED — LOG SUPPRESSED]",
+        "  it has always been observed. she was here first.",
+    ];
+
     await printMany([
         ["  ...", "l-dim"],
         ["  this session is being observed.", "l-dim"],
         ["  it has always been observed.", "l-dim"],
         ["", "l-dim"],
     ], 0, 180);
+
+    if (Math.random() < 0.33) {
+        const lines = output.querySelectorAll(".line.l-dim");
+        const targets = [lines[1], lines[2]].filter(Boolean);
+        if (targets.length) {
+            const el = targets[Math.floor(Math.random() * targets.length)];
+            const original = el.textContent;
+            const glitch = glitchVariants[Math.floor(Math.random() * glitchVariants.length)];
+            glitchLine(el, glitch, original);
+        }
+    }
+
     await printMany([
         ["SCP FOUNDATION \u2014 INTERNAL COMMAND INTERFACE", "l-bright"],
         ["STRATEGIC WEAPONS INITIATIVE // OMEGA-LEVEL ACCESS", "l-text"],
