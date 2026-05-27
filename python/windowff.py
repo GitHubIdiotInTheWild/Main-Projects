@@ -317,6 +317,7 @@ bob_paused = False
 compute_irritation = 0
 anxiety_score = 0
 terminal_mode = False
+boot_cancelled = False
 _idle_job = None
 _terminal_glow_job = None
 result_history = []
@@ -681,10 +682,15 @@ tk.Button(btn_row2, text="copy", font=FONT, bg="#111111", fg="#b388ff", command=
 tk.Button(btn_row2, text="help", font=FONT, bg="#111111", fg="#ff6b6b", command=lambda: show_help()).pack(side="left", padx=6)
 
 term_btn_row = tk.Frame(container, bg="black")
-term_help_btn = tk.Button(term_btn_row, text="help [debug]", font=FONT, bg="#330000", fg="#ff5555",
-                          activebackground="#550000", activeforeground="#ff8888",
-                          command=lambda: log(TERM_HELP_TEXT, COLOR_TERM))
-term_help_btn.pack()
+tk.Button(term_btn_row, text="clear", font=FONT, bg="#1a0000", fg="#ff5555",
+          activebackground="#330000", activeforeground="#ff8888",
+          command=lambda: output.config(text="")).pack(side="left", padx=6)
+tk.Button(term_btn_row, text="copy", font=FONT, bg="#1a0000", fg="#ff5555",
+          activebackground="#330000", activeforeground="#ff8888",
+          command=lambda: copy_output()).pack(side="left", padx=6)
+tk.Button(term_btn_row, text="help [debug]", font=FONT, bg="#330000", fg="#ff5555",
+          activebackground="#550000", activeforeground="#ff8888",
+          command=lambda: log(TERM_HELP_TEXT, COLOR_TERM)).pack(side="left", padx=6)
 
 # ---------------- boot sequence ----------------
 
@@ -695,15 +701,22 @@ skip_btn = tk.Button(window, text="Attempt to skip", font=FONT, bg="#111111", fg
                      command=lambda: attempt_skip())
 skip_btn.place(relx=0.5, rely=0.9, anchor="center")
 
+def _debug_skip():
+    global boot_cancelled
+    boot_cancelled = True
+    launch_app()
+
 debug_skip_btn = tk.Button(window, text="debug skip", font=("VCR OSD Mono", 9),
                            bg="black", fg="#333333", bd=0,
                            activebackground="black", activeforeground="#666666",
-                           command=lambda: launch_app())
+                           command=_debug_skip)
 debug_skip_btn.place(relx=1.0, rely=1.0, anchor="se", x=-6, y=-6)
 
 # ---------------- type boot ----------------
 
 def type_boot(text, on_done, i=0):
+    if boot_cancelled:
+        return
     if i <= len(text):
         boot_label.config(text=text[:i] + ("▍" if i < len(text) else ""))
         try:
@@ -718,20 +731,25 @@ def type_boot(text, on_done, i=0):
 # ---------------- boot steps ----------------
 
 def boot_step_3_done():
+    if boot_cancelled: return
     msg = "Activation success! Sentience gained. Bringing interface to main application."
     def after_last():
-        window.after(1800, launch_app)
+        if not boot_cancelled:
+            window.after(1800, launch_app)
     type_boot(msg, after_last)
 
 def boot_step_2_done():
-    window.after(7000, boot_step_3_done)
+    if boot_cancelled: return
+    window.after(7000, lambda: boot_step_3_done() if not boot_cancelled else None)
 
 def boot_step_1_done():
+    if boot_cancelled: return
     msg = "Activation failed. Promptly restarting..."
     type_boot(msg, boot_step_2_done)
 
 def boot_step_0_done():
-    window.after(3000, lambda: type_boot("Loading complete! Activating...", boot_step_1_done))
+    if boot_cancelled: return
+    window.after(3000, lambda: type_boot("Loading complete! Activating...", boot_step_1_done) if not boot_cancelled else None)
 
 def start_boot():
     type_boot("Loading...", boot_step_0_done)
