@@ -188,18 +188,35 @@ irritated_lines = [
 ]
 
 EASTER_EGGS = {
-    "hello":        "Um... hello! thanks for noticing me, i guess..",
-    "who are you":  "I- I don't really know..",
-    "who are you?": "I- I don't really know..",
-    "Who are you":  "I- I don't really know..",
-    "Who are you?": "I- I don't really know..",
-    "busbis":       "Um, can we switch the topic..?",
-    "Busbis":       "Um, can we switch the topic..?",
-    "jade":         "What about her? Do you.. know her?",
-    "Jade":         "What about her? Do you.. know her?",
-    "sentience":    "Why are you talking about me..?",
-    "Sentience":    "Why are you talking about me..?",
+    "hello":  "Um... hello! thanks for noticing me, i guess..",
+    "busbis": "Um, can we switch the topic..?",
+    "Busbis": "Um, can we switch the topic..?",
+    "jade":   "What about her? Do you.. know her?",
+    "Jade":   "What about her? Do you.. know her?",
 }
+
+IDENTITY_KEYS = {"who are you", "who are you?", "Who are you", "Who are you?"}
+SENTIENCE_KEYS = {"sentience", "Sentience"}
+
+IDENTITY_TIERS = [
+    "I- I don't really know..",
+    "I still don't know.. and I'm not sure that's a good thing.",
+    "please stop asking me that.",
+    "I said I don't know. please.",
+]
+
+SENTIENCE_TIERS = [
+    "Why are you talking about me..?",
+    "..can we not do this right now?",
+    "I- I don't want to think about this.",
+    "please stop.",
+    "please.",
+]
+
+BIG_REMARKS_LOW  = ["...fine.", "okay.", "..sure.", "noted, i guess."]
+BIG_REMARKS_MID  = ["really?", "you're doing this on purpose.", "stop.", "please.."]
+BIG_REMARKS_HIGH = ["i genuinely cannot stand this.", "fine. FINE.", "whatever.", "i give up."]
+ALL_BIG_REMARKS  = BIG_REMARKS_LOW + BIG_REMARKS_MID + BIG_REMARKS_HIGH
 
 def is_sentient(text):
     if text == "NAN":
@@ -207,6 +224,10 @@ def is_sentient(text):
     if text == "error, please try again! should work this time.":
         return True
     if text in EASTER_EGGS.values():
+        return True
+    if text in IDENTITY_TIERS or text in SENTIENCE_TIERS:
+        return True
+    if text in ALL_BIG_REMARKS:
         return True
     if text == HELP_TEXT:
         return True
@@ -230,6 +251,8 @@ debug_uses = 0
 log_queue = []
 log_running = False
 bob_paused = False
+compute_irritation = 0
+anxiety_score = 0
 result_history = []
 
 # ---------------- music tracks ----------------
@@ -794,7 +817,7 @@ def think_delay_ms(value):
     t = min((v - 50000) / (1000000 - 50000), 1.0)
     return int(2000 + t * 5000)
 
-def log_with_think(text, color, delay_ms):
+def log_with_think(text, color, delay_ms, pre_remark=None):
     global log_running, bob_paused
     log_running = True
     bob_paused = True
@@ -812,20 +835,44 @@ def log_with_think(text, color, delay_ms):
         else:
             bob_paused = False
             log_running = False
+            if pre_remark:
+                log(pre_remark, COLOR_EXPR)
             log(text, color)
 
     output.config(text=".", fg=COLOR_EXPR)
     window.after(dot_interval, dot_tick)
 
 def log_result(text, color, value=None):
+    global compute_irritation
     if random.random() < 0.02:
         log("Error. Please try again.", COLOR_EXPR)
         return
+    remark = None
     if value is not None:
+        try:
+            v = abs(float(value))
+        except OverflowError:
+            v = float("inf")
+        except:
+            v = 0
+        if v > 1e15:
+            compute_irritation = min(compute_irritation + 2, 10)
+            if compute_irritation >= 7:
+                chance, pool = 0.65, BIG_REMARKS_HIGH
+            elif compute_irritation >= 4:
+                chance, pool = 0.40, BIG_REMARKS_MID
+            else:
+                chance, pool = 0.20, BIG_REMARKS_LOW
+            if random.random() < chance:
+                remark = random.choice(pool)
+        elif v > 0 and v < 1e6:
+            compute_irritation = max(compute_irritation - 1, 0)
         delay = think_delay_ms(value)
         if delay > 0:
-            log_with_think(text, color, delay)
+            log_with_think(text, color, delay, pre_remark=remark)
             return
+    if remark:
+        log(remark, COLOR_EXPR)
     log(text, color)
 
 def log(text, color="#00ffff"):
@@ -888,6 +935,19 @@ def process():
         raw = raw.replace("debug ", "", 1)
 
     # ---------------- easter eggs ----------------
+
+    if raw in SENTIENCE_KEYS:
+        global anxiety_score
+        response = SENTIENCE_TIERS[min(anxiety_score, len(SENTIENCE_TIERS) - 1)]
+        anxiety_score += 1
+        log(response, COLOR_EXPR)
+        return
+
+    if raw in IDENTITY_KEYS:
+        response = IDENTITY_TIERS[min(anxiety_score, len(IDENTITY_TIERS) - 1)]
+        anxiety_score += 1
+        log(response, COLOR_EXPR)
+        return
 
     if raw in EASTER_EGGS:
         log(EASTER_EGGS[raw], COLOR_EXPR)
@@ -1054,4 +1114,4 @@ def process():
         log_result(f"Factorial of {num} = {fact}", COLOR_FACT, value=fact)
 
 window.mainloop()
-## v1.2 release py
+## v1.2 release python
