@@ -407,6 +407,11 @@ window.title("Sentient Mathematics")
 window.geometry("1000x560")
 window.configure(bg="black")
 
+try:
+    window.iconbitmap(resource_path("icon.ico"))
+except:
+    pass
+
 def _on_tk_error(exc_type, exc_val, exc_tb):
     global log_running, bob_paused
     log_running = False
@@ -869,16 +874,14 @@ def exit_terminal_mode():
         logo_canvas.tkraise()
         container.tkraise()
     try:
+        music_path = resource_path(tracks[current_track]["file"])
+        pygame.mixer.music.stop()
+        pygame.mixer.music.load(music_path)
         pygame.mixer.music.play(-1)
         pygame.mixer.music.set_volume(1.0)
-    except:
-        try:
-            music_path = resource_path(tracks[current_track]["file"])
-            pygame.mixer.music.load(music_path)
-            pygame.mixer.music.play(-1)
-            pygame.mixer.music.set_volume(1.0)
-        except Exception as e:
-            print(f"[music] failed to restart: {e}")
+        print(f"[music] restarted: {music_path}")
+    except Exception as e:
+        print(f"[music] failed to restart: {e}")
     music_active = True
     _reset_idle()
 
