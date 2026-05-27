@@ -88,11 +88,29 @@ def apply_trig(expr):
         except:
             return 0
 
-    expr = re.sub(r"sqrt\(([^)]+)\)", lambda m: str(math.sqrt(safe_eval(m.group(1)))), expr)
-    expr = re.sub(r"log\(([^)]+)\)", lambda m: str(math.log10(safe_eval(m.group(1)))), expr)
-    expr = re.sub(r"sin\(([^)]+)\)", lambda m: str(math.sin(math.radians(safe_eval(m.group(1))))), expr)
-    expr = re.sub(r"cos\(([^)]+)\)", lambda m: str(math.cos(math.radians(safe_eval(m.group(1))))), expr)
-    expr = re.sub(r"tan\(([^)]+)\)", lambda m: str(math.tan(math.radians(safe_eval(m.group(1))))), expr)
+    def cbrt(v):
+        return math.copysign(abs(v) ** (1/3), v)
+
+    expr = re.sub(r"cbrt\(([^)]+)\)",    lambda m: str(cbrt(safe_eval(m.group(1)))),                        expr)
+    expr = re.sub(r"sqrt\(([^)]+)\)",    lambda m: str(math.sqrt(safe_eval(m.group(1)))),                   expr)
+    expr = re.sub(r"log10\(([^)]+)\)",   lambda m: str(math.log10(safe_eval(m.group(1)))),                  expr)
+    expr = re.sub(r"log2\(([^)]+)\)",    lambda m: str(math.log2(safe_eval(m.group(1)))),                   expr)
+    expr = re.sub(r"log\(([^)]+)\)",     lambda m: str(math.log10(safe_eval(m.group(1)))),                  expr)
+    expr = re.sub(r"exp\(([^)]+)\)",     lambda m: str(math.exp(safe_eval(m.group(1)))),                    expr)
+    expr = re.sub(r"asin\(([^)]+)\)",    lambda m: str(math.degrees(math.asin(safe_eval(m.group(1))))),     expr)
+    expr = re.sub(r"acos\(([^)]+)\)",    lambda m: str(math.degrees(math.acos(safe_eval(m.group(1))))),     expr)
+    expr = re.sub(r"atan\(([^)]+)\)",    lambda m: str(math.degrees(math.atan(safe_eval(m.group(1))))),     expr)
+    expr = re.sub(r"sinh\(([^)]+)\)",    lambda m: str(math.sinh(safe_eval(m.group(1)))),                   expr)
+    expr = re.sub(r"cosh\(([^)]+)\)",    lambda m: str(math.cosh(safe_eval(m.group(1)))),                   expr)
+    expr = re.sub(r"tanh\(([^)]+)\)",    lambda m: str(math.tanh(safe_eval(m.group(1)))),                   expr)
+    expr = re.sub(r"sin\(([^)]+)\)",     lambda m: str(math.sin(math.radians(safe_eval(m.group(1))))),      expr)
+    expr = re.sub(r"cos\(([^)]+)\)",     lambda m: str(math.cos(math.radians(safe_eval(m.group(1))))),      expr)
+    expr = re.sub(r"tan\(([^)]+)\)",     lambda m: str(math.tan(math.radians(safe_eval(m.group(1))))),      expr)
+    expr = re.sub(r"abs\(([^)]+)\)",     lambda m: str(abs(safe_eval(m.group(1)))),                         expr)
+    expr = re.sub(r"floor\(([^)]+)\)",   lambda m: str(math.floor(safe_eval(m.group(1)))),                  expr)
+    expr = re.sub(r"ceil\(([^)]+)\)",    lambda m: str(math.ceil(safe_eval(m.group(1)))),                   expr)
+    expr = re.sub(r"round\(([^)]+)\)",   lambda m: str(round(safe_eval(m.group(1)))),                       expr)
+    expr = re.sub(r"fact\(([^)]+)\)",    lambda m: str(factorial(int(safe_eval(m.group(1))))),               expr)
 
     return expr
 
@@ -259,6 +277,8 @@ BIG_REMARKS_MID  = ["really?", "you're doing this on purpose.", "stop.", "please
 BIG_REMARKS_HIGH = ["i genuinely cannot stand this.", "fine. FINE.", "whatever.", "i give up."]
 ALL_BIG_REMARKS  = BIG_REMARKS_LOW + BIG_REMARKS_MID + BIG_REMARKS_HIGH
 
+IDLE_MESSAGE = "Sooo, would you rather just fucking close me already? My attention span is getting worse from the brainrot i see sometimes."
+
 def is_sentient(text):
     if text == "NAN":
         return True
@@ -269,6 +289,8 @@ def is_sentient(text):
     if text in IDENTITY_TIERS or text in SENTIENCE_TIERS:
         return True
     if text in ALL_BIG_REMARKS:
+        return True
+    if text == IDLE_MESSAGE:
         return True
     if text == HELP_TEXT:
         return True
@@ -294,6 +316,8 @@ log_running = False
 bob_paused = False
 compute_irritation = 0
 anxiety_score = 0
+terminal_mode = False
+_idle_job = None
 result_history = []
 
 # ---------------- music tracks ----------------
@@ -605,7 +629,21 @@ def _on_tab(event):
         _update_ghost()
     return "break"
 
-entry.bind("<KeyRelease>", _update_ghost)
+def _reset_idle(event=None):
+    global _idle_job, terminal_mode
+    if terminal_mode:
+        return
+    if _idle_job is not None:
+        window.after_cancel(_idle_job)
+    _idle_job = window.after(15000, _fire_idle)
+
+def _fire_idle():
+    global _idle_job, terminal_mode
+    _idle_job = None
+    if not terminal_mode and not log_running:
+        log(IDLE_MESSAGE, COLOR_EXPR)
+
+entry.bind("<KeyRelease>", lambda e: [_update_ghost(e), _reset_idle(e)])
 entry.bind("<Tab>", _on_tab)
 
 output = tk.Label(container, text="", font=FONT, bg="black", fg="#bffcff", wraplength=400)
@@ -684,6 +722,58 @@ def restart_boot():
     start_boot()
 
 # ---------------- show all UI elements ----------------
+
+def enter_terminal_mode():
+    global terminal_mode, music_active, _idle_job
+    terminal_mode = True
+    if _idle_job is not None:
+        window.after_cancel(_idle_job)
+        _idle_job = None
+    label.pack_forget()
+    output.pack_forget()
+    run_btn.pack_forget()
+    btn_row1.pack_forget()
+    btn_row2.pack_forget()
+    panel_frame.place_forget()
+    history_frame.place_forget()
+    music_frame.place_forget()
+    version_label.place_forget()
+    clock_label.place_forget()
+    credit_label.place_forget()
+    if logo_canvas:
+        logo_canvas.lower()
+    try:
+        pygame.mixer.music.fadeout(800)
+    except:
+        pass
+    music_active = False
+
+def exit_terminal_mode():
+    global terminal_mode, music_active
+    terminal_mode = False
+    label.pack(pady=10, before=entry)
+    output.pack(pady=20)
+    run_btn.pack(pady=10)
+    btn_row1.pack(pady=4)
+    btn_row2.pack(pady=4)
+    panel_frame.place(relx=1.0, rely=0.5, anchor="e", x=-18, y=0)
+    history_frame.place(relx=0.0, rely=0.5, anchor="w", x=18, y=0)
+    music_frame.place(relx=0.5, rely=1.0, anchor="s", y=-28)
+    version_label.place(relx=1.0, rely=1.0, anchor="se", x=-10, y=-10)
+    clock_label.place(relx=1.0, rely=0.0, anchor="ne", x=-10, y=10)
+    credit_label.place(relx=0.0, rely=1.0, anchor="sw", x=10, y=-10)
+    if logo_canvas:
+        logo_canvas.tkraise()
+        container.tkraise()
+    try:
+        music_path = resource_path(tracks[current_track]["file"])
+        pygame.mixer.music.load(music_path)
+        pygame.mixer.music.play(-1)
+        pygame.mixer.music.set_volume(1.0)
+    except:
+        pass
+    music_active = True
+    _reset_idle()
 
 def show_ui(cx, ui_y):
     global music_active
@@ -986,9 +1076,10 @@ def run_log_queue():
 # ---------------- MAIN ----------------
 
 def process():
-    global debug_uses, ans, history_index, nan_streak
+    global debug_uses, ans, history_index, nan_streak, terminal_mode
 
     raw = entry.get().strip()
+    _reset_idle()
     if raw:
         input_history.append(raw)
         history_index = -1
@@ -1006,6 +1097,19 @@ def process():
         raw = raw.replace("debug ", "", 1)
 
     # ---------------- easter eggs ----------------
+
+    if raw == "terminalizesm.exe()":
+        entry.delete(0, tk.END)
+        _update_ghost()
+        enter_terminal_mode()
+        return
+
+    if raw == "revert()":
+        entry.delete(0, tk.END)
+        _update_ghost()
+        if terminal_mode:
+            exit_terminal_mode()
+        return
 
     if raw in SENTIENCE_KEYS:
         global anxiety_score
