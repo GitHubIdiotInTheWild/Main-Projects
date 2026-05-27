@@ -733,15 +733,27 @@ def _apply_terminal_logo():
     if logo_canvas and logo_items:
         logo_canvas.itemconfig(logo_items["m1"], text="system debug", fill="#ff4444")
         logo_canvas.itemconfig(logo_items["m2"], text="",             fill="#ff4444")
-        for item in logo_items.get("g1", []) + logo_items.get("g2", []):
-            logo_canvas.itemconfig(item, fill="#330000")
+        for item in logo_items.get("g1", []):
+            logo_canvas.itemconfig(item, text="system debug", fill="#330000")
+        for item in logo_items.get("g2", []):
+            logo_canvas.itemconfig(item, text="", fill="#330000")
+        if "border_outer" in logo_items:
+            logo_canvas.itemconfig(logo_items["border_outer"], outline="#550000")
+        if "border_inner" in logo_items:
+            logo_canvas.itemconfig(logo_items["border_inner"], outline="#330000")
 
 def _apply_normal_logo():
     if logo_canvas and logo_items:
         logo_canvas.itemconfig(logo_items["m1"], text="sentient",     fill="#00ffff")
         logo_canvas.itemconfig(logo_items["m2"], text="mathematics.", fill="#00ffff")
-        for item in logo_items.get("g1", []) + logo_items.get("g2", []):
-            logo_canvas.itemconfig(item, fill="#002929")
+        for item in logo_items.get("g1", []):
+            logo_canvas.itemconfig(item, text="sentient",     fill="#002929")
+        for item in logo_items.get("g2", []):
+            logo_canvas.itemconfig(item, text="mathematics.", fill="#002929")
+        if "border_outer" in logo_items:
+            logo_canvas.itemconfig(logo_items["border_outer"], outline="#004444")
+        if "border_inner" in logo_items:
+            logo_canvas.itemconfig(logo_items["border_inner"], outline="#002222")
 
 def enter_terminal_mode():
     global terminal_mode, music_active, _idle_job
@@ -750,7 +762,7 @@ def enter_terminal_mode():
         window.after_cancel(_idle_job)
         _idle_job = None
     label.pack_forget()
-    output.pack_forget()
+    output.config(fg=COLOR_TERM)
     run_btn.pack_forget()
     btn_row1.pack_forget()
     btn_row2.pack_forget()
@@ -776,7 +788,7 @@ def exit_terminal_mode():
     global terminal_mode, music_active
     terminal_mode = False
     label.pack(pady=10, before=entry)
-    output.pack(pady=20)
+    output.config(fg=BASE_COLOR)
     run_btn.pack(pady=10)
     btn_row1.pack(pady=4)
     btn_row2.pack(pady=4)
@@ -855,10 +867,12 @@ def show_logo():
     w = window.winfo_width() or 1000
     h = window.winfo_height() or 560
     pad = 6
-    logo_canvas.create_rectangle(pad, pad, w - pad, h - pad,
+    logo_border_outer = logo_canvas.create_rectangle(pad, pad, w - pad, h - pad,
                                  outline="#004444", width=2)
-    logo_canvas.create_rectangle(pad + 3, pad + 3, w - pad - 3, h - pad - 3,
+    logo_border_inner = logo_canvas.create_rectangle(pad + 3, pad + 3, w - pad - 3, h - pad - 3,
                                  outline="#002222", width=1)
+    logo_items["border_outer"] = logo_border_outer
+    logo_items["border_inner"] = logo_border_inner
 
     boot_label.place_forget()
 
