@@ -695,6 +695,12 @@ skip_btn = tk.Button(window, text="Attempt to skip", font=FONT, bg="#111111", fg
                      command=lambda: attempt_skip())
 skip_btn.place(relx=0.5, rely=0.9, anchor="center")
 
+debug_skip_btn = tk.Button(window, text="debug skip", font=("VCR OSD Mono", 9),
+                           bg="black", fg="#333333", bd=0,
+                           activebackground="black", activeforeground="#666666",
+                           command=lambda: launch_app())
+debug_skip_btn.place(relx=1.0, rely=1.0, anchor="se", x=-6, y=-6)
+
 # ---------------- type boot ----------------
 
 def type_boot(text, on_done, i=0):
@@ -1023,6 +1029,7 @@ def show_logo():
 def launch_app():
     boot_label.place_forget()
     skip_btn.place_forget()
+    debug_skip_btn.place_forget()
     show_logo()
 
 window.after(1800, start_boot)
