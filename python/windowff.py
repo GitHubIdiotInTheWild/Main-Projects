@@ -845,8 +845,8 @@ def enter_terminal_mode():
     draw_border()
     _apply_terminal_logo()
     if logo_canvas:
-        logo_canvas.tkraise()
-        container.tkraise()
+        logo_canvas.lift()
+        container.lift()
     if _terminal_glow_job is None:
         _terminal_glow_tick()
 
@@ -871,8 +871,8 @@ def exit_terminal_mode():
     draw_border()
     _apply_normal_logo()
     if logo_canvas:
-        logo_canvas.tkraise()
-        container.tkraise()
+        logo_canvas.lift()
+        container.lift()
     try:
         music_path = resource_path(tracks[current_track]["file"])
         pygame.mixer.music.stop()
@@ -897,13 +897,13 @@ def show_ui(cx, ui_y):
     music_frame.place(relx=0.5, rely=1.0, anchor="s", y=-28)
     music_active = True
 
-    container.tkraise()
-    panel_frame.tkraise()
-    history_frame.tkraise()
-    version_label.tkraise()
-    clock_label.tkraise()
-    credit_label.tkraise()
-    music_frame.tkraise()
+    container.lift()
+    panel_frame.lift()
+    history_frame.lift()
+    version_label.lift()
+    clock_label.lift()
+    credit_label.lift()
+    music_frame.lift()
 
     label.config(fg="#000000")
     entry.config(bg="#000000")
