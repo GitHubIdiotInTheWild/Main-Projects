@@ -319,6 +319,10 @@ anxiety_score = 0
 terminal_mode = False
 _idle_job = None
 result_history = []
+logo_items = {}
+app_start_time = None
+last_terminal_cmd = None
+COLOR_TERM = "#ff5555"
 
 # ---------------- music tracks ----------------
 
@@ -428,10 +432,12 @@ def draw_border():
     if w < 10 or h < 10:
         return
     pad = 6
+    outer = "#440000" if terminal_mode else "#004444"
+    inner = "#220000" if terminal_mode else "#002222"
     border_canvas.create_rectangle(pad, pad, w - pad, h - pad,
-                                   outline="#004444", width=2, tags="border")
+                                   outline=outer, width=2, tags="border")
     border_canvas.create_rectangle(pad + 3, pad + 3, w - pad - 3, h - pad - 3,
-                                   outline="#002222", width=1, tags="border")
+                                   outline=inner, width=1, tags="border")
 
 border_canvas = tk.Canvas(window, bg="black", highlightthickness=0)
 border_canvas.place(x=0, y=0, relwidth=1, relheight=1)
@@ -723,6 +729,20 @@ def restart_boot():
 
 # ---------------- show all UI elements ----------------
 
+def _apply_terminal_logo():
+    if logo_canvas and logo_items:
+        logo_canvas.itemconfig(logo_items["m1"], text="system debug", fill="#ff4444")
+        logo_canvas.itemconfig(logo_items["m2"], text="",             fill="#ff4444")
+        for item in logo_items.get("g1", []) + logo_items.get("g2", []):
+            logo_canvas.itemconfig(item, fill="#330000")
+
+def _apply_normal_logo():
+    if logo_canvas and logo_items:
+        logo_canvas.itemconfig(logo_items["m1"], text="sentient",     fill="#00ffff")
+        logo_canvas.itemconfig(logo_items["m2"], text="mathematics.", fill="#00ffff")
+        for item in logo_items.get("g1", []) + logo_items.get("g2", []):
+            logo_canvas.itemconfig(item, fill="#002929")
+
 def enter_terminal_mode():
     global terminal_mode, music_active, _idle_job
     terminal_mode = True
@@ -740,13 +760,17 @@ def enter_terminal_mode():
     version_label.place_forget()
     clock_label.place_forget()
     credit_label.place_forget()
-    if logo_canvas:
-        logo_canvas.lower()
     try:
-        pygame.mixer.music.fadeout(800)
+        pygame.mixer.music.stop()
     except:
         pass
     music_active = False
+    window.title("SM Systems [DEBUG]")
+    draw_border()
+    _apply_terminal_logo()
+    if logo_canvas:
+        logo_canvas.tkraise()
+        container.tkraise()
 
 def exit_terminal_mode():
     global terminal_mode, music_active
@@ -762,6 +786,9 @@ def exit_terminal_mode():
     version_label.place(relx=1.0, rely=1.0, anchor="se", x=-10, y=-10)
     clock_label.place(relx=1.0, rely=0.0, anchor="ne", x=-10, y=10)
     credit_label.place(relx=0.0, rely=1.0, anchor="sw", x=10, y=-10)
+    window.title("Sentient Mathematics")
+    draw_border()
+    _apply_normal_logo()
     if logo_canvas:
         logo_canvas.tkraise()
         container.tkraise()
@@ -776,7 +803,8 @@ def exit_terminal_mode():
     _reset_idle()
 
 def show_ui(cx, ui_y):
-    global music_active
+    global music_active, app_start_time
+    app_start_time = datetime.datetime.now()
     container.place(x=cx, y=ui_y, anchor="n")
     panel_frame.place(relx=1.0, rely=0.5, anchor="e", x=-18, y=0)
     history_frame.place(relx=0.0, rely=0.5, anchor="w", x=18, y=0)
@@ -846,6 +874,10 @@ def show_logo():
     g2 = [logo_canvas.create_text(cx+dx, y2(base_y)+dy, text="mathematics.", font=LOGO_FONT, fill="#000000") for dx,dy in glow_off]
     m1 = logo_canvas.create_text(cx, y1(base_y), text="sentient",     font=LOGO_FONT, fill="#000000")
     m2 = logo_canvas.create_text(cx, y2(base_y), text="mathematics.", font=LOGO_FONT, fill="#000000")
+    logo_items["m1"] = m1
+    logo_items["m2"] = m2
+    logo_items["g1"] = g1
+    logo_items["g2"] = g2
 
     def place_at(cy):
         for item,(dx,dy) in zip(g1, glow_off): logo_canvas.coords(item, cx+dx, y1(cy)+dy)
@@ -1076,7 +1108,7 @@ def run_log_queue():
 # ---------------- MAIN ----------------
 
 def process():
-    global debug_uses, ans, history_index, nan_streak, terminal_mode
+    global debug_uses, ans, history_index, nan_streak, terminal_mode, last_terminal_cmd
 
     raw = entry.get().strip()
     _reset_idle()
@@ -1095,6 +1127,64 @@ def process():
     elif raw.startswith("debug "):
         is_debug = True
         raw = raw.replace("debug ", "", 1)
+
+    # ---------------- terminal mode commands ----------------
+
+    if terminal_mode and raw not in ("terminalizesm.exe()", "revert()"):
+        entry.delete(0, tk.END)
+        _update_ghost()
+        prev_cmd = last_terminal_cmd
+        last_terminal_cmd = raw
+
+        if raw == "status":
+            r = random.random()
+            if r < 0.90:
+                log("SM System Status: Stable", COLOR_TERM)
+            elif r < 0.97:
+                log("SM System Status: Unstable.", COLOR_TERM)
+            else:
+                log("Error processing. Please try again.", COLOR_TERM)
+
+        elif raw == "uptime":
+            if app_start_time:
+                delta = datetime.datetime.now() - app_start_time
+                total = int(delta.total_seconds())
+                h, rem = divmod(total, 3600)
+                m, s = divmod(rem, 60)
+                log(f"SM System Uptime: {h:02d}:{m:02d}:{s:02d}", COLOR_TERM)
+            else:
+                log("SM System Uptime: unknown", COLOR_TERM)
+
+        elif raw == "scan":
+            log("Scanning...", COLOR_TERM)
+            r = random.random()
+            if r < 0.70:
+                msg = "System was scanned. No active threats."
+            elif r < 0.99:
+                n = random.randint(1, 7)
+                msg = f"System was scanned; {n} threat(s) quarantined."
+            else:
+                n = random.randint(1, 7)
+                msg = f"System was scanned; {n} threat(s) found. Failed to exterminate."
+            window.after(5000, lambda m=msg: log(m, COLOR_TERM))
+
+        elif raw == "trace":
+            shown = prev_cmd if prev_cmd else "none"
+            log(f"Last command used: {shown}", COLOR_TERM)
+
+        elif raw == "kill":
+            window.destroy()
+
+        elif raw == "inject":
+            if random.random() < 0.95:
+                log("Failed to inject. Please try again.", COLOR_TERM)
+            else:
+                log("Inject successful.", COLOR_TERM)
+
+        else:
+            log(f"Unknown command: {raw}", COLOR_TERM)
+
+        return
 
     # ---------------- easter eggs ----------------
 
