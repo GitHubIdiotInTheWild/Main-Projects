@@ -869,12 +869,16 @@ def exit_terminal_mode():
         logo_canvas.tkraise()
         container.tkraise()
     try:
-        music_path = resource_path(tracks[current_track]["file"])
-        pygame.mixer.music.load(music_path)
         pygame.mixer.music.play(-1)
         pygame.mixer.music.set_volume(1.0)
     except:
-        pass
+        try:
+            music_path = resource_path(tracks[current_track]["file"])
+            pygame.mixer.music.load(music_path)
+            pygame.mixer.music.play(-1)
+            pygame.mixer.music.set_volume(1.0)
+        except Exception as e:
+            print(f"[music] failed to restart: {e}")
     music_active = True
     _reset_idle()
 
