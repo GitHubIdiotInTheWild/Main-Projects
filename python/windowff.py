@@ -1,4 +1,5 @@
 import tkinter as tk
+import tkinter.font as tkfont
 import random
 import pygame # type: ignore
 import re
@@ -14,6 +15,46 @@ def resource_path(filename):
     if hasattr(sys, '_MEIPASS'):
         return os.path.join(sys._MEIPASS, filename)
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), filename)
+
+# ---------------- autocomplete ----------------
+
+COMPLETIONS = [
+    ("asin",      "asin("),
+    ("acos",      "acos("),
+    ("atan",      "atan("),
+    ("sinh",      "sinh("),
+    ("cosh",      "cosh("),
+    ("tanh",      "tanh("),
+    ("sin",       "sin("),
+    ("cos",       "cos("),
+    ("tan",       "tan("),
+    ("sqrt",      "sqrt("),
+    ("cbrt",      "cbrt("),
+    ("log10",     "log10("),
+    ("log2",      "log2("),
+    ("log",       "log("),
+    ("exp",       "exp("),
+    ("abs",       "abs("),
+    ("floor",     "floor("),
+    ("ceil",      "ceil("),
+    ("round",     "round("),
+    ("factorial", "factorial("),
+    ("fact",      "fact("),
+    ("phi",       "phi"),
+    ("tau",       "tau"),
+    ("pi",        "pi"),
+]
+
+def get_suggestion(text, cursor_pos):
+    before = text[:cursor_pos]
+    m = re.search(r'([a-zA-Z]+)$', before)
+    if not m:
+        return ""
+    word = m.group(1)
+    for prefix, completion in COMPLETIONS:
+        if prefix.startswith(word) and prefix != word:
+            return completion[len(word):]
+    return ""
 
 # ---------------- math ----------------
 
@@ -536,6 +577,36 @@ def history_down(event):
 
 entry.bind("<Up>", history_up)
 entry.bind("<Down>", history_down)
+
+ghost_label = tk.Label(container, font=FONT, bg="white", fg="#a0a0a0", bd=0, padx=0, pady=0)
+
+def _update_ghost(event=None):
+    cursor_pos = entry.index(tk.INSERT)
+    text = entry.get()
+    suggestion = get_suggestion(text, cursor_pos)
+    if suggestion:
+        f = tkfont.Font(font=FONT)
+        text_w = f.measure(text[:cursor_pos])
+        ex = entry.winfo_x()
+        ey = entry.winfo_y()
+        eh = entry.winfo_height()
+        ghost_label.config(text=suggestion, bg=entry.cget("bg"), fg="#a0a0a0")
+        ghost_label.place(x=ex + text_w + 4, y=ey, height=eh)
+        ghost_label.lift()
+    else:
+        ghost_label.place_forget()
+
+def _on_tab(event):
+    cursor_pos = entry.index(tk.INSERT)
+    text = entry.get()
+    suggestion = get_suggestion(text, cursor_pos)
+    if suggestion:
+        entry.insert(cursor_pos, suggestion)
+        _update_ghost()
+    return "break"
+
+entry.bind("<KeyRelease>", _update_ghost)
+entry.bind("<Tab>", _on_tab)
 
 output = tk.Label(container, text="", font=FONT, bg="black", fg="#bffcff", wraplength=400)
 output.pack(pady=20)
