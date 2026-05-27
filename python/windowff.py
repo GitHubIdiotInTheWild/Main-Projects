@@ -1,6 +1,6 @@
 import tkinter as tk
 import random
-import pygame
+import pygame # type: ignore
 import re
 import math
 import os
