@@ -318,11 +318,23 @@ compute_irritation = 0
 anxiety_score = 0
 terminal_mode = False
 _idle_job = None
+_terminal_glow_job = None
 result_history = []
 logo_items = {}
 app_start_time = None
 last_terminal_cmd = None
 COLOR_TERM = "#ff5555"
+
+TERM_HELP_TEXT = (
+    "// SM Systems [DEBUG] commands\n"
+    "status   — system health check\n"
+    "uptime   — time since launch\n"
+    "scan     — run threat scan\n"
+    "trace    — last command used\n"
+    "inject   — injection attempt\n"
+    "kill     — terminate session\n"
+    "revert() — exit debug mode"
+)
 
 # ---------------- music tracks ----------------
 
@@ -432,8 +444,8 @@ def draw_border():
     if w < 10 or h < 10:
         return
     pad = 6
-    outer = "#440000" if terminal_mode else "#004444"
-    inner = "#220000" if terminal_mode else "#002222"
+    outer = "#882222" if terminal_mode else "#004444"
+    inner = "#551111" if terminal_mode else "#002222"
     border_canvas.create_rectangle(pad, pad, w - pad, h - pad,
                                    outline=outer, width=2, tags="border")
     border_canvas.create_rectangle(pad + 3, pad + 3, w - pad - 3, h - pad - 3,
@@ -668,6 +680,12 @@ btn_row2.pack(pady=4)
 tk.Button(btn_row2, text="copy", font=FONT, bg="#111111", fg="#b388ff", command=lambda: copy_output()).pack(side="left", padx=6)
 tk.Button(btn_row2, text="help", font=FONT, bg="#111111", fg="#ff6b6b", command=lambda: show_help()).pack(side="left", padx=6)
 
+term_btn_row = tk.Frame(container, bg="black")
+term_help_btn = tk.Button(term_btn_row, text="help [debug]", font=FONT, bg="#330000", fg="#ff5555",
+                          activebackground="#550000", activeforeground="#ff8888",
+                          command=lambda: log(TERM_HELP_TEXT, COLOR_TERM))
+term_help_btn.pack()
+
 # ---------------- boot sequence ----------------
 
 boot_label = tk.Label(window, text="", font=FONT, bg="black", fg="#00ffff", wraplength=760)
@@ -729,6 +747,20 @@ def restart_boot():
 
 # ---------------- show all UI elements ----------------
 
+def _terminal_glow_tick(phase=0.0):
+    global _terminal_glow_job
+    if not terminal_mode or not logo_canvas or not logo_items:
+        _terminal_glow_job = None
+        return
+    t = (math.sin(phase) + 1) / 2
+    gc = lerp_color("#330000", "#993333", t)
+    for item in logo_items.get("g1", []):
+        try:
+            logo_canvas.itemconfig(item, fill=gc)
+        except:
+            pass
+    _terminal_glow_job = window.after(50, lambda: _terminal_glow_tick(phase + 0.08))
+
 def _apply_terminal_logo():
     if logo_canvas and logo_items:
         logo_canvas.itemconfig(logo_items["m1"], text="system debug", fill="#ff4444")
@@ -738,9 +770,9 @@ def _apply_terminal_logo():
         for item in logo_items.get("g2", []):
             logo_canvas.itemconfig(item, text="", fill="#330000")
         if "border_outer" in logo_items:
-            logo_canvas.itemconfig(logo_items["border_outer"], outline="#550000")
+            logo_canvas.itemconfig(logo_items["border_outer"], outline="#882222")
         if "border_inner" in logo_items:
-            logo_canvas.itemconfig(logo_items["border_inner"], outline="#330000")
+            logo_canvas.itemconfig(logo_items["border_inner"], outline="#551111")
 
 def _apply_normal_logo():
     if logo_canvas and logo_items:
@@ -756,21 +788,24 @@ def _apply_normal_logo():
             logo_canvas.itemconfig(logo_items["border_inner"], outline="#002222")
 
 def enter_terminal_mode():
-    global terminal_mode, music_active, _idle_job
+    global terminal_mode, music_active, _idle_job, _terminal_glow_job
     terminal_mode = True
     if _idle_job is not None:
         window.after_cancel(_idle_job)
         _idle_job = None
     label.pack_forget()
     output.config(fg=COLOR_TERM)
-    run_btn.pack_forget()
+    run_btn.config(bg="#550000", fg="#ff5555", activebackground="#770000", activeforeground="#ff8888")
     btn_row1.pack_forget()
     btn_row2.pack_forget()
+    term_btn_row.pack(pady=4)
     panel_frame.place_forget()
     history_frame.place_forget()
     music_frame.place_forget()
-    version_label.place_forget()
-    clock_label.place_forget()
+    version_label.config(fg="#aa3333")
+    version_label.place(relx=1.0, rely=1.0, anchor="se", x=-10, y=-10)
+    clock_label.config(fg="#aa3333")
+    clock_label.place(relx=1.0, rely=0.0, anchor="ne", x=-10, y=10)
     credit_label.place_forget()
     try:
         pygame.mixer.music.stop()
@@ -783,19 +818,24 @@ def enter_terminal_mode():
     if logo_canvas:
         logo_canvas.tkraise()
         container.tkraise()
+    if _terminal_glow_job is None:
+        _terminal_glow_tick()
 
 def exit_terminal_mode():
     global terminal_mode, music_active
     terminal_mode = False
     label.pack(pady=10, before=entry)
     output.config(fg=BASE_COLOR)
-    run_btn.pack(pady=10)
+    run_btn.config(bg="#00e5ff", fg="black", activebackground="#00e5ff", activeforeground="black")
     btn_row1.pack(pady=4)
     btn_row2.pack(pady=4)
+    term_btn_row.pack_forget()
     panel_frame.place(relx=1.0, rely=0.5, anchor="e", x=-18, y=0)
     history_frame.place(relx=0.0, rely=0.5, anchor="w", x=18, y=0)
     music_frame.place(relx=0.5, rely=1.0, anchor="s", y=-28)
+    version_label.config(fg="#003333")
     version_label.place(relx=1.0, rely=1.0, anchor="se", x=-10, y=-10)
+    clock_label.config(fg="#004444")
     clock_label.place(relx=1.0, rely=0.0, anchor="ne", x=-10, y=10)
     credit_label.place(relx=0.0, rely=1.0, anchor="sw", x=10, y=-10)
     window.title("Sentient Mathematics")
