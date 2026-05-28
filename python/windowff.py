@@ -845,7 +845,7 @@ def enter_terminal_mode():
     draw_border()
     _apply_terminal_logo()
     if logo_canvas:
-        logo_canvas.lift()
+        tk.Misc.lift(logo_canvas)
         container.lift()
     if _terminal_glow_job is None:
         _terminal_glow_tick()
@@ -871,8 +871,14 @@ def exit_terminal_mode():
     draw_border()
     _apply_normal_logo()
     if logo_canvas:
-        logo_canvas.lift()
-        container.lift()
+        tk.Misc.lift(logo_canvas)
+    container.lift()
+    panel_frame.lift()
+    history_frame.lift()
+    music_frame.lift()
+    version_label.lift()
+    clock_label.lift()
+    credit_label.lift()
     try:
         music_path = resource_path(tracks[current_track]["file"])
         pygame.mixer.music.stop()
