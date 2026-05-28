@@ -845,7 +845,7 @@ def enter_terminal_mode():
     draw_border()
     _apply_terminal_logo()
     if logo_canvas:
-        tk.Misc.lift(logo_canvas)
+        logo_canvas.lift()
         container.lift()
     if _terminal_glow_job is None:
         _terminal_glow_tick()
@@ -871,7 +871,7 @@ def exit_terminal_mode():
     draw_border()
     _apply_normal_logo()
     if logo_canvas:
-        tk.Misc.lift(logo_canvas)
+        logo_canvas.lift()
         container.lift()
     try:
         music_path = resource_path(tracks[current_track]["file"])
