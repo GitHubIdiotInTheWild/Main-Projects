@@ -342,6 +342,7 @@ TERM_HELP_TEXT = (
 tracks = [
     {"name": "take care",  "file": "background.mp3"},
     {"name": "hip shop",   "file": "background2.mp3"},
+    {"name": "track 3",    "file": "background3.mp3"},
 ]
 current_track = 0
 music_active = False
@@ -464,7 +465,7 @@ window.bind("<Configure>", lambda e: draw_border())
 
 # ---------------- version label ----------------
 
-version_label = tk.Label(window, text="v1.2", font=FONT_SMALL, bg="black", fg="#003333")
+version_label = tk.Label(window, text="v1.3", font=FONT_SMALL, bg="black", fg="#003333")
 
 # ---------------- clock ----------------
 
@@ -835,7 +836,9 @@ def enter_terminal_mode():
     version_label.place(relx=1.0, rely=1.0, anchor="se", x=-10, y=-10)
     clock_label.config(fg="#aa3333")
     clock_label.place(relx=1.0, rely=0.0, anchor="ne", x=-10, y=10)
-    credit_label.place_forget()
+    credit_label.config(fg="#aa3333")
+    credit_label.place(relx=0.0, rely=1.0, anchor="sw", x=10, y=-10)
+    credit_label.lift()
     try:
         pygame.mixer.music.stop()
     except:
@@ -868,6 +871,7 @@ def exit_terminal_mode():
     version_label.place(relx=1.0, rely=1.0, anchor="se", x=-10, y=-10)
     clock_label.config(fg="#004444")
     clock_label.place(relx=1.0, rely=0.0, anchor="ne", x=-10, y=10)
+    credit_label.config(fg="#003333")
     credit_label.place(relx=0.0, rely=1.0, anchor="sw", x=10, y=-10)
     window.title("Sentient Mathematics")
     draw_border()
@@ -1473,4 +1477,4 @@ def process():
         log_result(f"Factorial of {num} = {fact}", COLOR_FACT, value=fact)
 
 window.mainloop()
-## v1.2 release python
+## v1.3 release python
