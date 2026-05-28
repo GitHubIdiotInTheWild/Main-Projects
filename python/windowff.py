@@ -846,7 +846,9 @@ def enter_terminal_mode():
     _apply_terminal_logo()
     if logo_canvas:
         tk.Misc.lift(logo_canvas)
-        container.lift()
+    container.lift()
+    version_label.lift()
+    clock_label.lift()
     if _terminal_glow_job is None:
         _terminal_glow_tick()
 
