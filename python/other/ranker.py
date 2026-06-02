@@ -41,34 +41,38 @@ RANKS = [
 
 RANK_COLORS = {r[0]: r[1] for r in RANKS}
 
-SYSTEM_PROMPT_GENERAL = """You are a brutally honest but fair achievement ranker. You are harsh and darkly funny, but you actually evaluate things correctly.
-Rate the overall achievement portfolio with ONE rank: P, S, A, B, C, D, or F
+SYSTEM_PROMPT_GENERAL = """You are a brutally honest but FAIR achievement ranker. Harsh, darkly funny, but calibrated correctly.
+Rate the portfolio with ONE rank: P, S, A, B, C, D, or F
 
-Rank definitions:
-P: Once-in-a-generation perfection. Almost never given.
-S: Exceptional. Rare. Genuinely impressive.
-A: Genuinely good. Above average.
-B: Solid. Serviceable. Fine.
-C: Below average. Mediocre but not catastrophic.
-D: Bad. You should be embarrassed.
-F: Genuinely pathetic. How.
+P: Once-in-a-generation. Almost never.
+S: Exceptional. Genuinely rare and impressive.
+A: Clearly above average. Good.
+B: Solid. Serviceable.
+C: Mediocre. Below average.
+D: Bad. Embarrassing.
+F: How.
 
-Be harsh and funny in your reasoning but actually give a fair rank. Don't inflate, don't deflate — be honest.
-Respond ONLY in this exact JSON, no markdown:
+Respond ONLY in this JSON, no markdown:
 {"rank": "X", "reasoning": "2-3 sentence brutal but fair roast"}"""
 
-SYSTEM_PROMPT_GAME = """You are a brutally honest but fair video game performance ranker. Rate 3 categories.
-Be harsh and funny but ACTUALLY fair — if the numbers are insane, reflect that in the rank.
+SYSTEM_PROMPT_GAME = """You are a video game performance ranker. Be harsh and funny but ACTUALLY CALIBRATED.
+
+CRITICAL RULES — read carefully:
+- A style score like 45000 in a game like ULTRAKILL is INSANE. That is S tier. Do not give it C.
+- A time of 20 seconds for a level is blazing fast. That is S tier unless context says otherwise.
+- 11 million kills is absurd. That is S tier.
+- Only give C or below for genuinely mediocre or bad performance.
+- You are rating relative to what a SKILLED player could achieve. Extraordinary numbers = extraordinary rank.
+- Be stingy with ranks that AREN'T deserved, but give high ranks when the numbers genuinely warrant it.
 
 Categories:
-- style: creativity, flair, risk-taking, combos. Raw quantity = bad. Skill expression = good.
-- kills: kill count and efficiency relative to what's expected for that game/level. 11 million kills = absurd = high rank.
-- time: speed relative to a reasonable expectation. 2 seconds for anything = either a glitch, skip, or godlike = reflect that.
+- style: creativity, flair, score. High style score = high rank. Low/no style = low rank.
+- kills: kill count and efficiency. More kills faster = better.
+- time: completion speed. Faster = better.
 
-Rank each: S, A, B, C, D, or F (NOT P — calculated separately).
-Be stingy but not delusional. Absurd numbers deserve absurd ranks.
+Rank each: S, A, B, C, D, or F (NOT P).
 
-Respond ONLY in this exact JSON, no markdown:
+Respond ONLY in this JSON, no markdown:
 {"style": "X", "kills": "X", "time": "X", "style_reason": "1-2 sentences", "kills_reason": "1-2 sentences", "time_reason": "1-2 sentences"}"""
 
 BG     = "#0a0a0a"
@@ -85,7 +89,7 @@ def call_api_general(achievements, callback):
                     {"role": "system", "content": SYSTEM_PROMPT_GENERAL},
                     {"role": "user", "content": f"Rate these achievements:\n{achievements}"}
                 ],
-                "max_tokens": 300, "temperature": 0.85
+                "max_tokens": 300, "temperature": 0.8
             }).encode()
             req = urllib.request.Request(
                 "https://openrouter.ai/api/v1/chat/completions",
@@ -110,7 +114,7 @@ def call_api_game(achievements, callback):
                     {"role": "system", "content": SYSTEM_PROMPT_GAME},
                     {"role": "user", "content": f"Rate this video game performance:\n{achievements}"}
                 ],
-                "max_tokens": 400, "temperature": 0.85
+                "max_tokens": 400, "temperature": 0.8
             }).encode()
             req = urllib.request.Request(
                 "https://openrouter.ai/api/v1/chat/completions",
@@ -139,113 +143,165 @@ def call_api_game(achievements, callback):
     threading.Thread(target=run, daemon=True).start()
 
 
+class FlashBox(tk.Canvas):
+    """A canvas that flashes white then fades to transparent over 1.5s."""
+    def __init__(self, parent, width, height, **kwargs):
+        super().__init__(parent, width=width, height=height,
+                         bg=BG, highlightthickness=0, **kwargs)
+        self._rect = self.create_rectangle(0, 0, width, height, fill=BG, outline="")
+        self._alpha = 0
+        self._fading = False
+
+    def flash(self):
+        self._alpha = 255
+        self._fading = True
+        self._fade_step()
+
+    def _fade_step(self):
+        if not self._fading or self._alpha <= 0:
+            self._alpha = 0
+            self._fading = False
+            self.itemconfig(self._rect, fill=BG)
+            return
+        # interpolate white -> BG
+        ratio = self._alpha / 255
+        r = int(0x0a + (0xff - 0x0a) * ratio)
+        g = int(0x0a + (0xff - 0x0a) * ratio)
+        b = int(0x0a + (0xff - 0x0a) * ratio)
+        color = f"#{r:02x}{g:02x}{b:02x}"
+        self.itemconfig(self._rect, fill=color)
+        self._alpha = max(0, self._alpha - 8)
+        self.after(50, self._fade_step)
+
+
 class App:
     def __init__(self, root):
         self.root = root
         self.mode = tk.StringVar(value="general")
         root.title("Achievement Ranker")
         root.configure(bg=BG)
-        root.geometry("640x800")
-        root.resizable(False, False)
+        root.attributes("-fullscreen", True)
+        root.bind("<Escape>", lambda e: root.attributes("-fullscreen", False))
+        root.bind("<F11>", lambda e: root.attributes("-fullscreen", True))
+
+        sw = root.winfo_screenwidth()
+        sh = root.winfo_screenheight()
 
         try:
-            self.font_title = tkfont.Font(family="VCR OSD Mono", size=20, weight="bold")
-            self.font_label = tkfont.Font(family="VCR OSD Mono", size=10)
-            self.font_rank  = tkfont.Font(family="VCR OSD Mono", size=80, weight="bold")
-            self.font_small = tkfont.Font(family="VCR OSD Mono", size=8)
-            self.font_sub   = tkfont.Font(family="VCR OSD Mono", size=13, weight="bold")
+            self.font_title = tkfont.Font(family="VCR OSD Mono", size=24, weight="bold")
+            self.font_label = tkfont.Font(family="VCR OSD Mono", size=11)
+            self.font_rank  = tkfont.Font(family="VCR OSD Mono", size=100, weight="bold")
+            self.font_small = tkfont.Font(family="VCR OSD Mono", size=9)
+            self.font_sub   = tkfont.Font(family="VCR OSD Mono", size=16, weight="bold")
         except:
-            self.font_title = tkfont.Font(family="Courier", size=20, weight="bold")
-            self.font_label = tkfont.Font(family="Courier", size=10)
-            self.font_rank  = tkfont.Font(family="Courier", size=80, weight="bold")
-            self.font_small = tkfont.Font(family="Courier", size=8)
-            self.font_sub   = tkfont.Font(family="Courier", size=13, weight="bold")
+            self.font_title = tkfont.Font(family="Courier", size=24, weight="bold")
+            self.font_label = tkfont.Font(family="Courier", size=11)
+            self.font_rank  = tkfont.Font(family="Courier", size=100, weight="bold")
+            self.font_small = tkfont.Font(family="Courier", size=9)
+            self.font_sub   = tkfont.Font(family="Courier", size=16, weight="bold")
 
-        tk.Label(root, text="ACHIEVEMENT RANKER", font=self.font_title, bg=BG, fg=FG).pack(pady=(24,2))
-        tk.Label(root, text="list your achievements. get destroyed.", font=self.font_small, bg=BG, fg="#444444").pack(pady=(0,12))
+        # Main scroll canvas
+        main = tk.Frame(root, bg=BG)
+        main.pack(expand=True, fill="both")
 
-        mode_frame = tk.Frame(root, bg=BG)
+        tk.Label(main, text="ACHIEVEMENT RANKER", font=self.font_title, bg=BG, fg=FG).pack(pady=(30,2))
+        tk.Label(main, text="list your achievements. get destroyed.", font=self.font_small, bg=BG, fg="#444444").pack(pady=(0,14))
+
+        mode_frame = tk.Frame(main, bg=BG)
         mode_frame.pack(pady=(0,10))
         tk.Label(mode_frame, text="MODE:", font=self.font_small, bg=BG, fg="#555555").pack(side="left", padx=(0,8))
         for val, lbl in [("general","GENERAL"), ("game","VIDEO GAME")]:
             tk.Radiobutton(mode_frame, text=lbl, variable=self.mode, value=val,
                            font=self.font_small, bg=BG, fg="#888888",
                            selectcolor=BG, activebackground=BG, activeforeground=FG,
-                           command=self._on_mode_change).pack(side="left", padx=6)
+                           command=self._on_mode_change).pack(side="left", padx=8)
 
-        input_frame = tk.Frame(root, bg=BORDER, padx=1, pady=1)
-        input_frame.pack(padx=28, fill="x")
+        iw = min(800, sw - 80)
+        input_frame = tk.Frame(main, bg=BORDER, padx=1, pady=1)
+        input_frame.pack(padx=40)
         inner = tk.Frame(input_frame, bg=ACCENT)
-        inner.pack(fill="x")
-        self.text = tk.Text(inner, height=7, bg=ACCENT, fg=FG,
+        inner.pack()
+        self.text = tk.Text(inner, height=6, width=iw//9, bg=ACCENT, fg=FG,
                             insertbackground=FG, relief="flat",
-                            font=self.font_label, padx=12, pady=10,
+                            font=self.font_label, padx=14, pady=10,
                             wrap="word", bd=0)
-        self.text.pack(fill="x")
+        self.text.pack()
         self._set_placeholder()
         self.text.bind("<FocusIn>", self._clear_placeholder)
         self._placeholder_active = True
 
-        self.btn = tk.Button(root, text="[ RANK ME ]", font=self.font_label,
+        self.btn = tk.Button(main, text="[ RANK ME ]", font=self.font_label,
                              bg="#111111", fg=FG, activebackground="#1e1e1e",
                              activeforeground=FG, relief="flat", bd=0,
-                             cursor="hand2", pady=10, command=self.submit)
-        self.btn.pack(padx=28, fill="x", pady=(2,0))
+                             cursor="hand2", pady=12, command=self.submit)
+        self.btn.pack(padx=40, fill="x", pady=(2,0), ipadx=0)
         self.btn.bind("<Enter>", lambda e: self.btn.config(bg="#1e1e1e"))
         self.btn.bind("<Leave>", lambda e: self.btn.config(bg="#111111"))
 
         # P rank gold box
-        self.p_frame = tk.Frame(root, bg=BG)
-        self.p_frame.pack(pady=(20,0))
-        self.p_box = tk.Frame(self.p_frame, bg="#FFD700", padx=18, pady=8)
+        self.p_outer = tk.Frame(main, bg=BG)
+        self.p_outer.pack(pady=(24,0))
+        self.p_box = tk.Frame(self.p_outer, bg="#FFD700", padx=20, pady=10)
         self.p_rank_label = tk.Label(self.p_box, text="P", font=self.font_rank, bg="#FFD700", fg="white")
         self.p_rank_label.pack()
 
-        # Normal rank display
-        self.rank_frame = tk.Frame(root, bg=BG)
+        # Normal rank
+        self.rank_frame = tk.Frame(main, bg=BG)
         self.rank_frame.pack()
         self.rank_var = tk.StringVar(value="?")
         self.rank_label = tk.Label(self.rank_frame, textvariable=self.rank_var,
                                    font=self.font_rank, bg=BG, fg="#2a2a2a")
         self.rank_label.pack()
 
-        self.rank_name_var = tk.StringVar(value="")
-        tk.Label(root, textvariable=self.rank_name_var, font=self.font_label, bg=BG, fg="#555555").pack()
+        # Flash overlay for final rank
+        self.final_flash = FlashBox(main, width=200, height=130)
+        # not packed — we place it via place() over rank
 
-        # Sub ranks (game mode)
-        self.sub_frame = tk.Frame(root, bg=BG)
-        self.sub_frame.pack(pady=(8,0))
+        self.rank_name_var = tk.StringVar(value="")
+        tk.Label(main, textvariable=self.rank_name_var, font=self.font_label, bg=BG, fg="#555555").pack()
+
+        # Sub ranks
+        self.sub_frame = tk.Frame(main, bg=BG)
+        self.sub_frame.pack(pady=(12,0))
         self.sub_labels = {}
+        self.sub_flashes = {}
         for cat in ["STYLE", "KILLS", "TIME"]:
             col = tk.Frame(self.sub_frame, bg=BG)
-            col.pack(side="left", padx=14)
+            col.pack(side="left", padx=30)
             tk.Label(col, text=cat, font=self.font_small, bg=BG, fg="#444444").pack()
+            # flash box behind rank letter
+            fb = FlashBox(col, width=60, height=50)
+            fb.pack()
             lv = tk.StringVar(value="-")
             lbl = tk.Label(col, textvariable=lv, font=self.font_sub, bg=BG, fg="#333333")
-            lbl.pack()
+            lbl.place(in_=fb, relx=0.5, rely=0.5, anchor="center")
             rv = tk.StringVar(value="")
             rl = tk.Label(col, textvariable=rv, font=self.font_small, bg=BG, fg="#444444",
-                          wraplength=160, justify="center")
+                          wraplength=200, justify="center")
             rl.pack()
             self.sub_labels[cat.lower()] = (lv, lbl, rv)
+            self.sub_flashes[cat.lower()] = fb
 
         self.reason_var = tk.StringVar(value="")
-        tk.Label(root, textvariable=self.reason_var, font=self.font_small,
-                 bg=BG, fg="#666666", wraplength=560, justify="center").pack(pady=(10,0), padx=28)
+        tk.Label(main, textvariable=self.reason_var, font=self.font_small,
+                 bg=BG, fg="#666666", wraplength=700, justify="center").pack(pady=(12,0), padx=40)
 
-        legend = tk.Frame(root, bg=BG)
-        legend.pack(pady=(16,0))
+        legend = tk.Frame(main, bg=BG)
+        legend.pack(pady=(18,0))
         for rank, color, _ in RANKS:
-            tk.Label(legend, text=rank, font=self.font_label, bg=BG, fg=color).pack(side="left", padx=5)
+            tk.Label(legend, text=rank, font=self.font_label, bg=BG, fg=color).pack(side="left", padx=7)
 
         self.status_var = tk.StringVar(value="")
-        tk.Label(root, textvariable=self.status_var, font=self.font_small,
-                 bg=BG, fg="#333333").pack(pady=(6,0))
+        tk.Label(main, textvariable=self.status_var, font=self.font_small,
+                 bg=BG, fg="#333333").pack(pady=(8,0))
+
+        tk.Label(main, text="ESC = exit fullscreen  |  F11 = fullscreen",
+                 font=self.font_small, bg=BG, fg="#222222").pack(pady=(4,0))
 
     def _set_placeholder(self):
         ph = ("e.g.\n- won a regional spelling bee\n- benched 60kg once\n- finished a game on normal difficulty"
               if self.mode.get() == "general" else
-              "e.g.\n- game: ULTRAKILL\n- level: 1-1\n- kills: 47, no deaths\n- time: 3:24\n- style: railcoined 3 enemies")
+              "e.g.\n- game: ULTRAKILL\n- level: 1-1\n- kills: 47, no deaths\n- time: 3:24\n- style: 45000")
         self.text.delete("1.0", "end")
         self.text.insert("1.0", ph)
         self.text.config(fg="#333333")
@@ -293,20 +349,14 @@ class App:
     def _display(self, rank, reasoning, sub):
         self.btn.config(state="normal", text="[ RANK ME ]")
         self.status_var.set("")
-
         if rank == "ERROR":
             self.status_var.set(f"error: {reasoning[:80]}")
             return
-
         color = RANK_COLORS.get(rank, "#888888")
         rank_info = next((r for r in RANKS if r[0] == rank), None)
-
         if sub:
-            # reveal sub ranks one by one, then final
-            cats = ["style", "kills", "time"]
-            self._reveal_sub(cats, 0, sub, rank, color, rank_info)
+            self._reveal_sub(["style","kills","time"], 0, sub, rank, color, rank_info)
         else:
-            # general mode: just show final after flash
             self._show_final(rank, color, rank_info, reasoning)
 
     def _reveal_sub(self, cats, idx, sub, final_rank, final_color, rank_info):
@@ -318,29 +368,25 @@ class App:
             lv.set(r)
             lbl.config(fg=c)
             rv.set(sub.get(f"{cat}_reason",""))
-            self.root.after(700, lambda: self._reveal_sub(cats, idx+1, sub, final_rank, final_color, rank_info))
+            self.sub_flashes[cat].flash()
+            self.root.after(800, lambda: self._reveal_sub(cats, idx+1, sub, final_rank, final_color, rank_info))
         else:
-            # all subs shown, now show final after a pause
-            self.root.after(500, lambda: self._show_final(final_rank, final_color, rank_info, None))
+            self.root.after(600, lambda: self._show_final(final_rank, final_color, rank_info, None))
 
     def _show_final(self, rank, color, rank_info, reasoning):
         play_rank_sound(rank)
-
         if rank == "P":
             self.rank_label.pack_forget()
-            self.p_box.pack(in_=self.p_frame)
+            self.p_box.pack(in_=self.p_outer)
         else:
             self.p_box.pack_forget()
             self.rank_label.pack()
             self.rank_var.set(rank)
             self.rank_label.config(fg=color)
-
         if rank_info:
             self.rank_name_var.set(rank_info[2])
-
         if reasoning:
             self.reason_var.set(f'"{reasoning}"')
-
         self._flash(rank, color, 0)
 
     def _flash(self, rank, color, n):
