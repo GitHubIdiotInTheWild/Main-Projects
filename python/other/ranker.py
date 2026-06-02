@@ -269,17 +269,36 @@ class App:
             col = tk.Frame(self.sub_frame, bg=BG)
             col.pack(side="left", padx=30)
             tk.Label(col, text=cat, font=self.font_small, bg=BG, fg="#444444").pack()
-            # flash box behind rank letter
-            fb = FlashBox(col, width=60, height=50)
+            # Use a Canvas so we can draw both flash rect and text on same layer
+            fb = tk.Canvas(col, width=70, height=55, bg=BG, highlightthickness=0)
             fb.pack()
-            lv = tk.StringVar(value="-")
-            lbl = tk.Label(col, textvariable=lv, font=self.font_sub, bg=BG, fg="#333333")
-            lbl.place(in_=fb, relx=0.5, rely=0.5, anchor="center")
+            fb._rect  = fb.create_rectangle(0, 0, 70, 55, fill=BG, outline="")
+            fb._text  = fb.create_text(35, 28, text="-", font=self.font_sub, fill="#333333")
+            fb._alpha = 0
+            fb._fading = False
+            def _flash_start(canvas=fb):
+                canvas._alpha = 255
+                canvas._fading = True
+                _fade(canvas)
+            def _fade(canvas):
+                if not canvas._fading or canvas._alpha <= 0:
+                    canvas._alpha = 0
+                    canvas._fading = False
+                    canvas.itemconfig(canvas._rect, fill=BG)
+                    return
+                ratio = canvas._alpha / 255
+                r = int(0x0a + (0xff - 0x0a) * ratio)
+                g = int(0x0a + (0xff - 0x0a) * ratio)
+                b = int(0x0a + (0xff - 0x0a) * ratio)
+                canvas.itemconfig(canvas._rect, fill=f"#{r:02x}{g:02x}{b:02x}")
+                canvas._alpha = max(0, canvas._alpha - 8)
+                canvas.after(50, lambda c=canvas: _fade(c))
+            fb.flash = _flash_start
             rv = tk.StringVar(value="")
             rl = tk.Label(col, textvariable=rv, font=self.font_small, bg=BG, fg="#444444",
                           wraplength=200, justify="center")
             rl.pack()
-            self.sub_labels[cat.lower()] = (lv, lbl, rv)
+            self.sub_labels[cat.lower()] = (fb, rv)
             self.sub_flashes[cat.lower()] = fb
 
         self.reason_var = tk.StringVar(value="")
@@ -325,9 +344,8 @@ class App:
         self.p_box.pack_forget()
         self.rank_label.pack()
         for cat in ["style","kills","time"]:
-            lv, lbl, rv = self.sub_labels[cat]
-            lv.set("-")
-            lbl.config(fg="#333333")
+            fb, rv = self.sub_labels[cat]
+            fb.itemconfig(fb._text, text="-", fill="#333333")
             rv.set("")
 
     def submit(self):
@@ -362,13 +380,12 @@ class App:
     def _reveal_sub(self, cats, idx, sub, final_rank, final_color, rank_info):
         if idx < len(cats):
             cat = cats[idx]
-            lv, lbl, rv = self.sub_labels[cat]
+            fb, rv = self.sub_labels[cat]
             r = sub[cat]
             c = RANK_COLORS.get(r, "#888888")
-            lv.set(r)
-            lbl.config(fg=c)
+            fb.itemconfig(fb._text, text=r, fill=c)
             rv.set(sub.get(f"{cat}_reason",""))
-            self.sub_flashes[cat].flash()
+            fb.flash()
             self.root.after(800, lambda: self._reveal_sub(cats, idx+1, sub, final_rank, final_color, rank_info))
         else:
             self.root.after(600, lambda: self._show_final(final_rank, final_color, rank_info, None))
