@@ -41,21 +41,21 @@ RANKS = [
 
 RANK_COLORS = {r[0]: r[1] for r in RANKS}
 
-SYSTEM_PROMPT_GENERAL = """You are a brutally honest but FAIR achievement ranker. Harsh, darkly funny, but calibrated correctly.
+SYSTEM_PROMPT_GENERAL = """You are a fair but direct achievement ranker. Honest and a little dry, but never cruel.
 Rate the portfolio with ONE rank: P, S, A, B, C, D, or F
 
-P: Once-in-a-generation. Almost never.
+P: Once-in-a-generation. Almost never given.
 S: Exceptional. Genuinely rare and impressive.
-A: Clearly above average. Good.
-B: Solid. Serviceable.
-C: Mediocre. Below average.
-D: Bad. Embarrassing.
-F: How.
+A: Clearly above average. Good work.
+B: Solid. Gets the job done.
+C: Mediocre. Room to grow.
+D: Below expectations. Needs work.
+F: Genuinely poor showing.
 
 Respond ONLY in this JSON, no markdown:
-{"rank": "X", "reasoning": "2-3 sentence brutal but fair roast"}"""
+{"rank": "X", "reasoning": "2-3 sentence honest but fair assessment"}"""
 
-SYSTEM_PROMPT_GAME = """You are a video game performance ranker. Be harsh and funny but ACTUALLY CALIBRATED.
+SYSTEM_PROMPT_GAME = """You are a video game performance ranker. Be direct and ACTUALLY CALIBRATED — not needlessly harsh.
 
 CRITICAL RULES — read carefully:
 - A style score like 45000 in a game like ULTRAKILL is INSANE. That is S tier. Do not give it C.
@@ -238,14 +238,14 @@ class App:
         self.btn.bind("<Enter>", lambda e: self.btn.config(bg="#1e1e1e"))
         self.btn.bind("<Leave>", lambda e: self.btn.config(bg="#111111"))
 
-        # P rank gold box
+        # P rank gold box (hidden until P is awarded)
         self.p_outer = tk.Frame(main, bg=BG)
         self.p_outer.pack(pady=(24,0))
         self.p_box = tk.Frame(self.p_outer, bg="#FFD700", padx=20, pady=10)
         self.p_rank_label = tk.Label(self.p_box, text="P", font=self.font_rank, bg="#FFD700", fg="white")
         self.p_rank_label.pack()
 
-        # Normal rank
+        # Normal rank label
         self.rank_frame = tk.Frame(main, bg=BG)
         self.rank_frame.pack()
         self.rank_var = tk.StringVar(value="?")
@@ -270,10 +270,10 @@ class App:
             col.pack(side="left", padx=30)
             tk.Label(col, text=cat, font=self.font_small, bg=BG, fg="#444444").pack()
             # Use a Canvas so we can draw both flash rect and text on same layer
-            fb = tk.Canvas(col, width=70, height=55, bg=BG, highlightthickness=0)
+            fb = tk.Canvas(col, width=50, height=42, bg=BG, highlightthickness=0)
             fb.pack()
-            fb._rect  = fb.create_rectangle(0, 0, 70, 55, fill=BG, outline="")
-            fb._text  = fb.create_text(35, 28, text="-", font=self.font_sub, fill="#333333")
+            fb._rect  = fb.create_rectangle(0, 0, 50, 42, fill=BG, outline="")
+            fb._text  = fb.create_text(25, 21, text="-", font=self.font_sub, fill="#333333")
             fb._alpha = 0
             fb._fading = False
             def _flash_start(canvas=fb):
@@ -395,6 +395,8 @@ class App:
         if rank == "P":
             self.rank_label.pack_forget()
             self.p_box.pack(in_=self.p_outer)
+            self.p_box.config(bg="#FFD700")
+            self.p_rank_label.config(bg="#FFD700")
         else:
             self.p_box.pack_forget()
             self.rank_label.pack()
@@ -415,7 +417,7 @@ class App:
                 self.rank_label.config(fg=color)
             return
         if rank == "P":
-            c = "#FFD700" if n % 2 == 0 else "#aa8800"
+            c = "#FFD700" if n % 2 == 0 else BG
             self.p_box.config(bg=c)
             self.p_rank_label.config(bg=c)
         else:
