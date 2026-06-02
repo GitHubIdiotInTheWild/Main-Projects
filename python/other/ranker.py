@@ -238,16 +238,16 @@ class App:
         self.btn.bind("<Enter>", lambda e: self.btn.config(bg="#1e1e1e"))
         self.btn.bind("<Leave>", lambda e: self.btn.config(bg="#111111"))
 
+        # Shared rank display container
+        self.rank_frame = tk.Frame(main, bg=BG)
+        self.rank_frame.pack(pady=(24,0))
+
         # P rank gold box (hidden until P is awarded)
-        self.p_outer = tk.Frame(main, bg=BG)
-        self.p_outer.pack(pady=(24,0))
-        self.p_box = tk.Frame(self.p_outer, bg="#FFD700", padx=20, pady=10)
+        self.p_box = tk.Frame(self.rank_frame, bg="#FFD700", padx=20, pady=10)
         self.p_rank_label = tk.Label(self.p_box, text="P", font=self.font_rank, bg="#FFD700", fg="white")
         self.p_rank_label.pack()
 
         # Normal rank label
-        self.rank_frame = tk.Frame(main, bg=BG)
-        self.rank_frame.pack()
         self.rank_var = tk.StringVar(value="?")
         self.rank_label = tk.Label(self.rank_frame, textvariable=self.rank_var,
                                    font=self.font_rank, bg=BG, fg="#2a2a2a")
@@ -394,9 +394,8 @@ class App:
         play_rank_sound(rank)
         if rank == "P":
             self.rank_label.pack_forget()
-            self.p_box.pack(in_=self.p_outer)
-            self.p_box.config(bg="#FFD700")
-            self.p_rank_label.config(bg="#FFD700")
+            self.p_box.pack()
+            self.p_rank_label.config(fg="white")
         else:
             self.p_box.pack_forget()
             self.rank_label.pack()
@@ -411,18 +410,15 @@ class App:
     def _flash(self, rank, color, n):
         if n >= 6:
             if rank == "P":
-                self.p_box.config(bg="#FFD700")
-                self.p_rank_label.config(bg="#FFD700")
+                self.p_rank_label.config(fg="white")
             else:
                 self.rank_label.config(fg=color)
             return
         if rank == "P":
-            c = "#FFD700" if n % 2 == 0 else BG
-            self.p_box.config(bg=c)
-            self.p_rank_label.config(bg=c)
+            # flicker the letter between white and gold (visible / invisible on box)
+            self.p_rank_label.config(fg="white" if n % 2 == 0 else "#FFD700")
         else:
-            c = color if n % 2 == 0 else BG
-            self.rank_label.config(fg=c)
+            self.rank_label.config(fg=color if n % 2 == 0 else BG)
         self.root.after(80, lambda: self._flash(rank, color, n+1))
 
 
