@@ -13,6 +13,7 @@ MODEL      = "google/gemma-3-27b-it"
 SOUND_DIR  = r"C:\Users\HP\Documents\GitHub\Main-Projects\python\other"
 SP_SOUND   = os.path.join(SOUND_DIR, "SPRank.ogg")
 NORM_SOUND = os.path.join(SOUND_DIR, "NormalRank.wav")
+VOLUME     = 0.35
 # ----------------------------------------
 
 pygame.mixer.init()
@@ -21,6 +22,7 @@ def play_rank_sound(rank):
     try:
         path = SP_SOUND if rank in ("S", "P") else NORM_SOUND
         pygame.mixer.music.load(path)
+        pygame.mixer.music.set_volume(VOLUME)
         pygame.mixer.music.play()
     except:
         pass
@@ -39,36 +41,35 @@ RANKS = [
 
 RANK_COLORS = {r[0]: r[1] for r in RANKS}
 
-SYSTEM_PROMPT_GENERAL = """You are an extremely brutal, ruthless achievement ranker. You do NOT sugarcoat ANYTHING.
-You are harsh, mean, and darkly funny. You have seen true greatness and these achievements probably disgust you.
-Rate the achievement portfolio with ONE rank: P, S, A, B, C, D, or F
+SYSTEM_PROMPT_GENERAL = """You are a brutally honest but fair achievement ranker. You are harsh and darkly funny, but you actually evaluate things correctly.
+Rate the overall achievement portfolio with ONE rank: P, S, A, B, C, D, or F
 
-Rank definitions (be VERY stingy — most things are C or below):
-P: Literally once-in-a-generation. You will almost NEVER give this. Reserved for gods among men.
-S: Exceptional. Very rare. Most people will never reach this.
-A: Genuinely good. Still uncommon.
-B: Serviceable. Fine. Whatever.
-C: Bad, but at least you tried, you pathetic creature.
-D: Very bad. You should be embarrassed.
-F: How did you even manage to waste everyone's time with this.
+Rank definitions:
+P: Once-in-a-generation perfection. Almost never given.
+S: Exceptional. Rare. Genuinely impressive.
+A: Genuinely good. Above average.
+B: Solid. Serviceable. Fine.
+C: Below average. Mediocre but not catastrophic.
+D: Bad. You should be embarrassed.
+F: Genuinely pathetic. How.
 
-Be BRUTALLY honest. Roast them. Be mean. Be funny. Don't hold back.
+Be harsh and funny in your reasoning but actually give a fair rank. Don't inflate, don't deflate — be honest.
 Respond ONLY in this exact JSON, no markdown:
-{"rank": "X", "reasoning": "brutal 2-3 sentence roast here"}"""
+{"rank": "X", "reasoning": "2-3 sentence brutal but fair roast"}"""
 
-SYSTEM_PROMPT_GAME = """You are an extremely brutal video game performance ranker. You rate 3 categories separately.
-Be harsh, mean, ruthless, and darkly funny. Do NOT be nice.
+SYSTEM_PROMPT_GAME = """You are a brutally honest but fair video game performance ranker. Rate 3 categories.
+Be harsh and funny but ACTUALLY fair — if the numbers are insane, reflect that in the rank.
 
 Categories:
-- style: how stylish/creative was the play. Raw kills with no flair = low. Crazy combos, risky moves = high.
-- kills: raw kill performance, efficiency, kill count relative to what's expected
-- time: how fast/efficient relative to a reasonable expectation for that game/level
+- style: creativity, flair, risk-taking, combos. Raw quantity = bad. Skill expression = good.
+- kills: kill count and efficiency relative to what's expected for that game/level. 11 million kills = absurd = high rank.
+- time: speed relative to a reasonable expectation. 2 seconds for anything = either a glitch, skip, or godlike = reflect that.
 
-Rank each S, A, B, C, D, or F (NOT P — P is never given by you directly, it's calculated separately).
-Be VERY stingy. Most people get C or D. S is almost never given.
+Rank each: S, A, B, C, D, or F (NOT P — calculated separately).
+Be stingy but not delusional. Absurd numbers deserve absurd ranks.
 
 Respond ONLY in this exact JSON, no markdown:
-{"style": "X", "kills": "X", "time": "X", "style_reason": "...", "kills_reason": "...", "time_reason": "..."}"""
+{"style": "X", "kills": "X", "time": "X", "style_reason": "1-2 sentences", "kills_reason": "1-2 sentences", "time_reason": "1-2 sentences"}"""
 
 BG     = "#0a0a0a"
 FG     = "#e0e0e0"
@@ -84,8 +85,7 @@ def call_api_general(achievements, callback):
                     {"role": "system", "content": SYSTEM_PROMPT_GENERAL},
                     {"role": "user", "content": f"Rate these achievements:\n{achievements}"}
                 ],
-                "max_tokens": 300,
-                "temperature": 0.9
+                "max_tokens": 300, "temperature": 0.85
             }).encode()
             req = urllib.request.Request(
                 "https://openrouter.ai/api/v1/chat/completions",
@@ -110,8 +110,7 @@ def call_api_game(achievements, callback):
                     {"role": "system", "content": SYSTEM_PROMPT_GAME},
                     {"role": "user", "content": f"Rate this video game performance:\n{achievements}"}
                 ],
-                "max_tokens": 400,
-                "temperature": 0.9
+                "max_tokens": 400, "temperature": 0.85
             }).encode()
             req = urllib.request.Request(
                 "https://openrouter.ai/api/v1/chat/completions",
@@ -125,10 +124,8 @@ def call_api_game(achievements, callback):
                 sr = result["style"].upper()
                 kr = result["kills"].upper()
                 tr = result["time"].upper()
-                # final rank = middle of 3 subranks
                 sorted_ranks = sorted([sr, kr, tr], key=lambda x: RANK_ORDER.index(x) if x in RANK_ORDER else 6)
-                final = sorted_ranks[1]  # middle
-                # if all S -> P
+                final = sorted_ranks[1]
                 if sr == "S" and kr == "S" and tr == "S":
                     final = "P"
                 callback(final, None, {
@@ -148,38 +145,34 @@ class App:
         self.mode = tk.StringVar(value="general")
         root.title("Achievement Ranker")
         root.configure(bg=BG)
-        root.geometry("640x780")
+        root.geometry("640x800")
         root.resizable(False, False)
 
         try:
-            self.font_title  = tkfont.Font(family="VCR OSD Mono", size=20, weight="bold")
-            self.font_label  = tkfont.Font(family="VCR OSD Mono", size=10)
-            self.font_rank   = tkfont.Font(family="VCR OSD Mono", size=80, weight="bold")
-            self.font_small  = tkfont.Font(family="VCR OSD Mono", size=8)
-            self.font_sub    = tkfont.Font(family="VCR OSD Mono", size=13, weight="bold")
+            self.font_title = tkfont.Font(family="VCR OSD Mono", size=20, weight="bold")
+            self.font_label = tkfont.Font(family="VCR OSD Mono", size=10)
+            self.font_rank  = tkfont.Font(family="VCR OSD Mono", size=80, weight="bold")
+            self.font_small = tkfont.Font(family="VCR OSD Mono", size=8)
+            self.font_sub   = tkfont.Font(family="VCR OSD Mono", size=13, weight="bold")
         except:
-            self.font_title  = tkfont.Font(family="Courier", size=20, weight="bold")
-            self.font_label  = tkfont.Font(family="Courier", size=10)
-            self.font_rank   = tkfont.Font(family="Courier", size=80, weight="bold")
-            self.font_small  = tkfont.Font(family="Courier", size=8)
-            self.font_sub    = tkfont.Font(family="Courier", size=13, weight="bold")
+            self.font_title = tkfont.Font(family="Courier", size=20, weight="bold")
+            self.font_label = tkfont.Font(family="Courier", size=10)
+            self.font_rank  = tkfont.Font(family="Courier", size=80, weight="bold")
+            self.font_small = tkfont.Font(family="Courier", size=8)
+            self.font_sub   = tkfont.Font(family="Courier", size=13, weight="bold")
 
         tk.Label(root, text="ACHIEVEMENT RANKER", font=self.font_title, bg=BG, fg=FG).pack(pady=(24,2))
         tk.Label(root, text="list your achievements. get destroyed.", font=self.font_small, bg=BG, fg="#444444").pack(pady=(0,12))
 
-        # Mode toggle
         mode_frame = tk.Frame(root, bg=BG)
         mode_frame.pack(pady=(0,10))
         tk.Label(mode_frame, text="MODE:", font=self.font_small, bg=BG, fg="#555555").pack(side="left", padx=(0,8))
         for val, lbl in [("general","GENERAL"), ("game","VIDEO GAME")]:
-            rb = tk.Radiobutton(mode_frame, text=lbl, variable=self.mode, value=val,
-                                font=self.font_small, bg=BG, fg="#888888",
-                                selectcolor=BG, activebackground=BG,
-                                activeforeground=FG, indicatoron=1,
-                                command=self._on_mode_change)
-            rb.pack(side="left", padx=6)
+            tk.Radiobutton(mode_frame, text=lbl, variable=self.mode, value=val,
+                           font=self.font_small, bg=BG, fg="#888888",
+                           selectcolor=BG, activebackground=BG, activeforeground=FG,
+                           command=self._on_mode_change).pack(side="left", padx=6)
 
-        # Input
         input_frame = tk.Frame(root, bg=BORDER, padx=1, pady=1)
         input_frame.pack(padx=28, fill="x")
         inner = tk.Frame(input_frame, bg=ACCENT)
@@ -193,7 +186,6 @@ class App:
         self.text.bind("<FocusIn>", self._clear_placeholder)
         self._placeholder_active = True
 
-        # Rank button
         self.btn = tk.Button(root, text="[ RANK ME ]", font=self.font_label,
                              bg="#111111", fg=FG, activebackground="#1e1e1e",
                              activeforeground=FG, relief="flat", bd=0,
@@ -202,13 +194,14 @@ class App:
         self.btn.bind("<Enter>", lambda e: self.btn.config(bg="#1e1e1e"))
         self.btn.bind("<Leave>", lambda e: self.btn.config(bg="#111111"))
 
-        # P rank gold box frame (hidden until P)
+        # P rank gold box
         self.p_frame = tk.Frame(root, bg=BG)
         self.p_frame.pack(pady=(20,0))
         self.p_box = tk.Frame(self.p_frame, bg="#FFD700", padx=18, pady=8)
-        # not packed until P rank
+        self.p_rank_label = tk.Label(self.p_box, text="P", font=self.font_rank, bg="#FFD700", fg="white")
+        self.p_rank_label.pack()
 
-        # Rank display (normal)
+        # Normal rank display
         self.rank_frame = tk.Frame(root, bg=BG)
         self.rank_frame.pack()
         self.rank_var = tk.StringVar(value="?")
@@ -216,18 +209,10 @@ class App:
                                    font=self.font_rank, bg=BG, fg="#2a2a2a")
         self.rank_label.pack()
 
-        # P rank label (inside gold box, white text)
-        self.p_rank_label = tk.Label(self.p_box, text="P",
-                                     font=self.font_rank, bg="#FFD700", fg="white")
-        self.p_rank_label.pack()
-
-        # Rank subtitle
         self.rank_name_var = tk.StringVar(value="")
-        self.rank_name_lbl = tk.Label(root, textvariable=self.rank_name_var,
-                                      font=self.font_label, bg=BG, fg="#555555")
-        self.rank_name_lbl.pack()
+        tk.Label(root, textvariable=self.rank_name_var, font=self.font_label, bg=BG, fg="#555555").pack()
 
-        # Game mode sub-ranks
+        # Sub ranks (game mode)
         self.sub_frame = tk.Frame(root, bg=BG)
         self.sub_frame.pack(pady=(8,0))
         self.sub_labels = {}
@@ -244,27 +229,23 @@ class App:
             rl.pack()
             self.sub_labels[cat.lower()] = (lv, lbl, rv)
 
-        # Reasoning
         self.reason_var = tk.StringVar(value="")
         tk.Label(root, textvariable=self.reason_var, font=self.font_small,
                  bg=BG, fg="#666666", wraplength=560, justify="center").pack(pady=(10,0), padx=28)
 
-        # Legend
         legend = tk.Frame(root, bg=BG)
         legend.pack(pady=(16,0))
         for rank, color, _ in RANKS:
             tk.Label(legend, text=rank, font=self.font_label, bg=BG, fg=color).pack(side="left", padx=5)
 
-        # Status
         self.status_var = tk.StringVar(value="")
         tk.Label(root, textvariable=self.status_var, font=self.font_small,
                  bg=BG, fg="#333333").pack(pady=(6,0))
 
     def _set_placeholder(self):
-        if self.mode.get() == "general":
-            ph = "e.g.\n- won a regional spelling bee\n- benched 60kg once\n- finished a game on normal difficulty"
-        else:
-            ph = "e.g.\n- game: ULTRAKILL\n- level: 1-1\n- kills: 47, no deaths\n- time: 3:24\n- style: railcoined 3 enemies"
+        ph = ("e.g.\n- won a regional spelling bee\n- benched 60kg once\n- finished a game on normal difficulty"
+              if self.mode.get() == "general" else
+              "e.g.\n- game: ULTRAKILL\n- level: 1-1\n- kills: 47, no deaths\n- time: 3:24\n- style: railcoined 3 enemies")
         self.text.delete("1.0", "end")
         self.text.insert("1.0", ph)
         self.text.config(fg="#333333")
@@ -301,7 +282,6 @@ class App:
         self.btn.config(state="disabled", text="[ RANKING... ]")
         self._reset_display()
         self.status_var.set("consulting the judges...")
-
         if self.mode.get() == "general":
             call_api_general(achievements, self._on_result)
         else:
@@ -318,16 +298,37 @@ class App:
             self.status_var.set(f"error: {reasoning[:80]}")
             return
 
-        play_rank_sound(rank)
-
         color = RANK_COLORS.get(rank, "#888888")
         rank_info = next((r for r in RANKS if r[0] == rank), None)
 
-        # P rank special display
+        if sub:
+            # reveal sub ranks one by one, then final
+            cats = ["style", "kills", "time"]
+            self._reveal_sub(cats, 0, sub, rank, color, rank_info)
+        else:
+            # general mode: just show final after flash
+            self._show_final(rank, color, rank_info, reasoning)
+
+    def _reveal_sub(self, cats, idx, sub, final_rank, final_color, rank_info):
+        if idx < len(cats):
+            cat = cats[idx]
+            lv, lbl, rv = self.sub_labels[cat]
+            r = sub[cat]
+            c = RANK_COLORS.get(r, "#888888")
+            lv.set(r)
+            lbl.config(fg=c)
+            rv.set(sub.get(f"{cat}_reason",""))
+            self.root.after(700, lambda: self._reveal_sub(cats, idx+1, sub, final_rank, final_color, rank_info))
+        else:
+            # all subs shown, now show final after a pause
+            self.root.after(500, lambda: self._show_final(final_rank, final_color, rank_info, None))
+
+    def _show_final(self, rank, color, rank_info, reasoning):
+        play_rank_sound(rank)
+
         if rank == "P":
             self.rank_label.pack_forget()
             self.p_box.pack(in_=self.p_frame)
-            self.rank_var.set("P")
         else:
             self.p_box.pack_forget()
             self.rank_label.pack()
@@ -337,16 +338,7 @@ class App:
         if rank_info:
             self.rank_name_var.set(rank_info[2])
 
-        if sub:
-            for cat in ["style","kills","time"]:
-                lv, lbl, rv = self.sub_labels[cat]
-                r = sub[cat]
-                c = RANK_COLORS.get(r, "#888888")
-                lv.set(r)
-                lbl.config(fg=c)
-                rv.set(sub.get(f"{cat}_reason",""))
-            self.reason_var.set("")
-        else:
+        if reasoning:
             self.reason_var.set(f'"{reasoning}"')
 
         self._flash(rank, color, 0)
